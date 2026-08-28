@@ -6,7 +6,9 @@ plugins {
 
 android {
     namespace = "de.asmapp.asm"
-    compileSdk = flutter.compileSdkVersion
+    // flutter.compileSdkVersion is stuck at 36 regardless of the installed AGP
+    // version; flutter_secure_storage needs 37+, and AGP 9.3.2 supports it.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
