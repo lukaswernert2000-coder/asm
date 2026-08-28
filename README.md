@@ -1,6 +1,16 @@
 # asm
 
-A new Flutter project.
+Flutter-App (iOS + Android) für den Handel mit gebrauchter Airsoft-Ausrüstung.
+
+## Starten
+
+Secrets (Supabase-URL/Key, Sentry-DSN) kommen nie hartcodiert ins Repo, sondern über
+`--dart-define-from-file`. Vor dem ersten Start `env/example.json` nach `env/dev.json`
+kopieren und mit echten Werten füllen (Datei ist gitignored):
+
+```bash
+flutter run --dart-define-from-file=env/dev.json
+```
 
 ## Getting Started
 

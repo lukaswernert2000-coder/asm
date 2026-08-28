@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shimmer/shimmer.dart';
 
-Widget _wrap(Widget child) =>
-    MaterialApp(home: Scaffold(body: child));
+Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 
 void main() {
   for (final entry in <String, Widget>{
@@ -13,7 +12,9 @@ void main() {
     'listingList': const AsmSkeleton.listingList(),
     'detail': const AsmSkeleton.detail(),
   }.entries) {
-    testWidgets('${entry.key} rendert ohne CircularProgressIndicator', (tester) async {
+    testWidgets('${entry.key} rendert ohne CircularProgressIndicator', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(entry.value));
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
@@ -24,7 +25,10 @@ void main() {
 
     final shimmer = tester.widget<Shimmer>(find.byType(Shimmer));
     final gradient = shimmer.gradient as LinearGradient;
-    expect(gradient.colors, containsAll([AsmColors.shimmerBase, AsmColors.shimmerHi]));
+    expect(
+      gradient.colors,
+      containsAll([AsmColors.shimmerBase, AsmColors.shimmerHi]),
+    );
     expect(shimmer.period, const Duration(milliseconds: 1200));
   });
 }

@@ -123,4 +123,21 @@ noch keinen Auth-Zustand (kommt erst in M1) — der Button pusht deshalb aktuell
 `/create`, unabhängig vom (nicht existierenden) Login-Status. **Nachziehen, sobald M1 einen
 Auth-Provider liefert** — voraussichtlich Task 1.x oder ein Nachtrag zu Task 0.6.
 
+## 2026-08-29 · Task 0.7 · CI ohne `build_runner`-Schritt
+
+Die Plan-Vorlage für `ci.yml` enthält `dart run build_runner build --delete-conflicting-outputs`.
+Das schlägt lokal weiterhin fehl (siehe Eintrag zu Task 0.6, `analyzer_plugin`/`analyzer`-Konflikt)
+und würde CI auf jedem Push rot färben, obwohl aktuell nichts Codegen braucht (`appRouterProvider`
+ist weiterhin ein plain `Provider`). Schritt aus `ci.yml` weggelassen. **Zurückholen, sobald** die
+Analyzer-Kette aus dem 0.6-Eintrag wieder kompatibel ist und `@riverpod`/`freezed` tatsächlich
+verwendet werden (spätestens M1).
+
+## 2026-08-29 · Task 0.7 · `dart format` auf 15 Dateien aus 0.5/0.6 nachgeholt
+
+Die neue CI prüft `dart format --set-exit-if-changed .`; das schlug sofort auf 15 nie formatierten,
+aber funktional unveränderten Dateien aus Task 0.5/0.6 fehl. Mit `dart format lib test` behoben,
+keine Verhaltensänderung. `dart format .` (Repo-Root) scheitert lokal weiterhin, weil es versucht,
+den gitignorten `build/`-Ordner (Android-Gradle-Zwischenartefakte, tiefe Pfade) zu durchsuchen —
+betrifft nur lokale Checkouts nach `flutter run`, nicht CI (frischer Checkout ohne `build/`).
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

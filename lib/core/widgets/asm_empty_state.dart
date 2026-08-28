@@ -29,12 +29,18 @@ class AsmEmptyState extends StatelessWidget {
           children: [
             Icon(icon, size: 48, color: AsmColors.textTertiary),
             const SizedBox(height: AsmSpacing.md),
-            Text(title, style: AsmTextStyles.titleM, textAlign: TextAlign.center),
+            Text(
+              title,
+              style: AsmTextStyles.titleM,
+              textAlign: TextAlign.center,
+            ),
             if (message != null) ...[
               const SizedBox(height: AsmSpacing.xs),
               Text(
                 message!,
-                style: AsmTextStyles.bodyM.copyWith(color: AsmColors.textSecondary),
+                style: AsmTextStyles.bodyM.copyWith(
+                  color: AsmColors.textSecondary,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],

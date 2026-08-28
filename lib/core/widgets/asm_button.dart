@@ -29,15 +29,27 @@ class AsmButton extends StatelessWidget {
     // Globale Regel gewinnt (keine dokumentierte Ausnahme fuer ghost).
     final height = variant == AsmButtonVariant.ghost ? 48.0 : 52.0;
 
-    final (Color? fill, Color labelColor, Color? borderColor) = switch (variant) {
-      AsmButtonVariant.primary => (AsmColors.brandBright, AsmColors.onBrand, null),
+    final (
+      Color? fill,
+      Color labelColor,
+      Color? borderColor,
+    ) = switch (variant) {
+      AsmButtonVariant.primary => (
+        AsmColors.brandBright,
+        AsmColors.onBrand,
+        null,
+      ),
       AsmButtonVariant.secondary => (
-          AsmColors.surfaceRaised,
-          AsmColors.textPrimary,
-          AsmColors.border,
-        ),
+        AsmColors.surfaceRaised,
+        AsmColors.textPrimary,
+        AsmColors.border,
+      ),
       AsmButtonVariant.ghost => (null, AsmColors.brandBright, null),
-      AsmButtonVariant.danger => (null, AsmColors.dangerText, AsmColors.dangerText),
+      AsmButtonVariant.danger => (
+        null,
+        AsmColors.dangerText,
+        AsmColors.dangerText,
+      ),
     };
 
     final pressedFill = switch (variant) {
@@ -57,7 +69,9 @@ class AsmButton extends StatelessWidget {
             decoration: BoxDecoration(
               color: fill,
               borderRadius: BorderRadius.circular(AsmRadius.md),
-              border: borderColor != null ? Border.all(color: borderColor) : null,
+              border: borderColor != null
+                  ? Border.all(color: borderColor)
+                  : null,
             ),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
@@ -72,7 +86,9 @@ class AsmButton extends StatelessWidget {
                           height: 18,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(AsmColors.onBrand),
+                            valueColor: AlwaysStoppedAnimation(
+                              AsmColors.onBrand,
+                            ),
                           ),
                         )
                       : Row(
@@ -84,7 +100,9 @@ class AsmButton extends StatelessWidget {
                             ],
                             Text(
                               label,
-                              style: AsmTextStyles.titleS.copyWith(color: labelColor),
+                              style: AsmTextStyles.titleS.copyWith(
+                                color: labelColor,
+                              ),
                             ),
                           ],
                         ),

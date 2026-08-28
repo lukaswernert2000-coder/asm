@@ -32,7 +32,11 @@ class AsmNetworkImage extends StatelessWidget {
     return const ColoredBox(
       color: AsmColors.surfaceRaised,
       child: Center(
-        child: Icon(LucideIcons.imageOff, size: 24, color: AsmColors.textTertiary),
+        child: Icon(
+          LucideIcons.imageOff,
+          size: 24,
+          color: AsmColors.textTertiary,
+        ),
       ),
     );
   }

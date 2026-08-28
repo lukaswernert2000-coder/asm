@@ -50,13 +50,20 @@ class GalleryScreen extends StatelessWidget {
               SizedBox(height: AsmSpacing.sm),
               AsmButton(label: 'Laedt', isLoading: true),
               SizedBox(height: AsmSpacing.sm),
-              AsmButton(label: 'Mit Icon', icon: LucideIcons.plus, onPressed: _noop),
+              AsmButton(
+                label: 'Mit Icon',
+                icon: LucideIcons.plus,
+                onPressed: _noop,
+              ),
             ],
           ),
           _Section(
             title: 'AsmTextField',
             children: [
-              AsmTextField(controller: TextEditingController(), label: 'Standard'),
+              AsmTextField(
+                controller: TextEditingController(),
+                label: 'Standard',
+              ),
               const SizedBox(height: AsmSpacing.md),
               AsmTextField(
                 controller: TextEditingController(),
@@ -80,7 +87,11 @@ class GalleryScreen extends StatelessWidget {
                 children: [
                   AsmChip(label: 'Inaktiv', selected: false),
                   AsmChip(label: 'Aktiv', selected: true),
-                  AsmChip(label: 'Mit Icon', selected: false, icon: LucideIcons.filter),
+                  AsmChip(
+                    label: 'Mit Icon',
+                    selected: false,
+                    icon: LucideIcons.filter,
+                  ),
                 ],
               ),
             ],
@@ -135,7 +146,10 @@ class GalleryScreen extends StatelessWidget {
             children: [
               SizedBox(
                 height: 260,
-                child: AsmErrorView(message: 'Keine Verbindung', onRetry: _noop),
+                child: AsmErrorView(
+                  message: 'Keine Verbindung',
+                  onRetry: _noop,
+                ),
               ),
             ],
           ),
@@ -183,7 +197,10 @@ class _Section extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: AsmTextStyles.titleM.copyWith(color: AsmColors.brandBright)),
+          Text(
+            title,
+            style: AsmTextStyles.titleM.copyWith(color: AsmColors.brandBright),
+          ),
           const SizedBox(height: AsmSpacing.sm),
           ...children,
         ],

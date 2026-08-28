@@ -20,9 +20,13 @@ class AsmChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fill = selected ? AsmColors.brand.withValues(alpha: 0.22) : AsmColors.surfaceRaised;
+    final fill = selected
+        ? AsmColors.brand.withValues(alpha: 0.22)
+        : AsmColors.surfaceRaised;
     final borderColor = selected ? AsmColors.brandBright : AsmColors.border;
-    final textColor = selected ? AsmColors.brandBright : AsmColors.textSecondary;
+    final textColor = selected
+        ? AsmColors.brandBright
+        : AsmColors.textSecondary;
 
     return SizedBox(
       height: 34,
@@ -45,7 +49,10 @@ class AsmChip extends StatelessWidget {
                   Icon(icon, size: 16, color: textColor),
                   const SizedBox(width: AsmSpacing.xxs),
                 ],
-                Text(label, style: AsmTextStyles.label.copyWith(color: textColor)),
+                Text(
+                  label,
+                  style: AsmTextStyles.label.copyWith(color: textColor),
+                ),
               ],
             ),
           ),

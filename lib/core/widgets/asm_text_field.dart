@@ -47,7 +47,10 @@ class _AsmTextFieldState extends State<AsmTextField> {
   @override
   Widget build(BuildContext context) {
     final hasError = widget.errorText != null;
-    final (Color borderColor, double borderWidth) = switch ((hasError, _hasFocus)) {
+    final (Color borderColor, double borderWidth) = switch ((
+      hasError,
+      _hasFocus,
+    )) {
       (true, _) => (AsmColors.dangerText, 1.5),
       (false, true) => (AsmColors.brandBright, 1.5),
       (false, false) => (AsmColors.border, 1.0),
@@ -94,7 +97,9 @@ class _AsmTextFieldState extends State<AsmTextField> {
               valueListenable: widget.controller,
               builder: (context, value, _) => Text(
                 '${value.text.length}/${widget.maxLength}',
-                style: AsmTextStyles.bodyS.copyWith(color: AsmColors.textTertiary),
+                style: AsmTextStyles.bodyS.copyWith(
+                  color: AsmColors.textTertiary,
+                ),
               ),
             ),
           ),

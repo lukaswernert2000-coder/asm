@@ -89,7 +89,9 @@ class _BranchPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: AsmEmptyState(icon: icon, title: title));
+    return Scaffold(
+      body: AsmEmptyState(icon: icon, title: title),
+    );
   }
 }
 

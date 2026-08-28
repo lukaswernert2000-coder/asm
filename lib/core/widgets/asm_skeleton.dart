@@ -8,13 +8,19 @@ enum _SkeletonLayout { listingGrid, listingList, detail }
 /// Ladeskelett. Genau drei Layouts, siehe 01-DESIGN-SYSTEM.md Abschnitt 5.8.
 /// Kein `CircularProgressIndicator` als Ganzseiten-Ladeanzeige (G14).
 class AsmSkeleton extends StatelessWidget {
-  const AsmSkeleton.listingGrid({super.key}) : _layout = _SkeletonLayout.listingGrid;
-  const AsmSkeleton.listingList({super.key}) : _layout = _SkeletonLayout.listingList;
+  const AsmSkeleton.listingGrid({super.key})
+    : _layout = _SkeletonLayout.listingGrid;
+  const AsmSkeleton.listingList({super.key})
+    : _layout = _SkeletonLayout.listingList;
   const AsmSkeleton.detail({super.key}) : _layout = _SkeletonLayout.detail;
 
   final _SkeletonLayout _layout;
 
-  static Widget _block({required double height, double? width, double radius = AsmRadius.sm}) {
+  static Widget _block({
+    required double height,
+    double? width,
+    double radius = AsmRadius.sm,
+  }) {
     return Container(
       width: width,
       height: height,
@@ -30,7 +36,10 @@ class AsmSkeleton extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        AspectRatio(aspectRatio: 4 / 3, child: _block(height: double.infinity, radius: AsmRadius.md)),
+        AspectRatio(
+          aspectRatio: 4 / 3,
+          child: _block(height: double.infinity, radius: AsmRadius.md),
+        ),
         const SizedBox(height: AsmSpacing.xs),
         _block(height: 14),
         const SizedBox(height: AsmSpacing.xxs),
@@ -83,7 +92,10 @@ class AsmSkeleton extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AsmSpacing.md),
       children: [
-        AspectRatio(aspectRatio: 4 / 3, child: _block(height: double.infinity, radius: AsmRadius.lg)),
+        AspectRatio(
+          aspectRatio: 4 / 3,
+          child: _block(height: double.infinity, radius: AsmRadius.lg),
+        ),
         const SizedBox(height: AsmSpacing.md),
         _block(height: 22),
         const SizedBox(height: AsmSpacing.xs),
