@@ -46,3 +46,12 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# ASM secrets (see G11)
+env/*.json
+!env/example.json
+*.jks
+key.properties
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
+.env
