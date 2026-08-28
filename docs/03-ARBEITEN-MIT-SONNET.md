@@ -131,6 +131,76 @@ Zeig mir zwei Alternativen mit Vor- und Nachteilen, bevor du etwas änderst.
 
 ---
 
+## 3b. Kontext: der Chat ist kein Gedächtnis
+
+Das Kontextfenster läuft in jeder längeren Session voll. Dagegen hilft kein Trick — aber
+es ist auch nicht das Problem. Das Problem ist, den Chatverlauf als Speicher zu benutzen.
+
+**Regel: Alles, was die nächste Session wissen muss, steht in einer Datei.**
+
+### Die vier Speicherorte
+
+| Ort | Was reinkommt | Wer pflegt |
+|---|---|---|
+| `CLAUDE.md` | Dauerhafte Projektregeln. **Max. 80 Zeilen** – wird jedes Mal geladen und kostet jedes Mal Kontext. | du, selten |
+| `docs/02-IMPLEMENTATION-PLAN.md` | Fortschritt. Sonnet hakt `- [ ]` → `- [x]` ab. | Sonnet, nach jedem Task |
+| `docs/DECISIONS.md` | Jede Abweichung vom Plan, jede Entscheidung, jeder Workaround – eine Zeile. | Sonnet, wenn es passiert |
+| `git log` | Was wann gebaut wurde. | Sonnet, jeder Commit |
+
+Wenn diese vier stimmen, ist der Chatverlauf **wegwerfbar**. Genau das ist das Ziel.
+
+### `/clear` und `/compact` richtig einsetzen
+
+| Situation | Befehl |
+|---|---|
+| Task fertig und committet | **`/clear`** – Verlauf weg, `CLAUDE.md` wird neu geladen. Der saubere Schnitt. |
+| Mitten in einem Task, Kontext wird knapp | **`/compact`** – fasst zusammen und macht weiter. Verlustbehaftet, aber der Faden bleibt. |
+| Kontext läuft von selbst voll | Passiert automatisch. Verlass dich nicht drauf – die automatische Zusammenfassung entscheidet selbst, was sie wegwirft. |
+
+**Nach jedem Task `/clear`.** Nicht sparen. Eine frische Session, die den Plan neu liest,
+ist besser als eine 200-Nachrichten-Session, die sich an das meiste falsch erinnert.
+
+### Was Kontext frisst — und wie du es verhinderst
+
+| Fresser | Gegenmittel |
+|---|---|
+| **Den 2.100-Zeilen-Plan komplett lesen** | Ab Session 2 nur den relevanten Teil: *"Lies in docs/02-IMPLEMENTATION-PLAN.md die Global Constraints und Meilenstein M3."* |
+| **Lange Build- und Testausgaben** | *"Zeig mir nur die letzten 30 Zeilen"* bzw. `flutter test 2>&1 \| tail -30`. `build_runner` produziert hunderte Zeilen Rauschen. |
+| **Große Dateien in den Chat pasten** | Nie. Sag den Pfad – Sonnet liest gezielt die Stellen, die es braucht. |
+| **Screenshots** | Sparsam. Ein Screenshot kostet so viel wie mehrere hundert Zeilen Text. |
+| **Suchen quer durchs Projekt** | Als Subagent: *"Nutze einen Subagent, um X zu finden, und gib mir nur das Ergebnis."* Die Suche läuft in eigenem Kontext, nur das Ergebnis kommt zurück. |
+| **Ein zu langes `CLAUDE.md`** | Kurz halten. Es ist ein Wegweiser, keine Kopie des Plans. |
+
+### Session-Start-Prompt ab Session 2
+
+```
+Wir sind bei Meilenstein M{X}, Tasks bis {X.Y} sind fertig und committet.
+
+Lies in docs/02-IMPLEMENTATION-PLAN.md die "Global Constraints" und den
+Abschnitt "Meilenstein M{X}". Den Rest des Plans brauchst du jetzt nicht.
+Lies docs/DECISIONS.md.
+
+Führe Task {X.Y+1} aus.
+```
+
+Das ist der ganze Zaubertrick: Sonnet zieht die Infos **aus den Dateien**, nicht aus dem
+Chat. Dass es sie „jedes Mal neu zieht" ist kein Bug — es ist der Grund, warum die
+Session 20 genauso zuverlässig ist wie Session 2.
+
+### Am Ende jedes Tasks
+
+```
+Bevor du fertig bist:
+1. Hake die erledigten Schritte in docs/02-IMPLEMENTATION-PLAN.md ab.
+2. Trag in docs/DECISIONS.md ein, was du anders gemacht hast als im Plan
+   und warum. Eine Zeile pro Punkt. Wenn nichts abwich: nichts eintragen.
+3. Commit.
+```
+
+Danach `/clear`.
+
+---
+
 ## 4. Was du selbst machen musst — das kann Sonnet nicht
 
 | Aufgabe | Warum du |

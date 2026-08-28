@@ -4,9 +4,21 @@ Flutter-App (iOS + Android) für den Handel mit gebrauchter Airsoft-Ausrüstung.
 Backend: Supabase. State: Riverpod 2 mit Codegen. Routing: go_router.
 
 ## Vor jeder Aufgabe lesen
-- `docs/02-IMPLEMENTATION-PLAN.md` – der verbindliche Plan. Arbeite Task für Task.
+- `docs/02-IMPLEMENTATION-PLAN.md` – der verbindliche Plan. **Zuerst den Abschnitt
+  "Stand" lesen** – dort steht, wo wir sind. Dann nur den aktuellen Meilenstein,
+  nicht den ganzen Plan.
+- `docs/DECISIONS.md` – Abweichungen und Stolpersteine aus früheren Sessions.
 - `docs/01-DESIGN-SYSTEM.md` – Farben, Typografie, Komponenten. Nichts dazuerfinden.
 - `docs/00-SPEC.md` – Produktentscheidungen, Kategorien, Rechtsanforderungen.
+  Nur bei Bedarf, nicht routinemäßig.
+
+## Am Ende jedes Tasks – immer, ohne Nachfrage
+1. Abschnitt "Stand" in `docs/02-IMPLEMENTATION-PLAN.md` aktualisieren.
+2. Abweichungen vom Plan in `docs/DECISIONS.md` eintragen (eine Zeile). Wenn nichts
+   abwich: nichts eintragen.
+3. Commit.
+
+Der Chatverlauf ist wegwerfbar. Was die nächste Session wissen muss, steht in einer Datei.
 
 ## Harte Regeln
 - Dark-Theme only. Keine Farb-, Größen- oder Abstands-Literale in Widgets –

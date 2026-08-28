@@ -29,6 +29,25 @@ Firebase Cloud Messaging · Sentry
 
 ---
 
+## 📍 Stand
+
+> **Diese Zeilen sind die einzige Wahrheit über den Fortschritt.** Sonnet aktualisiert sie
+> als letzten Schritt jedes Tasks — vor dem Commit. Wer wissen will, wo das Projekt steht,
+> liest hier, nicht im Chatverlauf.
+
+| | |
+|---|---|
+| **Meilenstein** | M0 · Fundament |
+| **Fertig** | Task 0.1 · 0.2 · 0.3 · 0.4 |
+| **Als Nächstes** | **Task 0.5 — Kern-Widgets** |
+| **Offen in M0** | 0.5 · 0.6 · 0.7 · 0.8 |
+| **Letzter Commit** | `219e9f2` fix(android): upgrade AGP to 9.3.2 |
+| **Stand vom** | 2026-08-28 |
+
+Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
+
+---
+
 ## Global Constraints
 
 Diese Regeln gelten für **jeden** Task. Sie werden nicht wiederholt.
