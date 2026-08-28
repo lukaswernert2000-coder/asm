@@ -38,11 +38,11 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M0 · Fundament |
-| **Fertig** | Task 0.1 · 0.2 · 0.3 · 0.4 · 0.5 |
-| **Als Nächstes** | **Task 0.6 — Router und Navigations-Shell** |
-| **Offen in M0** | 0.6 · 0.7 · 0.8 |
-| **Letzter Commit** | `7059ee6` feat(ui): add core widget library |
-| **Stand vom** | 2026-08-28 |
+| **Fertig** | Task 0.1 · 0.2 · 0.3 · 0.4 · 0.5 · 0.6 |
+| **Als Nächstes** | **Task 0.7 — Sentry, Umgebungs-Konfiguration und CI** |
+| **Offen in M0** | 0.7 · 0.8 |
+| **Letzter Commit** | `fff6db3` feat(router): add go_router shell with bottom navigation |
+| **Stand vom** | 2026-08-29 |
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
