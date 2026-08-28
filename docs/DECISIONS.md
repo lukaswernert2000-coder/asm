@@ -140,4 +140,20 @@ keine Verhaltensänderung. `dart format .` (Repo-Root) scheitert lokal weiterhin
 den gitignorten `build/`-Ordner (Android-Gradle-Zwischenartefakte, tiefe Pfade) zu durchsuchen —
 betrifft nur lokale Checkouts nach `flutter run`, nicht CI (frischer Checkout ohne `build/`).
 
+## 2026-08-29 · Task 0.7 · `sentry_flutter` auf 9.28.0 hochgezogen — 8.14.2 crasht beim Start
+
+Nach Commit `9d9cdba` erstmals echt auf dem Emulator getestet (vorher nur `analyze`/`test`):
+`SentryFlutter.init()` wirft auf Android bei **jedem** Start `ClassCastException: Integer
+cannot be cast to Long`, unabhängig von den eigenen Optionen. Ursache gefunden in der
+Plugin-Quelle im Pub-Cache: `SentryFlutter.kt:48` liest `autoSessionTrackingIntervalMillis`
+als `Long`, aber der Default-Wert kommt über den Platform-Channel als 32-bit `Integer` an
+(Dart-`int`, klein genug für Int32-Kodierung) — ein Bug in `sentry_flutter 8.14.2`, das
+zugleich die letzte je veröffentlichte 8.x-Version ist (2024-08-26), Fix also nur über
+einen Major-Sprung erreichbar. Mit `sentry_flutter ^9.28.0` (aktuell) getestet: `pub get`
+löst sauber auf (keine anderen gepinnten Pakete betroffen, nur `jni`/`path_provider_android`
+transitiv leicht abweichend), `flutter analyze --fatal-infos` 0 Issues, App läuft auf dem
+Emulator ohne jede Sentry-Fehlermeldung. Vor dem Hochziehen mit dem Nutzer abgestimmt
+(Alternative wäre `autoInitializeNativeSdk = false` auf 8.14.2 gewesen — Dart-Fehler bleiben
+erfasst, aber kein natives Crash-/ANR-Tracking).
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->
