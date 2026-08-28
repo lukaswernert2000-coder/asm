@@ -82,4 +82,45 @@ dokumentierte Ausnahme. G15 gewinnt: `ghost` ist jetzt 48dp hoch wie `primary`/`
 nur ohne Fläche/Border. Betrifft nur `ghost` — `secondary`/`danger`/`primary` waren mit
 52dp bereits konform.
 
+## 2026-08-29 · Task 0.6 · `build_runner` durch `analyzer_plugin` blockiert — `riverpod_lint` entfernt, `appRouterProvider` ohne Codegen
+
+`dart run build_runner build` schlägt beim Kompilieren des Build-Skripts fehl:
+`riverpod_generator 2.6.4` → `riverpod_analyzer_utils 0.5.9` → `custom_lint_core` →
+`analyzer_plugin 0.12.0` nutzt eine `Element`-API, die unsere gepinnte `analyzer`-Version
+bereits durch `Element2` ersetzt hat — ein bestätigter, offener Upstream-Bug
+(dart-lang/sdk#60899, rrousselGit/riverpod#4124/#4393). Kein Analyzer zwischen 7.3 und 7.6
+funktioniert gleichzeitig für `analyzer_plugin` (braucht älter) und `custom_lint_visitor`
+1.0.0+7.7.0 (braucht neuer, wegen Dart-Dot-Shorthand-Syntax) — das Fenster ist leer.
+**Gegenmittel:** `custom_lint`/`riverpod_lint` aus `pubspec.yaml` entfernt (IDE-Lint-Hilfe,
+nicht build-kritisch) und `analysis_options.yaml`s `plugins: - custom_lint` gestrichen.
+`riverpod_generator` bleibt installiert, wird aber vorerst nicht benutzt — `appRouterProvider`
+in `lib/core/router/app_router.dart` ist ein klassischer `Provider<GoRouter>((ref) => …)`
+ohne `@riverpod`. **Sobald diese Pakete kompatible Versionen ausliefern**: `custom_lint`/
+`riverpod_lint` zurückholen und `appRouterProvider` auf `@riverpod` umstellen. Betrifft auch
+`freezed`/`json_serializable` in M1 — die brauchen `build_runner` genauso und laufen erst
+wieder, wenn diese Kette gelöst ist.
+
+## 2026-08-29 · Task 0.6 · Schwebender Create-Kreis: `floatingActionButton`/`centerDocked` statt Stack
+
+Der "erhöhte Kreis" in der BottomNav (5.9) sollte zunächst per eigenem `Stack`/`Positioned`
+über der Bar schweben. Drei Anläufe (negativer Offset, Leerraum-Spacer, explizite
+Gesamthöhe per `SizedBox`) haben das **visuell** jedes Mal korrekt hinbekommen — aber
+**Touch-Events kamen nie an**, weder beim Kreis noch (im ersten Anlauf) bei den Labels
+daneben, ohne jede Fehlermeldung oder Overflow-Warnung. `Scaffold.bottomNavigationBar`
+reicht Gesten offenbar nicht zuverlässig durch, wenn die Wurzel ein `Stack` mit eigenem
+`Positioned`-Overlay ist. **Gegenmittel:** Scaffolds eigenen `floatingActionButton` +
+`floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked` benutzt — genau
+dafür gebaut, Rendering *und* Hit-Testing funktionieren sofort. `_BottomNav` ist wieder eine
+simple `Row` in `SafeArea`+`SizedBox(height: 64)` (die ursprüngliche, immer funktionierende
+Form). **Lektion:** Bei "Widget X schwebt über Bar Y" in Flutter zuerst den dafür vorgesehenen
+Scaffold-Slot (`floatingActionButton`, `persistentFooterButtons`, …) prüfen, bevor man das
+per `Stack` nachbaut.
+
+## 2026-08-29 · Task 0.6 · Gast-Check am Create-Button noch nicht umsetzbar
+
+5.9 verlangt: bei Gast öffnet der mittlere Button das Login-Sheet statt `/create`. Es gibt
+noch keinen Auth-Zustand (kommt erst in M1) — der Button pusht deshalb aktuell immer
+`/create`, unabhängig vom (nicht existierenden) Login-Status. **Nachziehen, sobald M1 einen
+Auth-Provider liefert** — voraussichtlich Task 1.x oder ein Nachtrag zu Task 0.6.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->
