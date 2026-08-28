@@ -156,4 +156,16 @@ Emulator ohne jede Sentry-Fehlermeldung. Vor dem Hochziehen mit dem Nutzer abges
 (Alternative wäre `autoInitializeNativeSdk = false` auf 8.14.2 gewesen — Dart-Fehler bleiben
 erfasst, aber kein natives Crash-/ANR-Tracking).
 
+## 2026-08-29 · Task 0.6 (Nachtrag) · Widget-Katalog war eine Sackgasse
+
+Beim manuellen Verifizieren von Task 0.7 auf dem Emulator gemeldet: Die App landet im
+Debug-Build laut `app_router.dart` immer zuerst auf `GalleryScreen` (`kDebugMode ?
+_galleryPath : AsmRoutes.home`), aber die Katalog-Seite hatte keinerlei Navigation zurück
+zur echten App — keine Bottom-Nav, kein Link, kein Zurück-Button (sie ist die initiale
+Route, also auch kein Pop möglich). Jeder normale `flutter run` blieb dort hängen; die
+Bottom-Nav-Shell aus Task 0.6 war dadurch faktisch nicht erreichbar. Test-first behoben:
+`AsmButton`-freier `IconButton` (Haus-Icon, Tooltip "Zur App") in der `GalleryScreen`-AppBar,
+navigiert per `context.go(AsmRoutes.home)`. Mit echtem Tap auf dem Emulator verifiziert,
+inklusive aller vier Tabs und dem Create-Vollbild-Flow — alle funktionieren wie spezifiziert.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

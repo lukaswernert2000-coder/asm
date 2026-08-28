@@ -1,3 +1,4 @@
+import 'package:asm/core/router/routes.dart';
 import 'package:asm/core/theme/asm_colors.dart';
 import 'package:asm/core/theme/asm_spacing.dart';
 import 'package:asm/core/theme/asm_text_styles.dart';
@@ -9,6 +10,7 @@ import 'package:asm/core/widgets/asm_network_image.dart';
 import 'package:asm/core/widgets/asm_skeleton.dart';
 import 'package:asm/core/widgets/asm_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Debug-Widget-Katalog. Zeigt alle Kern-Widgets in allen Zustaenden
@@ -19,7 +21,16 @@ class GalleryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Widget-Katalog')),
+      appBar: AppBar(
+        title: const Text('Widget-Katalog'),
+        actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.house),
+            tooltip: 'Zur App',
+            onPressed: () => context.go(AsmRoutes.home),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(AsmSpacing.md),
         children: [
