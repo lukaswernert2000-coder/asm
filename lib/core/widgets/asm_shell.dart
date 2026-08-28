@@ -178,8 +178,8 @@ class _CreateNavItem extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: Color(0x66000000),
-                blurRadius: 16,
-                offset: Offset(0, 4),
+                blurRadius: 8,
+                offset: Offset(0, 2),
               ),
             ],
           ),

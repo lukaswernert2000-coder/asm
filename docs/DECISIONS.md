@@ -187,4 +187,18 @@ nur die aktive) — Assertion auf `findsNWidgets(2)` korrigiert. Und `pumpAndSet
 Sprung in den Katalog hängt sich auf, weil `AsmSkeleton` dort mit einer Shimmer-Animation läuft,
 die nie zur Ruhe kommt — durch zwei gezielte `pump()`-Aufrufe ersetzt.
 
+## 2026-08-29 · Task 0.6 (Nachtrag 3) · Create-Button-Schatten auf Nutzerwunsch verkleinert
+
+Der Schatten des Create-FAB (`4.3`-Ausnahme) wirkte dem Nutzer zu präsent. Pixelgenau
+nachgemessen, bevor etwas geändert wurde: Das Plus-Icon selbst war exakt zentriert
+(0,5px/0,3% Abweichung bei 145px Kreisdurchmesser — Rauschen, kein Bug). Der wahrgenommene
+Versatz kam vom asymmetrischen Schatten-Offset `(0, 4)`, der unten sichtbar mehr Fläche
+einnahm als oben und den Kreis optisch nach oben verschoben wirken ließ. Auf Wunsch des
+Nutzers Blur und Offset halbiert: `blur 16 → 8`, `offset (0,4) → (0,2)`. Vorher/Nachher per
+Screenshot-Zoom verglichen, sichtbar kleiner und symmetrischer. `01-DESIGN-SYSTEM.md`
+Abschnitt 4.3 entsprechend mitgezogen, damit Spec und Code nicht auseinanderlaufen. Kein
+Widget-Test ergänzt — `AsmShell` braucht einen echten `StatefulNavigationShell`, den ohne
+GoRouter zu faken wäre für eine reine Konstantenänderung unverhältnismäßig; wie schon bei
+der FAB-Positionierung in Task 0.6 stattdessen manuell auf dem Emulator verifiziert.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

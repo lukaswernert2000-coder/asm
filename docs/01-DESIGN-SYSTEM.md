@@ -161,7 +161,7 @@ Keine `BoxShadow` auf dunklem Grund. Stattdessen:
 | 3 – Overlay | `scrim` + Ebene 2 darüber | – |
 
 Ausnahme: Der Floating Action Button darf einen weichen Schatten haben
-(`Color(0x66000000)`, blur 16, offset 0/4), damit er sich vom Feed löst.
+(`Color(0x66000000)`, blur 8, offset 0/2), damit er sich vom Feed löst.
 
 ### 4.4 Bewegung
 
