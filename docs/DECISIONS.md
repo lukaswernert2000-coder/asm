@@ -168,4 +168,23 @@ Bottom-Nav-Shell aus Task 0.6 war dadurch faktisch nicht erreichbar. Test-first 
 navigiert per `context.go(AsmRoutes.home)`. Mit echtem Tap auf dem Emulator verifiziert,
 inklusive aller vier Tabs und dem Create-Vollbild-Flow — alle funktionieren wie spezifiziert.
 
+## 2026-08-29 · Task 0.6 (Nachtrag 2) · `initialLocation` zeigte immer noch auf den Katalog
+
+Der vorherige Eintrag ("Widget-Katalog war eine Sackgasse") hat nur einen Ausgang aus dem
+Katalog ergänzt, aber `initialLocation: kDebugMode ? _galleryPath : AsmRoutes.home` nicht
+angefasst — jeder normale `flutter run` landete also weiterhin zuerst im Katalog, nie in der
+echten App. Vom Nutzer zu Recht als falsch zurückgewiesen. Jetzt echt behoben:
+`initialLocation` ist immer `AsmRoutes.home`; der Katalog ist stattdessen über ein
+Schraubenschlüssel-Icon oben rechts in `AsmShell` erreichbar (nur `if (kDebugMode)`,
+`AsmRoutes.debugGallery`, ehemals der private `_galleryPath`-Konstante in `app_router.dart`,
+jetzt in `routes.dart` neben den anderen Routen). Mit echtem Neustart auf dem Emulator
+verifiziert: App landet direkt auf dem Start-Tab, Schraubenschlüssel führt zum Katalog,
+Zurück-Pfeil und das bestehende Home-Icon im Katalog führen beide zurück.
+
+Zwei Testfallen dabei gefunden: `find.text('Start')` matcht zweimal (Bottom-Nav-Label **und**
+Platzhalter-Titel, weil `StatefulShellRoute.indexedStack` alle vier Branches sofort baut, nicht
+nur die aktive) — Assertion auf `findsNWidgets(2)` korrigiert. Und `pumpAndSettle()` nach dem
+Sprung in den Katalog hängt sich auf, weil `AsmSkeleton` dort mit einer Shimmer-Animation läuft,
+die nie zur Ruhe kommt — durch zwei gezielte `pump()`-Aufrufe ersetzt.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

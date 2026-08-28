@@ -2,6 +2,7 @@ import 'package:asm/core/router/routes.dart';
 import 'package:asm/core/theme/asm_colors.dart';
 import 'package:asm/core/theme/asm_spacing.dart';
 import 'package:asm/core/theme/asm_text_styles.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -24,7 +25,19 @@ class AsmShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: navigationShell,
+      body: Stack(
+        children: [
+          navigationShell,
+          if (kDebugMode)
+            Positioned(
+              top: MediaQuery.paddingOf(context).top + AsmSpacing.sm,
+              right: AsmSpacing.sm,
+              child: _DebugGalleryButton(
+                onTap: () => context.push(AsmRoutes.debugGallery),
+              ),
+            ),
+        ],
+      ),
       floatingActionButton: _CreateNavItem(
         onTap: () => context.push(AsmRoutes.create),
       ),
@@ -122,6 +135,21 @@ class _NavItem extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _DebugGalleryButton extends StatelessWidget {
+  const _DebugGalleryButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(LucideIcons.wrench, color: AsmColors.textTertiary),
+      tooltip: 'Widget-Katalog',
+      onPressed: onTap,
     );
   }
 }

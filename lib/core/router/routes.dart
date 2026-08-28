@@ -19,4 +19,7 @@ abstract final class AsmRoutes {
   static const legal = '/legal';
   static const favorites = '/favorites';
   static const myListings = '/my-listings';
+
+  /// Nur im Debug-Build registriert, siehe `app_router.dart`.
+  static const debugGallery = '/_gallery';
 }

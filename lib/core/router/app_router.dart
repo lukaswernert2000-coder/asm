@@ -14,11 +14,11 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 /// werden.
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: kDebugMode ? _galleryPath : AsmRoutes.home,
+    initialLocation: AsmRoutes.home,
     routes: [
       if (kDebugMode)
         GoRoute(
-          path: _galleryPath,
+          path: AsmRoutes.debugGallery,
           builder: (context, state) => const GalleryScreen(),
         ),
       StatefulShellRoute.indexedStack(
@@ -78,8 +78,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-
-const _galleryPath = '/_gallery';
 
 class _BranchPlaceholder extends StatelessWidget {
   const _BranchPlaceholder({required this.icon, required this.title});
