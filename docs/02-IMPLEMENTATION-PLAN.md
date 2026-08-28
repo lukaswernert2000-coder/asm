@@ -41,7 +41,7 @@ Firebase Cloud Messaging · Sentry
 | **Fertig** | Task 0.1 · 0.2 · 0.3 · 0.4 · 0.5 · 0.6 · 0.7 |
 | **Als Nächstes** | **Task 0.8 — Lokalisierung und PLZ-Datensatz** |
 | **Offen in M0** | 0.8 |
-| **Letzter Commit** | `fc0693d` fix(router): add way back to the app from the debug widget gallery |
+| **Letzter Commit** | `0bcee3a` fix(router): open the app on the real home screen, not the debug gallery |
 | **Stand vom** | 2026-08-29 |
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
