@@ -35,6 +35,8 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_image_compress: ^2.5.1
+  flutter_localizations:
+    sdk: flutter
   flutter_riverpod: ^2.6.1
   flutter_secure_storage: ^11.0.0
   flutter_svg: ^2.3.0
@@ -72,6 +74,7 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     - assets/icons/
     - assets/icons/categories/

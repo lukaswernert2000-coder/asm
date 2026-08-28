@@ -201,4 +201,28 @@ Widget-Test ergänzt — `AsmShell` braucht einen echten `StatefulNavigationShel
 GoRouter zu faken wäre für eine reine Konstantenänderung unverhältnismäßig; wie schon bei
 der FAB-Positionierung in Task 0.6 stattdessen manuell auf dem Emulator verifiziert.
 
+## 2026-08-29 · Task 0.8 · PLZ-Datensatz: GeoNames, gefiltert auf 8.172 echte Orte
+
+Datenquelle: [GeoNames Postal Code Dataset](https://download.geonames.org/export/zip/DE.zip),
+**CC BY 4.0** — Nutzung erfordert Attribution (Link auf geonames.org). **Muss beim
+Impressum/den Rechtstexten in M7 berücksichtigt werden**, dort noch nicht eingetragen.
+
+Der Rohdatensatz hat 23.297 Zeilen für 10.813 PLZ — deutlich mehr als die im Plan erwarteten
+~8.200. Grund: Viele PLZ sind exklusive "Großkunden-Postleitzahlen" einzelner Firmen (z. B.
+80788 → 40 Zeilen, alle "BMW ..."), erkennbar am **leeren `accuracy`-Feld** (im Gegensatz zu
+`4`/`6`/`1` bei echten Orten). Diese Firmen-Einträge rausgefiltert (ergibt 8.172 PLZ, sehr
+nah am Plan-Wert) — eine reine Firmen-PLZ hat danach keinen Eintrag mehr und `resolve()`
+liefert korrekt `null` (kein Nutzer hat eine solche PLZ als Heimatadresse). Bei PLZ mit
+mehreren echten Orten (ländliche Gebiete, ein PLZ deckt mehrere Dörfer ab, z. B. 15848 mit
+55 Orten) den kürzesten Namen gewählt (bevorzugt den Hauptort vor zusammengesetzten
+Ortsteil-Namen wie "Tauche Falkenberg"). `assets/data/plz.json`: 8.172 Einträge, 425 KB
+(Ziel war <1,5 MB).
+
+## 2026-08-29 · Task 0.8 · `flutter_localizations` fehlte
+
+Task 0.2 (`flutter pub add flutter_localizations --sdk=flutter`) wurde in einer früheren
+Session offenbar übersprungen oder ist verlorengegangen — stand nicht in `pubspec.yaml`,
+obwohl im Plan vorgesehen. Ohne dieses Paket gibt es keine `GlobalMaterialLocalizations`
+etc. für die generierten `AppLocalizations.localizationsDelegates`. Jetzt nachgeholt.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

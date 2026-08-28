@@ -1,5 +1,6 @@
 import 'package:asm/core/router/app_router.dart';
 import 'package:asm/core/theme/asm_theme.dart';
+import 'package:asm/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,6 +15,9 @@ class AsmApp extends ConsumerWidget {
       theme: AsmTheme.dark,
       darkTheme: AsmTheme.dark,
       themeMode: ThemeMode.dark,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: const [Locale('de')],
+      locale: const Locale('de'),
       routerConfig: ref.watch(appRouterProvider),
     );
   }

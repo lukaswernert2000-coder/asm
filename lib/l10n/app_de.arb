@@ -1,0 +1,7 @@
+{
+  "@@locale": "de",
+  "appTitle": "ASM",
+  "@appTitle": {
+    "description": "Name der App, u.a. im Task-Switcher sichtbar."
+  }
+}
