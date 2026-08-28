@@ -1,4 +1,6 @@
 import 'package:asm/core/theme/asm_theme.dart';
+import 'package:asm/core/widgets/_gallery_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class AsmApp extends StatelessWidget {
@@ -12,7 +14,9 @@ class AsmApp extends StatelessWidget {
       theme: AsmTheme.dark,
       darkTheme: AsmTheme.dark,
       themeMode: ThemeMode.dark,
-      home: const Scaffold(body: Center(child: Text('ASM'))),
+      home: kDebugMode
+          ? const GalleryScreen()
+          : const Scaffold(body: Center(child: Text('ASM'))),
     );
   }
 }
