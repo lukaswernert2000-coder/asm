@@ -40,14 +40,14 @@ Firebase Cloud Messaging · Sentry
 | **Meilenstein** | M1 · Backend und Datenmodell |
 | **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1 |
 | **Als Nächstes** | **Task 1.2 — Migration: Profile** |
-| **Offen in M0** | keins — mit zwei Einschränkungen, siehe unten |
-| **Letzter Commit** | `e30c508` feat(auth): configure asm:// redirects and require email confirmation |
+| **Offen in M0** | keins — eine Einschränkung, siehe unten |
+| **Letzter Commit** | `c5885be` docs: mark task 1.1 done, point Stand at task 1.2 |
 | **Stand vom** | 2026-08-29 |
 
-M0 ist funktional fertig und auf dem Emulator durchverifiziert, aber zwei Punkte aus dem
-"M0 abgeschlossen, wenn"-Kriterienkatalog sind nicht abschließend geprüft: **kein Test auf
-echtem Gerät** (nur Emulator) und **CI nie auf GitHub gelaufen** (kein Remote verbunden,
-lokale Äquivalente sind aber grün). Beides nachholen, sobald verfügbar.
+Repo ist jetzt auf GitHub (`lukaswernert2000-coder/asm`), CI lief real und grün
+([Run #1](https://github.com/lukaswernert2000-coder/asm/actions), `conclusion: success`,
+~3 Min. Laufzeit) — die alte Einschränkung dazu ist erledigt. Bleibt: **kein Test auf einem
+echten Gerät**, bisher nur Emulator. Nachholen, sobald eins verfügbar ist.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
