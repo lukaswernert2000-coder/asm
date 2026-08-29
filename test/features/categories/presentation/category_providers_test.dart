@@ -44,15 +44,18 @@ void main() {
     expect(result, category);
   });
 
-  test('categoryChildrenProvider ruft children() mit dem Eltern-Slug auf', () async {
-    when(
-      () => repository.children('langwaffen'),
-    ).thenAnswer((_) async => [category]);
+  test(
+    'categoryChildrenProvider ruft children() mit dem Eltern-Slug auf',
+    () async {
+      when(
+        () => repository.children('langwaffen'),
+      ).thenAnswer((_) async => [category]);
 
-    final result = await container.read(
-      categoryChildrenProvider('langwaffen').future,
-    );
+      final result = await container.read(
+        categoryChildrenProvider('langwaffen').future,
+      );
 
-    expect(result, [category]);
-  });
+      expect(result, [category]);
+    },
+  );
 }

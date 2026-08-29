@@ -12,9 +12,15 @@ final listingRepositoryProvider = Provider<ListingRepository>(
 /// Schlanker, einmaliger `search()`-Aufruf ohne Pagination -- Zwischenloesung
 /// fuer Task 3.1 (Kategorie-Feed, "Neu eingestellt"). Task 3.2 ersetzt dies
 /// durch `listingFeedProvider` als `AsyncNotifier` mit `loadMore()`/`refresh()`.
-final FutureProviderFamily<({List<ListingSummary> items, int total}), ListingFilter>
+final FutureProviderFamily<
+  ({List<ListingSummary> items, int total}),
+  ListingFilter
+>
 categoryFeedProvider =
-    FutureProvider.family<({List<ListingSummary> items, int total}), ListingFilter>(
+    FutureProvider.family<
+      ({List<ListingSummary> items, int total}),
+      ListingFilter
+    >(
       (ref, filter) => ref.watch(listingRepositoryProvider).search(filter),
     );
 

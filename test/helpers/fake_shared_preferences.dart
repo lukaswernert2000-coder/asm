@@ -11,9 +11,10 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 Future<SharedPreferencesWithCache> fakeSharedPreferences({
   bool hasSeenOnboarding = true,
 }) {
-  SharedPreferencesAsyncPlatform.instance = InMemorySharedPreferencesAsync.withData({
-    if (hasSeenOnboarding) hasSeenOnboardingPrefsKey: true,
-  });
+  SharedPreferencesAsyncPlatform.instance =
+      InMemorySharedPreferencesAsync.withData({
+        if (hasSeenOnboarding) hasSeenOnboardingPrefsKey: true,
+      });
   return SharedPreferencesWithCache.create(
     cacheOptions: const SharedPreferencesWithCacheOptions(
       allowList: {hasSeenOnboardingPrefsKey},
