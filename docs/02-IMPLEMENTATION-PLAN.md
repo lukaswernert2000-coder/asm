@@ -37,12 +37,17 @@ Firebase Cloud Messaging · Sentry
 
 | | |
 |---|---|
-| **Meilenstein** | M0 · Fundament |
-| **Fertig** | Task 0.1 · 0.2 · 0.3 · 0.4 · 0.5 · 0.6 · 0.7 |
-| **Als Nächstes** | **Task 0.8 — Lokalisierung und PLZ-Datensatz** |
-| **Offen in M0** | 0.8 |
-| **Letzter Commit** | `7117c10` fix(ui): shrink the create button's shadow |
+| **Meilenstein** | M1 · Backend und Datenmodell |
+| **Fertig** | M0 komplett (Task 0.1–0.8) |
+| **Als Nächstes** | **Task 1.1 — Supabase-Projekt und CLI** — braucht zuerst dich: Account, Projekt in `eu-central-1`, Zahlungsdaten (siehe `03-ARBEITEN-MIT-SONNET.md` Abschnitt 4) |
+| **Offen in M0** | keins — mit zwei Einschränkungen, siehe unten |
+| **Letzter Commit** | `99b0d99` test(l10n): verify context.l10n actually resolves at runtime |
 | **Stand vom** | 2026-08-29 |
+
+M0 ist funktional fertig und auf dem Emulator durchverifiziert, aber zwei Punkte aus dem
+"M0 abgeschlossen, wenn"-Kriterienkatalog sind nicht abschließend geprüft: **kein Test auf
+echtem Gerät** (nur Emulator) und **CI nie auf GitHub gelaufen** (kein Remote verbunden,
+lokale Äquivalente sind aber grün). Beides nachholen, sobald verfügbar.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
