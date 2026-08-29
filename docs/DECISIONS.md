@@ -796,4 +796,126 @@ kann das nicht automatisieren. `website/` ist lokal fertig und lokal per
 `npx --yes serve website` geprüft (alle sechs Seiten, Mobile-Breite, alle Links) —
 Hochladen und Postfach-Einrichtung bleiben eine manuelle Aufgabe des Nutzers.
 
+## 2026-08-29 · Task 2.5 · Vier Unterpunkte verweisen auf spaetere, dedizierte Tasks
+
+Wie schon bei Task 2.4 (Altersgate → M3) haengen mehrere Task-2.5-Punkte an Features, die
+im Plan bereits eigene, spaetere Tasks haben. Statt sie hier vollstaendig vorwegzunehmen:
+
+- **"Favoriten"**: eigener Screen ist Task 5.2 (M5). Hier nur ein Navigations-Eintrag zu
+  `/favorites`, Ziel ist ein `_TitledPlaceholder` wie bei Chats/Suchen aus Task 0.6.
+- **"Meine Inserate"**: die volle Verwaltung (Tabs Aktiv/Reserviert/Verkauft/Entwuerfe,
+  Bearbeiten/Hochschieben/Status/Loeschen) ist Task 4.3. Weil `ListingRepository.bySeller`
+  aber schon existiert, zeigt `MyListingsScreen` echte aktive Inserate (nur lesend, keine
+  Aktionen) statt eines reinen Platzhalters — mehr Wert als ein Platzhalter, kein
+  Vorgriff auf 4.3s Funktionsumfang.
+- **"Melden"/"Blockieren"**: das volle Melde-Sheet mit den 9 festen Gruenden aus Task 1.5
+  und Bestaetigungstext ist Task 7.1 (M7), ebenso die beidseitige Sichtbarkeits-Logik in
+  Suche/Chat. Hier schon `moderation/domain/report_reason.dart` mit den neun Werten
+  angelegt (im Plan bereits fixiert, verlustfrei jetzt schon nutzbar) und eine einfache,
+  aber echte Melden/Blockieren-Aktion gebaut (schreibt wirklich in `reports`/`blocks`).
+  Task 7.1 baut daraus das Sheet und die Sichtbarkeits-Effekte.
+- **"Einstellungen"**: `_TitledPlaceholder`. Die "Liste blockierter Nutzer" darin ist
+  laut Plan explizit Teil von Task 7.1.
+- **"Rechtstexte"**: verlinkt extern auf `asm-app.de/*.html` (Task 8.0), gleiches Muster
+  wie die AGB-/Datenschutz-Links im Registrieren-Screen. In-App-Rendering per
+  `flutter_markdown` ist Task 7.2.
+
+## 2026-08-29 · Task 2.5 · `lat`/`lng`/`commercial_address` sind wie `birth_date` schreibbar, aber nie lesbar
+
+Task 1.2s Spalten-Grants (siehe DECISIONS.md-Eintrag zu Task 1.9) geben `lat`, `lng` und
+`commercial_address` einen Update-, aber keinen Select-Grant. Zwei Konsequenzen im
+Bearbeiten-Screen:
+
+1. `commercial_address` kann nie vorausgefuellt werden. `ProfileRepository.update` nimmt
+   deshalb ein freies `Map<String, dynamic>`-Patch statt eines festen DTOs — der Aufrufer
+   sendet den Key nur, wenn der Nutzer in der aktuellen Sitzung tatsaechlich etwas
+   eingetippt hat. Reine Entscheidungslogik dafuer in
+   `profile_update_payload.dart::buildProfileUpdatePayload`, direkt getestet.
+2. `lat`/`lng` waeren beim Speichern ganz ohne PLZ-Aenderung nie erneut bekannt.
+   Geloest, indem `EditProfileScreen` die (vorausgefuellte oder neu getippte) PLZ **immer**
+   ueber denselben `_plzController`-Listener aufloest — deterministisch aus derselben PLZ,
+   reproduziert exakt das urspruenglich gespeicherte Ergebnis. Speichern bleibt deshalb
+   deaktiviert, bis eine PLZ erfolgreich aufgeloest ist.
+
+Avatar-Uploads laufen unter einem festen Dateinamen je Nutzer (`<uid>/avatar.jpg`,
+`upsert: true`) statt eindeutiger Dateinamen — verhindert verwaiste alte Avatare im
+Bucket, ein neuer Upload ersetzt den alten einfach.
+
+## 2026-08-29 · Task 2.5 · Zwei echte Layout-Bugs auf schmalen Geraeten gefunden (nicht nur Test-Artefakte)
+
+Beim Testen bei 400px Breite (realistische schmale Telefonbreite) zwei tatsaechliche
+`RenderFlex`-Overflows gefunden, beide vorher unbemerkt, weil bisher nie bei dieser
+Breite gepumpt wurde:
+
+- `LoginScreen`s "Noch kein Konto? Registrieren"-`Row` (seit Task 2.3) uebersteigt die
+  verfuegbare Breite. Zu `Wrap` gewechselt (faellt auf schmalen Geraeten in eine zweite
+  Zeile statt abzuschneiden), keine funktionale Aenderung.
+- `PublicProfileScreen`s "Melden"/"Blockieren" nebeneinander in eine `Row` mit `Expanded`
+  passt nicht (Blockieren + `AsmButton`s festem `AsmSpacing.lg`-Innenabstand). Zu
+  `Column` (untereinander) gewechselt.
+
+Ausserdem: `AsmSkeleton.listingGrid()` (intern ein `GridView`) direkt als Kind einer
+bereits scrollenden `ListView` verschachtelt haette in Produktion dasselbe
+Nested-Scrollable-Problem gehabt, das `flutter test` sichtbar machte. Fuer die reine
+"X aktive Inserate"-Zeile auf dem Fremdprofil reicht ein einzeiliger Shimmer-Platzhalter
+(`_TextLineSkeleton`) — kein Grund, dafuer eine ganze Karten-Grid-Vorschau zu bauen.
+
+## 2026-08-29 · Task 2.5 · Zwei neue Test-Stolperfallen fuer kuenftige Sessions
+
+1. **`PlzLookup.resolve()` (echtes `rootBundle`-Laden von 425 KB) haengt innerhalb von
+   `testWidgets()`**, obwohl derselbe Aufruf in einem einfachen `test()` (wie in
+   `plz_lookup_test.dart`) sofort funktioniert — `testWidgets` laeuft in einer
+   FakeAsync-Zone, die mit dem echten Datei-I/O des Asset-Ladens nicht sauber
+   zusammenspielt. Gegenmittel: `EditProfileScreen` bekommt einen `resolvePlz`-Seam
+   (Default `PlzLookup.resolve`), Tests injizieren eine synchrone Fake-Funktion — gleiches
+   Prinzip wie `pickBirthDate`/`launchLink` in Task 2.2.
+2. **`router.routeInformationProvider.value.uri` ist kein verlaesslicher Nachweis fuer
+   `context.push(...)`, wenn der Aufrufer innerhalb eines `StatefulShellBranch` sitzt**
+   (hier: von `ProfileScreen` aus zu `/my-listings`). Der Navigationswechsel geschah real
+   (der Ziel-Screen rendert), aber die Route-Information aktualisierte sich im Test nicht
+   zuverlaessig fuer einen direkten String-Vergleich. Stattdessen den tatsaechlich
+   gerenderten Screen pruefen (`find.widgetWithText(AppBar, ...)`), wie es
+   `app_router_test.dart` fuer den Guard-Redirect in Task 2.4 bereits vormacht.
+
+Nebenbei bestaetigt, nicht neu entdeckt: `AsmCheckbox` toggelt nur ueber die Box
+(`find.descendant(of: find.byType(AsmCheckbox), matching: find.byType(GestureDetector))`)
+und `AsmTextField`s Label ist kein Decendant des inneren `TextField`
+(`find.descendant(of: find.widgetWithText(AsmTextField, label), matching: find.byType(TextField))`)
+— beide Muster existierten schon in `register_screen_test.dart`, hier nur wiederverwendet.
+
+## 2026-08-29 · Task 2.5 · `register_screen.dart`: AGB-/Datenschutz-Links um `.html` ergaenzt
+
+Beim Bauen der "Rechtstexte"-Links auf dem Profil-Screen aufgefallen: Die in Task 2.2
+gesetzten externen Links zeigten auf `asm-app.de/agb`/`.../datenschutz` (ohne Endung),
+aber `tool/gen_website.dart` aus Task 8.0 erzeugt `agb.html`/`datenschutz.html`. Beide
+Stellen jetzt konsistent auf `.html`. Bis zum Hochladen (Task 8.0 Schritt 8, offen) fuehrt
+das ohnehin noch zu keiner echten Seite.
+
+## 2026-08-29 · Task 2.5 · Emulator-Verifikation: Guard und Login-Layout live bestaetigt, neue Profil-Screens nicht
+
+Auf dem Emulator gegen das echte Dev-Supabase-Projekt getestet: Tap auf den Profil-Tab
+als Gast leitet korrekt zum Login-Screen um (Task-2.4-Guard funktioniert weiterhin), und
+`LoginScreen`s neu auf `Wrap` umgestellte "Noch kein Konto?"-Zeile rendert bei 1080px
+Geraetebreite ohne Overflow — der Layout-Fix aus diesem Task ist damit real bestaetigt,
+nicht nur in Tests.
+
+**Nicht live durchgespielt:** `ProfileScreen`, `EditProfileScreen`, `PublicProfileScreen`
+und `MyListingsScreen` selbst, weil dafuer ein eingeloggter Nutzer noetig ist und der
+Versuch, dafuer ueber die UI ein neues Konto zu registrieren, am Geburtsdatum-Feld
+scheiterte: der native Material-Datepicker liess sich per `adb shell input tap` nicht
+zuverlaessig steuern (identisches Problem wie schon in der Task-2.4-Session mit dem
+Registrieren-Screen, siehe dortiger DECISIONS.md-Eintrag — dort ebenfalls abgebrochen,
+keine Registrierung abgeschickt, kein Testkonto angelegt). Die Interaktion hatte in einer
+fruaheren Session einmal funktioniert (Task 2.2s DECISIONS.md-Eintrag), diesmal auch nach
+mehreren Anlaeufen (Kalender-OK-Taste, Text-Eingabe-Modus ueber das Stift-Icon) nicht.
+
+Stattdessen verlaesst sich diese Session auf die Breite der automatisierten Suite fuer
+die neuen Screens (u. a. Lade-/Fehler-/Erfolgszustaende, PLZ-Aufloesung ueber einen
+injizierten Seam, das `commercial_address`-Patch-Verhalten, Avatar-Upload-Fluss,
+Melden/Blockieren inkl. Gast-Redirect) — alle 160 Tests gruen, `flutter analyze` 0
+Probleme. **Nachholen:** sobald ein eingeloggtes Testkonto auf andere Weise verfuegbar
+ist (z. B. Passwort fuer `gear_hunter_42` per DB-Zugriff neu setzen, oder
+Computer-Use mit echten Maus-Events statt `adb`-Synthetic-Taps fuer den Datepicker),
+alle vier Screens einmal real durchklicken.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

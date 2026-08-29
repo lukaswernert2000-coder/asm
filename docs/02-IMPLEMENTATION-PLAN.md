@@ -38,10 +38,10 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M2 · Authentifizierung und Profil |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.4 · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) |
-| **Als Nächstes** | **Task 2.5 — Profil ansehen und bearbeiten** (Außer-der-Reihe-Liste A–D damit abgearbeitet, Rest von 8.0A ist unabhängiges Nutzer-To-do) |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.5 · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) |
+| **Als Nächstes** | **Task 2.6 — Account löschen (Store-Pflicht)** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `b7741fb` feat(web): add landing page and legal documents |
+| **Letzter Commit** | `ec1d562` feat(profile): add profile view and edit screens |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -55,7 +55,14 @@ grün ([Run #4](https://github.com/lukaswernert2000-coder/asm/actions/runs/33254
 `tool/gen_website.dart`, `website/style.css`, `index.html`, `account-loeschen.html` —
 lokal per `npx serve` geprüft. **Schritte 7–8 (Postfach anlegen, Hochladen zu Hostinger)
 kann Sonnet nicht ausführen** und bleiben offen für den Nutzer, sind aber unabhängig vom
-App-Code — blockieren Task 2.5 nicht. Details und Abwägungen in DECISIONS.md. Task 2.2–2.4
+App-Code — blockieren Task 2.5 nicht. Details und Abwägungen in DECISIONS.md. **Task 2.5:**
+`ProfileScreen`, `EditProfileScreen`, `PublicProfileScreen`, `MyListingsScreen` neu, dazu
+`moderation`-Feature (Melden/Blockieren, echte Aktion) und `guards.dart` um `/settings`
+erweitert. Zwei echte, vorher unbemerkte Layout-Bugs bei 400 px Breite gefunden und
+behoben (`LoginScreen`, `PublicProfileScreen`), Details in DECISIONS.md. **Nicht live auf
+dem Emulator verifiziert** — die Registrierung eines Testkontos scheiterte am
+Geburtsdatum-Datepicker (`adb`-Taps unzuverlässig, wie schon in der Task-2.4-Session),
+verlässt sich auf die 160 grünen Tests. Task 2.2–2.4
 liefen (jeweils zumindest teilweise) auf dem Android-**Emulator** gegen das echte
 Dev-Supabase-Projekt durch, siehe DECISIONS.md — das ist aber weiterhin **kein Test auf
 echter Hardware**. Bleibt offen wie schon seit M0: kein Test auf einem echten Android- oder
@@ -1835,13 +1842,16 @@ Regeln:
 
 ## Task 2.5: Profil ansehen und bearbeiten
 
-- [ ] Eigenes Profil: Avatar, Nutzername, Mitglied seit, aktive Inserate, Favoriten,
-      Einstellungen, Rechtstexte, Abmelden
-- [ ] Profil bearbeiten: Avatar-Upload (Bucket `avatars`, auf 512 px komprimiert),
+- [x] Eigenes Profil: Avatar, Nutzername, Mitglied seit, aktive Inserate, Favoriten,
+      Einstellungen, Rechtstexte, Abmelden — Favoriten/Einstellungen als Platzhalter
+      (echte Inhalte sind Task 5.2 bzw. Task 7.1), Rechtstexte verlinken extern auf
+      `asm-app.de` (Task 8.0), Details in DECISIONS.md
+- [x] Profil bearbeiten: Avatar-Upload (Bucket `avatars`, auf 512 px komprimiert),
       Anzeigename, Bio, PLZ mit Ort-Auflösung aus `assets/data/plz.json`,
       Schalter "Ich verkaufe gewerblich" mit Pflichtfeldern
-- [ ] Fremdprofil: öffentliche Daten + aktive Inserate + Buttons "Melden" und "Blockieren"
-- [ ] Commit — `feat(profile): add profile view and edit screens`
+- [x] Fremdprofil: öffentliche Daten + aktive Inserate + Buttons "Melden" und "Blockieren"
+      — echte Aktion, volles Melde-Sheet mit den 9 Gründen aus Task 1.5 ist Task 7.1
+- [x] Commit — `feat(profile): add profile view and edit screens`
 
 ## Task 2.6: Account löschen (Store-Pflicht)
 
