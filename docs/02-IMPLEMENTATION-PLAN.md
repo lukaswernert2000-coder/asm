@@ -39,7 +39,7 @@ Firebase Cloud Messaging · Sentry
 |---|---|
 | **Meilenstein** | M2 · Authentifizierung und Profil |
 | **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.5 · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) |
-| **Als Nächstes** | **Task 2.6 fertigstellen — Edge Function deployen und live verifizieren** (Code fertig, siehe unten) |
+| **Als Nächstes** | **Task 2.7 — Splash, Onboarding und Willkommen (F19)** — Task 2.6 ist inhaltlich fertig, ein Verifikations-Detail bleibt offen, siehe unten |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
 | **Letzter Commit** | `feat(profile): add in-app account deletion` (Edge Function + Screen, ungepusht) |
 | **Stand vom** | 2026-08-29 |
@@ -84,11 +84,15 @@ mit `auth: "user"`), `DeleteAccountScreen` mit Bestätigungsdialog (Nutzername e
 neue Menüzeile in `ProfileScreen`, `error_mapper.dart` um `FunctionException` erweitert.
 Alle Dart-Tests grün (168), `flutter analyze` 0 Probleme. Die Webseite
 `account-loeschen.html` aus Task 8.0 erfüllt die Google-Play-Pflicht bereits, ein
-veralteter Navigationspfad darin wurde korrigiert. **Nicht deployt und nicht live
-verifiziert:** `supabase functions deploy` wurde vom Auto-Mode-Classifier blockiert —
-der Nutzer muss den Deploy selbst ausführen, danach steht die Live-Verifikation
-("Login mit denselben Daten scheitert nach dem Löschen") noch aus. Details und die
-bewusst ausgesparte `chat-images`-Bereinigung in DECISIONS.md.
+veralteter Navigationspfad darin wurde korrigiert. Edge Function ist **deployt**
+(`xlpgrexkiigzqrcmkenv`, nach Nutzer-Freigabe — erster Versuch vom Auto-Mode-Classifier
+blockiert) und der Auth-Gate live **teilverifiziert** (401 ohne bzw. mit ungültigem
+Token). **Offen:** der volle destruktive Test mit einem echten, bestätigten Nutzer
+("Login mit denselben Daten scheitert nach dem Löschen") — braucht entweder einen
+manuellen E-Mail-Bestätigungs-Klick oder den service_role-Key, siehe DECISIONS.md.
+Fällt mit der ohnehin offenen "kein Test auf echtem Gerät"-Zeile zusammen, die M2 laut
+Abschlusskriterium unten sowieso noch braucht. Details zur bewusst ausgesparten
+`chat-images`-Bereinigung ebenfalls in DECISIONS.md.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 

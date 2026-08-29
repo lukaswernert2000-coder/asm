@@ -933,12 +933,29 @@ Storage liegen (Kostenfaktor, kein Datenleck). **Nachholen:** falls das relevant
 eine begleitende Aufraeum-Funktion, die vor dem User-Delete alle `conversation_id`s des
 Nutzers sammelt und deren `chat-images`-Ordner leert.
 
-**Deploy blockiert:** `supabase functions deploy delete-account --use-api` wurde vom
-Auto-Mode-Classifier abgelehnt (Grund: "Blocked by classifier"), kein Workaround
-versucht. Die Function ist lokal fertig (Code, Tests fuer alles Dart-Seitige gruen,
-`flutter analyze` 0 Probleme), aber **weder deployt noch live verifiziert** — der
-Plan-Testpunkt "Login mit denselben Daten liefert nach dem Loeschen einen Fehler"
-steht noch aus. Der Nutzer muss `supabase functions deploy delete-account --use-api`
-selbst ausfuehren (oder die Aktion freigeben); danach die Live-Verifikation nachholen.
+**Deploy zunaechst blockiert, nach Freigabe erfolgreich:** `supabase functions deploy
+delete-account --use-api` wurde erst vom Auto-Mode-Classifier abgelehnt ("Blocked by
+classifier"), kein Workaround versucht. Nutzer hat die Aktion im Chat freigegeben,
+zweiter Versuch war erfolgreich (Function live auf `xlpgrexkiigzqrcmkenv`).
+
+**Teilverifikation live gemacht, volle e2e-Verifikation offen:** Zwei `curl`-Aufrufe
+gegen die deployte Function ohne bzw. mit ungueltigem Bearer-Token liefern beide
+korrekt `401 Invalid credentials` — bestaetigt, dass Deploy und der
+`withSupabase({auth: "user"})`-Gate wirklich greifen, obwohl `verify_jwt` in
+`config.toml` fuer diese Function auf `false` steht (von `supabase functions new`
+selbst so generiert; das ist bei `@supabase/server`-Functions so vorgesehen, die
+Lib macht die Auth-Pruefung selbst, siehe https://github.com/supabase/server).
+
+**Nicht gemacht:** der volle destruktive Test aus dem Plan ("Login mit denselben
+Daten liefert nach dem Loeschen einen Fehler") mit einem echten Nutzer. Grund:
+`enable_confirmations = true` fuer E-Mail (siehe `config.toml`) bedeutet, `signUp()`
+liefert keine Session, bevor der Bestaetigungslink angeklickt wurde — ohne Session
+kein Access-Token, ohne Access-Token kein Aufruf der Function moeglich. Ein echter
+Testlauf braucht entweder (a) einmalig ein echtes/mailinator-Postfach mit Klick auf
+den Bestaetigungslink (E-Mail-Limit ist knapp, siehe Task-2.3-Eintrag), oder (b)
+einen per Admin-API vorbestaetigten Nutzer, was den service_role-Key braucht und
+damit dieselbe Grenze wie in der Task-1.2-Session beruehrt. **Nachholen:** eine der
+beiden Optionen mit dem Nutzer abstimmen, sobald ein echter Geraetetest ansteht
+(deckt sich mit der ohnehin offenen "kein Test auf echter Hardware"-Zeile oben).
 
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->
