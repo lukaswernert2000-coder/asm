@@ -92,7 +92,9 @@ Token). **Offen:** der volle destruktive Test mit einem echten, bestätigten Nut
 manuellen E-Mail-Bestätigungs-Klick oder den service_role-Key, siehe DECISIONS.md.
 Fällt mit der ohnehin offenen "kein Test auf echtem Gerät"-Zeile zusammen, die M2 laut
 Abschlusskriterium unten sowieso noch braucht. Details zur bewusst ausgesparten
-`chat-images`-Bereinigung ebenfalls in DECISIONS.md.
+`chat-images`-Bereinigung ebenfalls in DECISIONS.md. Task-2.6-Push ist CI-grün
+([Run #7](https://github.com/lukaswernert2000-coder/asm/actions/runs/33266628565),
+`conclusion: success`).
 **Task 2.7:** `SplashScreen` (reiner Wartebildschirm, Logik sitzt in `AsmApp`),
 `OnboardingScreen` (3 Seiten, Punktindikator, "Überspringen"/"Fertig"),
 `WelcomeScreen`, dazu zwei vorher fehlende Bausteine nachgezogen:
