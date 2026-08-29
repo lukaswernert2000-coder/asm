@@ -38,11 +38,11 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M3 · Kategorien, Feed und Suche |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) |
-| **Als Nächstes** | **Task 3.1 — Kategorie-Übersicht und Kategorie-Feed** |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1 komplett (Code-seitig, siehe unten — nicht live verifiziert) |
+| **Als Nächstes** | **Task 3.2 — Paginierter Feed** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `fix(profile): select explicit columns matching the grant in byId()` |
-| **Stand vom** | 2026-08-29 |
+| **Letzter Commit** | `feat(categories): add category overview and category feed` |
+| **Stand vom** | 2026-08-30 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
 (Nutzer hat dem Push zugestimmt, Außer-der-Reihe-Punkt B) — CI lief danach zum ersten Mal
@@ -122,6 +122,29 @@ kompletter Flow Splash → Onboarding (alle 3 Seiten) → Willkommen → Gast-Fe
 Skip-Verhalten beim zweiten Start (Onboarding-Flag gesetzt → direkt zum Start-Tab) — Details
 und eine Beobachtung zum nativen Splash-Icon (faellt mangels eigenem App-Icon auf
 Flutter-Default zurueck, siehe Task 8.2) in DECISIONS.md.
+
+**2026-08-30, Task 3.1:** `CategoryTile` (`lib/features/categories/presentation/widgets/`)
+und `ListingCard` (`lib/features/listings/presentation/widgets/`, Varianten `.grid`/`.list`)
+neu gebaut — beide existierten vorher nur als Spec in `01-DESIGN-SYSTEM.md`. Dazu zwei neue
+Provider (`categoryBySlugProvider`, `categoryChildrenProvider`) und ein bewusst schlanker
+`categoryFeedProvider` (einmaliger `search()`-Aufruf ohne Pagination — Task 3.2 ersetzt ihn
+durch den echten `listingFeedProvider`). `CategoryOverviewScreen` ersetzt den
+`_BranchPlaceholder` auf der Start-Route, `CategoryScreen` ist neu unter `/category/:slug`
+verdrahtet (Unterkategorien-Chips + gefilterter Feed). `/listing/:id` bekommt vorerst
+denselben Platzhalter-Screen wie Favoriten/Einstellungen, damit ein Kartentipp nicht ins
+Leere läuft — echte Detailseite ist M4. Die 8 Kategorie-Icons plus `f-marking.svg` wurden
+als handgezeichnete, einfache Linien-SVGs angelegt (`assets/icons/categories/*.svg`, vorher
+nur `.gitkeep`) — kein Profi-Set, bei Bedarf austauschbar. **Altersgate bewusst nicht
+verdrahtet:** Nutzer hat auf Nachfrage klargestellt, dass Kategorien und Inserate für
+**alle** (Gast, Minderjährig, Erwachsen) ansehbar bleiben sollen — nur eine künftige
+Kauf-/Kontaktieren-Aktion wird für nicht-volljährige bzw. nicht eingeloggte Nutzer gesperrt.
+Dabei aufgefallen: Die RLS-Policy aus Task 1.4 blockt `requires_age_18`-Zeilen aktuell
+komplett auf SELECT-Ebene — das widerspricht dieser Absicht und ist noch nicht aufgelöst,
+Details in DECISIONS.md. `blocksForAge()` bleibt unverändert fertig/getestet, aber unwired.
+**Nicht live auf Emulator/Gerät verifiziert** — 194 Tests grün, `flutter analyze`
+0 Probleme, verlässt sich wie schon bei Task 2.5 auf die Testsuite; das Projekt hat bewusst
+keine Web-Plattform (nur Android/iOS seit Task 0.1), ein schneller Browser-Check war deshalb
+nicht möglich.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -1955,11 +1978,11 @@ Session landet im Login und danach wieder auf `/create`.
 **Ergebnis:** Man kann stöbern, suchen und filtern. Der Feed lädt seitenweise nach.
 
 ## Task 3.1: Kategorie-Übersicht und Kategorie-Feed
-- [ ] Startseite: Grid mit 8 Kategorie-Kacheln (`CategoryTile`), darunter Sektion
+- [x] Startseite: Grid mit 8 Kategorie-Kacheln (`CategoryTile`), darunter Sektion
       "Neu eingestellt" mit horizontaler Liste
-- [ ] Kategorie-Screen: Unterkategorien als Chip-Reihe oben, darunter der gefilterte Feed
-- [ ] Kategorie-Icons als SVG einbinden (Design-System Abschnitt 6)
-- [ ] Commit — `feat(categories): add category overview and category feed`
+- [x] Kategorie-Screen: Unterkategorien als Chip-Reihe oben, darunter der gefilterte Feed
+- [x] Kategorie-Icons als SVG einbinden (Design-System Abschnitt 6)
+- [x] Commit — `feat(categories): add category overview and category feed`
 
 ## Task 3.2: Paginierter Feed
 **Produziert:** `listingFeedProvider(ListingFilter)` als `AsyncNotifier` mit

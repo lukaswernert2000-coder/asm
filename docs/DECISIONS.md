@@ -1064,4 +1064,65 @@ trifft. `isUsernameTaken()`/`update()` waren bereits korrekt (kein bzw. `select(
 ("Ein Emulator zeigt nicht, wie sich die App anfuehlt"), kein Sonnet-Task. Alles andere aus
 dem Kriterium ist jetzt live bestaetigt.
 
+## 2026-08-30 · Task 3.1 · Altersgate bewusst nicht verdrahtet — Nutzerklärung deckt einen Konflikt mit der RLS-Policy aus Task 1.4 auf
+
+Auf Nachfrage zum Altersgate (siehe Task-2.4-Eintrag oben) hat der Nutzer klargestellt:
+Kategorien und Inserate bleiben für **alle** ansehbar (Gast, Minderjährig, Erwachsen) — nur
+eine künftige Kauf-/Kontaktieren-Aktion wird für nicht-volljährige bzw. nicht eingeloggte
+Nutzer gesperrt ("wenn Alter nicht 18+ bestätigt ist, soll der Kauf-Button gelockt sein, das
+Inserat darf trotzdem angeschaut werden"). Beim Umsetzen aufgefallen: Die Policy
+`listings_public_read` aus Task 1.4 filtert `requires_age_18`-Zeilen aktuell komplett aus dem
+`select`-Ergebnis für jeden Nicht-Erwachsenen (bestätigt per `pg_policies`-Wortlaut) — ein
+Gast oder ein verifizierter Minderjähriger bekäme also gar keine Zeile zurück, nicht nur
+einen gesperrten Kauf-Button. Das widerspricht der gerade beschriebenen Absicht direkt.
+Task 3.1 selbst hat keinen Kauf-/Kontaktieren-Button (der lebt erst in M4/M5) und ist von
+diesem Konflikt nicht blockiert — ein Kategorie-Feed für z. B. "Pistolen" zeigt
+Gästen/Minderjährigen aktuell einfach 0 Treffer über den normalen Leerzustand, kein Absturz.
+**Nachholen, bevor M4/M5 einen Kauf-/Kontaktieren-Button bauen:** entweder die RLS-Policy so
+ändern, dass sie nur noch bestimmte Spalten/Aktionen sperrt statt der ganzen Zeile, oder eine
+andere Lösung (z. B. eine eigene View/RPC für die öffentliche Sicht) — echte
+Datenmodell-Entscheidung, mit dem Nutzer abstimmen statt selbst zu entscheiden. `blocksForAge()`
+in `guards.dart` bleibt unverändert fertig und getestet, aber weiterhin an keine Route
+angebunden.
+
+## 2026-08-30 · Task 3.1 · CategoryTile/ListingCard unter dem jeweiligen Feature statt in core/widgets/, drei neue Provider
+
+`CategoryTile` und `ListingCard` liegen unter `lib/features/<feature>/presentation/widgets/`,
+nicht unter `lib/core/widgets/` wie die generischen `Asm*`-Primitiven — beide sind
+feature-spezifisch (rendern `Category`-/`ListingSummary`-Daten direkt), keine
+wiederverwendbaren Design-Tokens-Wrapper. Neu: `categoryBySlugProvider`,
+`categoryChildrenProvider` (beide in `category_providers.dart`) und `categoryFeedProvider`
+(`listing_providers.dart`) — letzterer ist bewusst ein einmaliger, nicht paginierter
+`search()`-Aufruf als Zwischenlösung; Task 3.2 ersetzt ihn durch `listingFeedProvider` mit
+`loadMore()`/`refresh()`. `CategoryTile` lässt die "Anzahl"-Zeile aus der 5.5-Mockup-Skizze
+weg — `CategoryRepository` liefert keine Inserate-Zählung pro Kategorie, eine neue
+Count-Query wäre Scope über die Task-Checkliste hinaus.
+
+## 2026-08-30 · Task 3.1 · Kategorie-Icons und F-Kennzeichen als handgezeichnete Linien-SVGs, kein `<text>`
+
+`assets/icons/categories/*.svg` (8 Stück, benannt nach den `icon`-Slugs aus der
+Kategorien-Seed-Tabelle: `asg05j`, `rifle`, `pistol`, `gear`, `accessory`, `vest`, `shirt`,
+`dots`) sowie `assets/icons/f-marking.svg` waren bisher nur `.gitkeep`-Platzhalter. Alle neun
+selbst als einfache Linienpfade gezeichnet (24×24, `stroke-width: 1.75`, `currentColor`, kein
+Fill) nach den Motiv-Beschreibungen in `01-DESIGN-SYSTEM.md` Abschnitt 6 — kein
+Profi-Icon-Set, bei Bedarf später austauschbar. Bewusste Entscheidung gegen ein
+SVG-`<text>`-Element fürs "F" im Fünfeck-Marker: `flutter_svg`s Text-Unterstützung gilt als
+lückenhaft, und das F-Kennzeichen ist eine echte gesetzliche Kennzeichnungspflicht
+(00-SPEC.md, F-Kennzeichen-Pflicht) — das "F" ist deshalb aus zwei Strichen gezeichnet, nicht
+aus einem Font-Glyph, damit es garantiert sichtbar ist. `asg05j.svg` zeigt aus demselben
+Grund ein Halbkreis-Symbol statt einer "0,5"-Textbeschriftung.
+
+## 2026-08-30 · Task 3.1 · `/listing/:id`-Platzhalter ergänzt, keine Web-Plattform verfügbar für Live-Check
+
+`ListingCard`s Kartentipp braucht ein Sprungziel; die echte Detailseite ist erst M4. Analog
+zum bestehenden Muster (Favoriten/Einstellungen als `_TitledPlaceholder` seit Task 0.6/2.5)
+bekommt `/listing/:id` denselben Platzhalter, damit kein GoRouter-Fehler statt einer
+sinnvollen Seite erscheint. **Keine Live-Verifikation diese Session:** Das Projekt hat
+bewusst nur `--platforms=android,ios` (Task 0.1) — ein Versuch, kurz
+`flutter run -d web-server` zu nutzen, brach mit "This application is not configured to
+build on the web" ab; `flutter create .` zum Nachrüsten der Web-Plattform wäre eine eigene
+Scope-Entscheidung gewesen, nicht einfach für einen schnellen Check gemacht. Verlässt sich
+wie schon bei Task 2.5 auf die Testsuite (194 Tests grün, `flutter analyze` 0 Probleme) — ein
+echter Emulator-/Gerätelauf für Task 3.1 steht noch aus.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

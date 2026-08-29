@@ -10,3 +10,14 @@ final categoryRepositoryProvider = Provider<CategoryRepository>(
 final rootCategoriesProvider = FutureProvider<List<Category>>(
   (ref) => ref.watch(categoryRepositoryProvider).roots(),
 );
+
+final FutureProviderFamily<Category, String> categoryBySlugProvider =
+    FutureProvider.family<Category, String>(
+      (ref, slug) => ref.watch(categoryRepositoryProvider).bySlug(slug),
+    );
+
+final FutureProviderFamily<List<Category>, String> categoryChildrenProvider =
+    FutureProvider.family<List<Category>, String>(
+      (ref, parentSlug) =>
+          ref.watch(categoryRepositoryProvider).children(parentSlug),
+    );
