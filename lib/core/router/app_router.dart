@@ -2,7 +2,10 @@ import 'package:asm/core/router/routes.dart';
 import 'package:asm/core/widgets/_gallery_screen.dart';
 import 'package:asm/core/widgets/asm_empty_state.dart';
 import 'package:asm/core/widgets/asm_shell.dart';
+import 'package:asm/features/auth/presentation/forgot_password_screen.dart';
+import 'package:asm/features/auth/presentation/login_screen.dart';
 import 'package:asm/features/auth/presentation/register_screen.dart';
+import 'package:asm/features/auth/presentation/reset_password_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -79,6 +82,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AsmRoutes.register,
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: AsmRoutes.login,
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: AsmRoutes.forgotPassword,
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: AsmRoutes.resetPassword,
+        builder: (context, state) => const ResetPasswordScreen(),
       ),
     ],
   );

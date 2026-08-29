@@ -4,6 +4,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class AuthRepository {
   Stream<AsmUser?> authStateChanges();
+
+  /// Roher Auth-Event-Stream — separat von [authStateChanges], weil nur hier
+  /// zwischen einem normalen Login/Auth-Callback (`signedIn`) und einem
+  /// Passwort-Reset-Link (`passwordRecovery`) unterschieden werden kann.
+  /// Treibt das globale Redirect in `app.dart`.
+  Stream<AuthChangeEvent> authEvents();
   Future<void> signUp({
     required String email,
     required String password,
@@ -13,6 +19,7 @@ abstract interface class AuthRepository {
   Future<void> resendConfirmation(String email);
   Future<void> signOut();
   Future<void> resetPassword(String email);
+  Future<void> updatePassword(String newPassword);
   Future<void> deleteAccount();
 }
 
@@ -26,6 +33,11 @@ class SupabaseAuthRepository implements AuthRepository {
     return _client.auth.onAuthStateChange.map(
       (state) => _toAsmUser(state.session?.user),
     );
+  }
+
+  @override
+  Stream<AuthChangeEvent> authEvents() {
+    return _client.auth.onAuthStateChange.map((state) => state.event);
   }
 
   AsmUser? _toAsmUser(User? user) {
@@ -80,7 +92,19 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<void> resetPassword(String email) async {
     try {
-      await _client.auth.resetPasswordForEmail(email);
+      await _client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'asm://reset-password',
+      );
+    } catch (error) {
+      throw mapError(error);
+    }
+  }
+
+  @override
+  Future<void> updatePassword(String newPassword) async {
+    try {
+      await _client.auth.updateUser(UserAttributes(password: newPassword));
     } catch (error) {
       throw mapError(error);
     }

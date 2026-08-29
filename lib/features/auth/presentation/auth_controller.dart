@@ -2,6 +2,7 @@ import 'package:asm/core/supabase/supabase_provider.dart';
 import 'package:asm/features/auth/data/auth_repository.dart';
 import 'package:asm/features/auth/domain/asm_user.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthChangeEvent;
 
 final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => SupabaseAuthRepository(ref.watch(supabaseProvider)),
@@ -9,6 +10,10 @@ final authRepositoryProvider = Provider<AuthRepository>(
 
 final authStateProvider = StreamProvider<AsmUser?>((ref) {
   return ref.watch(authRepositoryProvider).authStateChanges();
+});
+
+final authEventProvider = StreamProvider<AuthChangeEvent>((ref) {
+  return ref.watch(authRepositoryProvider).authEvents();
 });
 
 final currentUserProvider = Provider<AsmUser?>((ref) {
