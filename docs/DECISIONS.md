@@ -225,4 +225,18 @@ Session offenbar übersprungen oder ist verlorengegangen — stand nicht in `pub
 obwohl im Plan vorgesehen. Ohne dieses Paket gibt es keine `GlobalMaterialLocalizations`
 etc. für die generierten `AppLocalizations.localizationsDelegates`. Jetzt nachgeholt.
 
+## 2026-08-29 · Task 1.1 · `supabase config push` überschreibt die komplette Auth-Config
+
+`supabase config push` hat keinen Scope-Filter — es überträgt die **gesamte** `config.toml`,
+nicht nur die drei beabsichtigten Felder (`site_url`, `additional_redirect_urls`,
+`auth.email.enable_confirmations`). Beim ersten Push hat das drei unbeabsichtigte Werte auf
+die lokalen `supabase init`-Defaults zurückgesetzt: `auth.mfa.totp.enroll_enabled`/
+`verify_enabled` von `true` auf `false` (MFA deaktiviert), `auth.email.max_frequency` von
+`1m0s` auf `1s` (E-Mail-Rate-Limit praktisch ausgehebelt — echtes Abuse-Risiko) und
+`otp_length` von 8 auf 6. Der Diff, den `config push` selbst ausgibt, hat das sofort sichtbar
+gemacht. Alle drei zurückgesetzt und erneut gepusht, zweiter Diff zeigte nur noch die
+Rückstellung, dritter Push meldete "up to date" auf allen Services. **Lektion:** Vor jedem
+künftigen `supabase config push` den ausgegebenen Diff lesen, nicht nur auf Erfolg prüfen —
+das Kommando hat keinen `--only`/Scope-Flag, um das zu verhindern.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->
