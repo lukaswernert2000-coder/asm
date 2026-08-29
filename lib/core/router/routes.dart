@@ -9,6 +9,7 @@ abstract final class AsmRoutes {
   static const register = '/register';
   static const forgotPassword = '/forgot-password';
   static const resetPassword = '/reset-password';
+  static const confirmEmail = '/confirm-email';
   static const onboarding = '/onboarding';
 
   static String category(String slug) => '/category/$slug';

@@ -15,8 +15,10 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 /// Stack/Positioned-Aufbaus - letzterer rendert zwar korrekt, aber Scaffold
 /// reicht Touch-Events dafuer nicht zuverlaessig durch (siehe DECISIONS.md).
 ///
-/// Der Gast-Check aus 5.9 ("bei Gast oeffnet er das Login-Sheet") ist noch
-/// nicht umsetzbar — Auth kommt erst in M1, siehe DECISIONS.md.
+/// Der Gast-Check aus 5.9 ("bei Gast oeffnet er das Login-Sheet") braucht
+/// hier keine Sonderbehandlung mehr: der globale Auth-Guard (Task 2.4,
+/// core/router/guards.dart) faengt einen Gast-Tap auf `/create` ab und
+/// leitet zu `/login` um. Kein eigenes Sheet-Widget, siehe DECISIONS.md.
 class AsmShell extends StatelessWidget {
   const AsmShell({required this.navigationShell, super.key});
 

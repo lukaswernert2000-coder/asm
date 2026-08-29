@@ -22,7 +22,11 @@ class AsmApp extends ConsumerWidget {
         case AuthChangeEvent.passwordRecovery:
           router.go(AsmRoutes.resetPassword);
         case AuthChangeEvent.signedIn:
-          router.go(AsmRoutes.home);
+          // Falls ein Auth-Guard (guards.dart) vorher zu /login?from=<ziel>
+          // umgeleitet hat, dorthin zurueck -- sonst wie bisher zum Start.
+          final from =
+              router.routeInformationProvider.value.uri.queryParameters['from'];
+          router.go(from ?? AsmRoutes.home);
         case AuthChangeEvent.initialSession:
         case AuthChangeEvent.signedOut:
         case AuthChangeEvent.tokenRefreshed:

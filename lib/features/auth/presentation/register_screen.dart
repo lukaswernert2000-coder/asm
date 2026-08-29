@@ -29,7 +29,10 @@ Future<DateTime?> _defaultPickBirthDate(BuildContext context) {
 
 Future<void> _defaultLaunchLink(Uri url) async {
   try {
-    await url_launcher.launchUrl(url, mode: url_launcher.LaunchMode.externalApplication);
+    await url_launcher.launchUrl(
+      url,
+      mode: url_launcher.LaunchMode.externalApplication,
+    );
   } on Exception catch (_) {
     // Ein fehlgeschlagener externer Link ist kein App-Fehler.
   }

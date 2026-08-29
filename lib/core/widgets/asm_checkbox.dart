@@ -52,7 +52,9 @@ class AsmCheckbox extends StatelessWidget {
                       width: _boxSize,
                       height: _boxSize,
                       decoration: BoxDecoration(
-                        color: value ? AsmColors.brandBright : AsmColors.surface,
+                        color: value
+                            ? AsmColors.brandBright
+                            : AsmColors.surface,
                         borderRadius: BorderRadius.circular(AsmRadius.sm),
                         border: Border.all(
                           color: borderColor,

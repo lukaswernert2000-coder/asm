@@ -99,7 +99,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             if (_error != null) ...[
               Text(
                 _error!,
-                style: AsmTextStyles.bodyS.copyWith(color: AsmColors.dangerText),
+                style: AsmTextStyles.bodyS.copyWith(
+                  color: AsmColors.dangerText,
+                ),
               ),
               const SizedBox(height: AsmSpacing.md),
             ],

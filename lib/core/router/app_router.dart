@@ -1,7 +1,10 @@
+import 'package:asm/core/router/guards.dart' as guards;
 import 'package:asm/core/router/routes.dart';
 import 'package:asm/core/widgets/_gallery_screen.dart';
 import 'package:asm/core/widgets/asm_empty_state.dart';
 import 'package:asm/core/widgets/asm_shell.dart';
+import 'package:asm/features/auth/presentation/auth_controller.dart';
+import 'package:asm/features/auth/presentation/confirm_email_required_screen.dart';
 import 'package:asm/features/auth/presentation/forgot_password_screen.dart';
 import 'package:asm/features/auth/presentation/login_screen.dart';
 import 'package:asm/features/auth/presentation/register_screen.dart';
@@ -19,6 +22,11 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: AsmRoutes.home,
+    redirect: (context, state) => guards.redirect(
+      location: state.uri.toString(),
+      isLoggedIn: ref.read(isLoggedInProvider),
+      emailConfirmed: ref.read(currentUserProvider)?.emailConfirmed ?? false,
+    ),
     routes: [
       if (kDebugMode)
         GoRoute(
@@ -94,6 +102,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AsmRoutes.resetPassword,
         builder: (context, state) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
+        path: AsmRoutes.confirmEmail,
+        builder: (context, state) => const ConfirmEmailRequiredScreen(),
       ),
     ],
   );

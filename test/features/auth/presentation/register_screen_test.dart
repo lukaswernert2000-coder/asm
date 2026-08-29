@@ -142,7 +142,9 @@ void main() {
     (tester) async {
       await tester.pumpWidget(wrap());
 
-      await tester.tapOnText(find.textRange.ofSubstring('Datenschutzerklärung'));
+      await tester.tapOnText(
+        find.textRange.ofSubstring('Datenschutzerklärung'),
+      );
 
       expect(launchedUrls, [Uri.parse('https://asm-app.de/datenschutz')]);
     },
