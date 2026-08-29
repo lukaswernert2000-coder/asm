@@ -38,28 +38,32 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M2 · Authentifizierung und Profil |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.3 |
-| **Als Nächstes** | **Task 2.4 — Auth-Guards im Router** |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.4 |
+| **Als Nächstes** | **Task 2.5 — Profil ansehen und bearbeiten** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `ca685f7` fix(ui): remove double border on AsmTextField (Bugfix, kein Task) |
+| **Letzter Commit** | `4386768` feat(router): add auth and age guards |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`), CI lief zuletzt für M0 real und grün
 ([Run #1](https://github.com/lukaswernert2000-coder/asm/actions), `conclusion: success`).
 M1 war entgegen einer älteren Notiz doch schon gepusht (`git fetch` zeigte das in Task 2.1).
 Ob CI auf M1/M2/M2.3 real durchlief, ist weiterhin nicht bestätigt (`gh` war auch in dieser
-Session nicht verfügbar) — im GitHub-Actions-Tab nachsehen. **Task 2.1–2.3 sind noch
-nicht gepusht** (Push braucht laut Arbeitsregeln explizite Zustimmung). Task 2.2 und 2.3
-liefen komplett auf dem Android-**Emulator** gegen das echte Dev-Supabase-Projekt durch,
-siehe DECISIONS.md — das ist aber weiterhin **kein Test auf echter Hardware**. Bleibt offen
-wie schon seit M0: kein Test auf einem echten Android- oder iOS-Gerät. Neu offen seit
-Task 2.3: der **echte E-Mail-Link-Tap für `asm://auth-callback`/`asm://reset-password`**
-wurde nicht durchgespielt (Supabase-E-Mail-Limit in dieser Session ausgeschöpft) — bei
-Bedarf mit einer echten/mailinator-Adresse nachholen, siehe DECISIONS.md. Zusätzlich: das
-Supabase-Projekt-Limit `auth.rate_limit.email_sent = 2`/Stunde ist beim manuellen Testen
-sehr schnell erreicht — künftige Sessions sollten E-Mail-auslösende Aktionen (Registrieren,
-Erneut senden, Passwort vergessen) sparsam einsetzen und wissen, dass "email rate limit
-exceeded" kein Bug ist.
+Session nicht verfügbar) — im GitHub-Actions-Tab nachsehen. **Task 2.1–2.4 sind noch
+nicht gepusht** (Push braucht laut Arbeitsregeln explizite Zustimmung). Task 2.2–2.4
+liefen (jeweils zumindest teilweise) auf dem Android-**Emulator** gegen das echte
+Dev-Supabase-Projekt durch, siehe DECISIONS.md — das ist aber weiterhin **kein Test auf
+echter Hardware**. Bleibt offen wie schon seit M0: kein Test auf einem echten Android- oder
+iOS-Gerät. Weiterhin offen seit Task 2.3: der **echte E-Mail-Link-Tap für
+`asm://auth-callback`/`asm://reset-password`** wurde nicht durchgespielt (Supabase-E-Mail-
+Limit in dieser Session ausgeschöpft) — bei Bedarf mit einer echten/mailinator-Adresse
+nachholen, siehe DECISIONS.md. Zusätzlich: das Supabase-Projekt-Limit
+`auth.rate_limit.email_sent = 2`/Stunde ist beim manuellen Testen sehr schnell erreicht —
+künftige Sessions sollten E-Mail-auslösende Aktionen (Registrieren, Erneut senden,
+Passwort vergessen) sparsam einsetzen und wissen, dass "email rate limit exceeded" kein
+Bug ist. Neu offen seit Task 2.4: das Altersgate (`blocksForAge` in `guards.dart`) ist
+fertig und getestet, aber an keine Route angebunden — `/category/:slug` kommt erst in M3;
+und ob "eingeloggt, aber E-Mail unbestätigt" (`/create`-Hinweis-Regel) über einen normalen
+Login je erreichbar ist, wurde nicht live geprüft. Beides mit Details in DECISIONS.md.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -1820,8 +1824,8 @@ Regeln:
 | `/create` | E-Mail bestätigt | Hinweis "Bitte bestätige zuerst deine E-Mail" |
 | Kategorie mit `requires_age_18` | `isAdult` | Alters-Sperrseite mit Erklärung |
 
-- [ ] Test: `redirect` gibt für `/create` ohne Session `/login?from=/create` zurück
-- [ ] Commit — `feat(router): add auth and age guards`
+- [x] Test: `redirect` gibt für `/create` ohne Session `/login?from=/create` zurück
+- [x] Commit — `feat(router): add auth and age guards`
 
 ## Task 2.5: Profil ansehen und bearbeiten
 

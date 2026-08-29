@@ -635,4 +635,84 @@ eine. **Nicht angefasst:** der Test-Wrapper ohne echtes Theme — bliebe ein bli
 fuer aehnliche Theme-Leck-Bugs, aber Fix des Wrappers war nicht Teil dieser Meldung und
 haette den Scope unnoetig vergroessert.
 
+## 2026-08-29 · Task 2.4 · Altersgate-Logik gebaut, aber an keine Route angebunden
+
+Die Regeltabelle verlangt ein Gate fuer "Kategorie mit `requires_age_18`", aber
+`/category/:slug` existiert als Route erst ab M3 (Kategorien, Feed und Suche) — in
+`app_router.dart` gibt es aktuell keine Kategorie-Detailroute, an die sich ein Redirect
+haengen liesse. `blocksForAge({required bool requiresAge18, required bool isAdult})` in
+`guards.dart` ist fertig implementiert und getestet (reine Funktion, konsumiert
+`isAdultProvider` aus Task 2.1 noch nicht direkt), aber **nirgends verdrahtet**.
+**Nachholen:** sobald M3 die Kategorie-Route anlegt, dort `redirect` um einen Aufruf von
+`blocksForAge` erweitern (Kategorie laden, `requires_age_18` pruefen, bei `true` auf eine
+noch zu bauende Alters-Sperrseite umleiten — auch die existiert noch nicht, ebenfalls ohne
+Spec in `01-DESIGN-SYSTEM.md`).
+
+## 2026-08-29 · Task 2.4 · Kein eigenes "Login-Sheet"-Widget — globaler Guard deckt den Gast-Tap auf den Create-FAB mit ab
+
+01-DESIGN-SYSTEM.md 5.9 nennt ein "Login-Sheet" fuer den Gast-Tap auf den mittleren
+BottomNav-Button, seit Task 0.6 als offener Punkt in DECISIONS.md vermerkt ("Nachziehen,
+sobald M1 einen Auth-Provider liefert"). Es gibt dafuer aber weder einen eigenen Plan-Task
+noch eine Component-Spezifikation (anders als z. B. Filter-Sheet/Melde-Sheet, die beide
+eigene Tasks haben) — und der Akzeptanztest fuer Task 2.4 verlangt explizit einen
+Seiten-Redirect (`redirect` → `/login?from=/create`), kein Sheet. Statt ein unspezifiziertes
+neues Bottom-Sheet-Widget zu erfinden: der globale Auth-Guard aus `guards.dart` deckt jetzt
+**jeden** Weg zu `/create` ab, auch den FAB-Tap eines Gasts (`AsmShell._CreateNavItem` pusht
+weiterhin unconditional `/create`, der Guard faengt Gaeste ab und leitet zu
+`/login?from=/create` um). Der Alt-Kommentar in `asm_shell.dart` ("noch nicht umsetzbar")
+ist entsprechend aktualisiert. Falls spaeter doch ein echtes Bottom-Sheet gewuenscht ist
+(schnellerer Login ohne volle Seitennavigation), ist das ein separates UI-Vorhaben mit
+eigenem Spec-Bedarf, kein Bugfix an dieser Stelle.
+
+## 2026-08-29 · Task 2.4 · Rueckkehr zur Zielroute nach Login ohne neuen `refreshListenable`
+
+"Danach zurück zur Zielroute" (Regeltabelle) haette sich auch ueber einen
+`GoRouterRefreshStream`/`refreshListenable` loesen lassen, der `redirect` bei jeder
+Auth-Aenderung automatisch neu auswertet. Bewusst nicht gemacht: `app.dart`s bestehender
+globaler Listener auf `authEventProvider` (Task 2.3, real auf dem Emulator getestet fuer
+sowohl Login-Screen als auch den `asm://auth-callback` Deep Link) navigiert bei `signedIn`
+bereits explizit per `router.go(...)`. Stattdessen liest dieser Aufruf jetzt den
+`from`-Query-Parameter der aktuellen Route (`router.routeInformationProvider.value.uri`)
+und geht dorthin statt immer zu `/` — kleinerer, risikoaermerer Diff, der den
+Deep-Link-Pfad unveraendert laesst (dort ist beim Cold-Start nie ein `from` gesetzt, also
+identisches Verhalten wie vorher).
+
+## 2026-08-29 · Task 2.4 · `dart format` auf vier Dateien aus fruaheren Tasks nachgeholt
+
+Wie schon in Task 0.7: `dart format lib test` fand Formatierungs-Drift in vier Dateien, die
+in dieser Session nicht inhaltlich angefasst wurden (`asm_checkbox.dart`,
+`login_screen.dart`, `register_screen.dart`, `register_screen_test.dart`) — je 4-5 Zeilen
+reines Zeilenumbruch-Whitespace, keine Verhaltensaenderung. Mitformatiert, da
+`dart format --set-exit-if-changed .` in CI sonst auf diesen Dateien rot gelaufen waere,
+unabhaengig vom eigentlichen Task-2.4-Diff.
+
+## 2026-08-29 · Task 2.4 · Emulator-Verifikation: Gast-Guard live bestätigt, "eingeloggt+unbestätigt"-Pfad offen gelassen
+
+Auf dem Emulator gegen das echte Dev-Supabase-Projekt getestet: Tap auf den Create-FAB als
+Gast landet korrekt auf dem Login-Screen (`redirect` greift live, nicht nur in Tests) — der
+Teil mit der groessten Unsicherheit (funktioniert `ref.read(...)` innerhalb der
+`GoRouter.redirect`-Closure gegen den echten ProviderContainer), damit bestaetigt.
+
+**Nicht live durchgespielt:** die Regel "`/create` eingeloggt + unbestaetigte E-Mail →
+Hinweis". Der Versuch, dafuer einen zweiten Test-Account durchzuregistrieren, wurde
+abgebrochen, nachdem der Datum-Picker im Registrierungsformular ueber `adb input tap`
+mehrfach nicht zuverlaessig steuerbar war (Flutter exponiert ohne aktiven Accessibility-
+Service keinen `uiautomator`-Baum, blinde Koordinaten-Taps auf den Kalender-Dialog trafen
+nicht zuverlaessig) — kein Zeichen eines App-Bugs, reine Automatisierungs-Reibung. Keine
+Registrierung wurde abgeschickt, kein Testkonto/E-Mail-Versand ausgeloest.
+
+**Offene Frage dabei entdeckt:** Login-Screen und `AuthRepository.signIn` gehen bisher davon
+aus, dass `signInWithPassword` bei aktivierter E-Mail-Bestaetigung (Task 1.1) fuer
+unbestaetigte Konten ueberhaupt eine Session liefert — Task 2.3 dokumentiert aber bereits,
+dass Supabase in diesem Fall serverseitig einen eigenen Fehler wirft ("E-Mail nicht
+bestaetigt"), den der Login-Screen bewusst hinter der generischen Meldung versteckt. Falls
+Supabase Login fuer unbestaetigte Konten grundsaetzlich verweigert, ist die Regel
+"`/create` eingeloggt+unbestaetigt" in der Praxis unerreichbar (keine Session ohne
+Bestaetigung moeglich) — die Guard-Logik in `guards.dart` ist trotzdem korrekt und bleibt
+als Absicherung bestehen, nur der Live-Beweis fehlt. **Nachholen:** mit einem Konto pruefen,
+dessen E-Mail nachweislich unbestaetigt ist (z. B. `gear_hunter_42`/`nutzer@example.de`
+aus Task 2.2, Passwort muesste dafuer erst per DB-Zugriff neu gesetzt werden, da
+`resetPasswordForEmail` `example.*`-Adressen ablehnt) und beobachten, ob `signIn` ueberhaupt
+erfolgreich zurueckkehrt.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->
