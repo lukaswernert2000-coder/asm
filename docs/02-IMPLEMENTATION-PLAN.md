@@ -63,6 +63,20 @@ exceeded" kein Bug ist.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
+### 🔁 Außer der Reihe — vor Task 2.5 abarbeiten
+
+Drei Dinge, die nicht am Meilenstein-Faden hängen, aber jetzt fällig sind. Reihenfolge
+einhalten – jeder Schritt setzt den vorigen voraus.
+
+| # | Was | Warum jetzt |
+|---|---|---|
+| **A** | Task 2.4 fertigstellen und committen | Nicht mittendrin abbiegen – die Arbeitskopie ist offen |
+| **B** | Die dann ~9 ungepushten Commits pushen | M2 existiert nur lokal. `gh` ist nicht installiert, normales `git push` benutzen |
+| **C** | CI grün bekommen | Läuft mit dem Push zum ersten Mal über M1 und M2. Vorher bestätigt grün war nur M0 |
+| **D** | [Task 8.0 Teil A](#task-80-website-und-rechtsseiten) – Website und Rechtstexte | Hängt an keinem App-Code, liefert die Markdown-Quelle für Task 7.2, und die Store-URLs müssen vor der Einreichung stehen |
+
+Danach normal weiter mit Task 2.5.
+
 ---
 
 ## Global Constraints
@@ -2052,13 +2066,20 @@ Stream<List<Message>> messages(String conversationId) {
 - [ ] Commit — `feat(moderation): add report and block flows`
 
 ## Task 7.2: Rechtstexte in der App
-- [ ] Vier Markdown-Dateien in `assets/legal/`: `impressum.md`, `datenschutz.md`,
-      `agb.md`, `nutzungsbedingungen.md`
+
+> **Voraussetzung:** Die vier Markdown-Dateien in `assets/legal/` entstehen bereits in
+> **Task 8.0 Teil A**. Wurde 8.0A vorgezogen (empfohlen), sind sie hier schon da und
+> dieser Task besteht nur noch aus Anzeige und Verlinkung. Falls nicht: erst 8.0A
+> Schritt 2 machen, damit App und Website dieselbe Quelle nutzen.
+
+- [ ] Vier Markdown-Dateien in `assets/legal/` vorhanden: `impressum.md`, `datenschutz.md`,
+      `agb.md`, `nutzungsbedingungen.md` (Quelle: Task 8.0A)
 - [ ] Anzeige über `flutter_markdown` im App-Theme (kein WebView – schneller, offline, konsistent)
 - [ ] Verlinkt aus: Registrierung (Pflicht-Checkboxen), Einstellungen, Profil
-- [ ] **Inhaltlich vom Anwalt prüfen lassen** – die Entwürfe hier sind nur Platzhalter
-- [ ] Nutzungsbedingungen müssen enthalten: verbotene Artikel, 18+-Regel, F-Kennzeichen-Pflicht,
+- [ ] **Inhaltlich vom Anwalt prüfen lassen** – die Entwürfe sind nur Platzhalter
+- [ ] Nutzungsbedingungen enthalten: verbotene Artikel, 18+-Regel, F-Kennzeichen-Pflicht,
       Besitznachweis-Pflicht, Null-Toleranz-Klausel für anstößige Inhalte (Apple 1.2), Meldeverfahren
+- [ ] Gegenprobe: Der in der App angezeigte Text ist identisch mit dem auf der Website
 - [ ] Commit — `feat(legal): add in-app legal documents`
 
 ## Task 7.3: Sicherheits-Durchgang
@@ -2079,6 +2100,136 @@ select tablename, count(*) from pg_policies where schemaname='public' group by 1
 ---
 
 # Meilenstein M8 · Politur und Release
+
+## Task 8.0: Website und Rechtsseiten
+
+> **🔀 Teil A ist jederzeit vorziehbar und sollte früh gemacht werden.** Er hängt an
+> keinem App-Code. Wer ihn bis M8 aufschiebt, macht ihn unter Release-Druck – und die
+> Store-Formulare verlangen die URLs, *bevor* man einreichen darf.
+> **Teil B ist echt blockiert** und kann erst nach Task 8.3/8.4 fertiggestellt werden.
+
+**Hosting:** vorhandenes Hostinger-Abo. Statisches HTML reicht – kein PHP, kein CMS.
+EU-Standort wählen (Litauen oder Niederlande) und den AV-Vertrag von Hostinger holen.
+
+### Teil A — sofort machbar
+
+**Dateien:**
+- Create: `assets/legal/impressum.md`, `datenschutz.md`, `agb.md`, `nutzungsbedingungen.md`
+- Create: `website/index.html`, `datenschutz.html`, `impressum.html`, `agb.html`,
+  `nutzungsbedingungen.html`, `account-loeschen.html`, `style.css`
+- Create: `tool/gen_website.dart`
+
+**Produziert:** Sechs statische Seiten für Hostinger + die vier Markdown-Rechtstexte, die
+**Task 7.2 unverändert weiterverwendet**. Task 7.2 schrumpft dadurch auf „Markdown in der
+App rendern und verlinken".
+
+- [ ] **Schritt 1: Domain klären**
+
+Prüfen, ob `asm-app.de` frei/vorhanden ist. Falls nicht: Alternative wählen und den Namen
+**in allen Docs konsistent ersetzen** (`00-SPEC.md` §7.2, dieser Plan, `CLAUDE.md`).
+Die Domain taucht später in Store-Einträgen, Deep Links und im Impressum auf – ein
+späterer Wechsel ist teuer.
+
+- [ ] **Schritt 2: Rechtstexte als Markdown anlegen — eine Quelle, zwei Ziele**
+
+`assets/legal/*.md` ist die **einzige** Quelle. Website und App rendern beide daraus.
+Zwei Kopien pflegen zu müssen ist der sichere Weg zu widersprüchlichen Rechtstexten.
+
+Pflichtinhalte der `nutzungsbedingungen.md` (aus `00-SPEC.md` §7.2 – ohne die lehnt
+Apple nach Guideline 1.2 ab):
+
+- Verbotene Artikel: scharfe Waffen, Munition, Heißgaswaffen, entmilitarisierte Waffen,
+  Artikel ohne Airsoft-Bezug
+- Abgabe von Geräten über 0,5 J nur an Personen ab 18
+- F-Kennzeichen-Foto ist Pflicht bei über 0,5 J
+- Besitznachweis-Foto ist Pflicht
+- Null-Toleranz-Klausel für anstößige Inhalte und missbräuchliches Verhalten
+- Beschreibung des Melde- und Abhilfeverfahrens (DSA Art. 16), Reaktion binnen 24 h
+- Kontaktstelle mit E-Mail-Adresse
+
+> ⚠️ Die von Sonnet erzeugten Texte sind **Entwürfe zur Anwaltsprüfung**, kein fertiges
+> Recht. Als solche kennzeichnen (`<!-- ENTWURF – anwaltlich pruefen -->` oben in jeder
+> Datei) und vor dem Release ersetzen.
+
+- [ ] **Schritt 3: `tool/gen_website.dart` schreiben**
+
+Liest `assets/legal/*.md`, rendert jede Datei in das HTML-Template und schreibt sie nach
+`website/`. Rund 60 Zeilen, verhindert dauerhaftes Auseinanderlaufen von App und Website.
+Aufruf: `dart run tool/gen_website.dart`.
+
+- [ ] **Schritt 4: `website/style.css` aus den Design-Tokens**
+
+Dieselben Farben und Schriften wie die App – Website und App sollen erkennbar
+zusammengehören. Werte aus `01-DESIGN-SYSTEM.md` Abschnitt 2 und 3 als CSS-Variablen:
+
+```css
+:root {
+  --bg: #171A18;  --surface: #222622;  --border: #3A403A;
+  --brand-bright: #7D8B6A;  --text-primary: #E8EAE5;  --text-secondary: #A8ADA4;
+}
+```
+
+Schriften **lokal einbinden** (`website/fonts/`), nicht über die Google-Fonts-CDN –
+gleiche DSGVO-Begründung wie **G12** in der App.
+
+- [ ] **Schritt 5: `index.html` — Landingpage**
+
+Zweck ist nicht Marketing, sondern: Store-Pflichtfeld „Support-URL" bedienen und
+Vertrauen schaffen. Inhalt: Logo-Lockup, ein Satz was ASM ist, Store-Badges (später),
+drei Screenshots, Links auf alle Rechtsseiten, `support@asm-app.de`.
+
+**Kein Kontaktformular.** Sobald eines existiert, verarbeitest du auf Hostinger
+personenbezogene Daten und brauchst dafür eigene Datenschutz-Angaben. Eine
+`mailto:`-Adresse reicht und ist rechtlich sauberer.
+
+- [ ] **Schritt 6: `account-loeschen.html` — Google-Play-Pflichtseite**
+
+Google verlangt eine **öffentlich erreichbare Web-URL** zur Löschung; die In-App-Löschung
+aus Task 2.6 allein genügt nicht. Die Seite muss beschreiben:
+welche Daten gelöscht werden, welche wie lange aufbewahrt werden und wie man die Löschung
+ohne installierte App anstößt (E-Mail an `support@`).
+
+- [ ] **Schritt 7: E-Mail-Postfach einrichten**
+
+`support@asm-app.de` bei Hostinger anlegen. Wird gebraucht für: Impressum, Store-Kontakt,
+Apple-Guideline 1.2 („veröffentlichte Kontaktmöglichkeit"), Löschanfragen, DSA-Kontaktstelle.
+
+- [ ] **Schritt 8: Hochladen und prüfen**
+
+Per Hostinger-Dateimanager oder FTP nach `public_html/`. Danach jede URL im Browser öffnen –
+HTTPS aktiv, kein Zertifikatsfehler, keine Weiterleitung.
+
+- [ ] **Schritt 9: Commit** — `feat(web): add landing page and legal documents`
+
+### Teil B — blockiert bis Task 8.3 / 8.4
+
+Deep Links (`https://asm-app.de/listing/<id>` öffnet die App) brauchen zwei Dateien, die
+erst mit den echten Signaturdaten befüllt werden können.
+
+- [ ] **`website/.well-known/assetlinks.json`** — braucht den **SHA-256-Fingerprint des
+      Release-Keystores** aus Task 8.4:
+
+```bash
+keytool -list -v -keystore upload-keystore.jks -alias upload | grep SHA256
+```
+
+- [ ] **`website/.well-known/apple-app-site-association`** — braucht die **Apple Team ID**
+      aus Task 8.3. Format: JSON, aber **ohne** `.json`-Dateiendung.
+
+- [ ] **`.htaccess` für den korrekten Content-Type** — der häufigste Grund, warum
+      iOS-Deep-Links „unerklärlich" nicht funktionieren:
+
+```apache
+<Files "apple-app-site-association">
+  ForceType application/json
+</Files>
+```
+
+- [ ] **Prüfen:** Beide Dateien über HTTPS erreichbar, ohne Weiterleitung, korrekter
+      Content-Type (`curl -I`). Danach Deep Link auf einem echten Gerät testen.
+- [ ] **Commit** — `feat(web): add deep link association files`
+
+---
 
 ## Task 8.1: Qualitätsdurchgang
 - [ ] Alle 24 Screens durchgehen: Ladezustand, Fehlerzustand, leerer Zustand vorhanden?
