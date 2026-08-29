@@ -1028,4 +1028,40 @@ Task 2.7). Hintergrundfarbe selbst ist korrekt `AsmColors.bg`. **Nachholen:** so
 Task 8.2 ein echtes App-Icon existiert, hier pruefen, ob `android_12.icon` in
 `flutter_native_splash.yaml` gesetzt werden soll statt des Launcher-Icon-Fallbacks.
 
+## 2026-08-29 · M2-Komplettflow live · Echter Bug gefunden: `ProfileRepository.byId()` schlug fuer jeden Nutzer fehl
+
+**Kontext:** Auf Nutzerwunsch den kompletten M2-Flow einmal echt durchgespielt (nicht nur
+Emulator-Fragmente wie bisher): Erststart → Onboarding → Registrieren (echte
+mailinator.com-Adresse, Geburtsdatum ueber den Text-Eingabe-Modus des Datepickers --
+diesmal zuverlaessig, weil per `uiautomator dump` exakte Koordinaten statt geschaetzter
+verwendet wurden) → E-Mail-Bestaetigungslink im **emulator-eigenen Chrome** angetippt (nicht
+im Host-Browser -- der `asm://auth-callback`-Deep-Link muss auf demselben Geraet ausgeloest
+werden wie die installierte App) → automatisch eingeloggt → Profil ausfuellen → abmelden →
+wieder einloggen → Account loeschen → Login mit denselben Daten liefert korrekt
+"E-Mail oder Passwort ist falsch". **Damit ist auch der seit Task 2.6 offene Testpunkt
+("Login nach Loeschen scheitert") jetzt echt bestaetigt, nicht nur der Auth-Gate.**
+
+**Echter Bug gefunden und behoben:** Direkt nach dem allerersten echten Login zeigte das
+Profil "Profil konnte nicht geladen werden". `AppException` war `AuthRequiredException`,
+aber Session und Access-Token waren nachweislich gueltig (per Temp-Debug-Print gegengeprueft:
+`currentUser` gesetzt, Token nicht abgelaufen). Ursache: `SupabaseProfileRepository.byId()`
+rief `.select()` **ohne Spaltenliste** auf (= `select(*)`), aber `0001_profiles.sql`s
+`grant select (id, username, ..., role, created_at, last_seen_at)` gewaehrt explizit
+**nicht** alle Spalten -- `birth_date`, `lat`, `lng`, `commercial_address` haben ueberhaupt
+keinen Select-Grant (schon in den Task-1.9/2.5-Eintraegen oben dokumentiert). Ein
+`select(*)` gegen eine Tabelle mit spaltenbeschraenkten Grants schlaegt fuer die **gesamte**
+Zeile mit `42501` fehl, auch fuer Spalten, die der Aufrufer gar nicht braucht --
+`error_mapper.dart` bildet das (etwas irrefuehrend) auf `AuthRequiredException` ab, was hier
+in die falsche Richtung fuehrte, bis das Debug-Log den echten Postgrest-Fehlercode zeigte.
+**Kein Test haette das gefangen:** alle Profil-Screen-Tests mocken `ProfileRepository` auf
+Interface-Ebene, keiner ruft echtes Postgrest mit echten Column-Grants auf -- exakt die
+Klasse Bug, die nur ein echter Login gegen die echte DB zeigt. Fix: `byId()` nutzt jetzt
+eine explizite Spaltenliste (`_profileColumns`), die exakt den Grant und die `Profile`-Felder
+trifft. `isUsernameTaken()`/`update()` waren bereits korrekt (kein bzw. `select('id')`).
+
+**Nachholen:** Der eigentliche M2-Abschlusskriterium-Satz verlangt "auf einem echten Geraet"
+-- laut `03-ARBEITEN-MIT-SONNET.md` Abschnitt 4 ist das ausdruecklich Nutzer-Aufgabe
+("Ein Emulator zeigt nicht, wie sich die App anfuehlt"), kein Sonnet-Task. Alles andere aus
+dem Kriterium ist jetzt live bestaetigt.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

@@ -25,6 +25,14 @@ abstract interface class ProfileRepository {
   Future<String> uploadAvatar(String userId, Uint8List bytes);
 }
 
+/// Spalten aus dem `grant select (...)` in `0001_profiles.sql` -- `birth_date`,
+/// `lat`, `lng` und `commercial_address` haben dort bewusst keinen Select-Grant
+/// (siehe DECISIONS.md), ein bare `select()` (= `select(*)`) schlaegt deshalb
+/// fuer JEDEN Nutzer mit 42501 fehl. Deckt sich exakt mit den `Profile`-Feldern.
+const _profileColumns =
+    'id, username, display_name, avatar_path, bio, postal_code, city, '
+    'is_commercial, commercial_name, role, created_at, last_seen_at';
+
 class SupabaseProfileRepository implements ProfileRepository {
   SupabaseProfileRepository(this._client);
 
@@ -33,7 +41,11 @@ class SupabaseProfileRepository implements ProfileRepository {
   @override
   Future<Profile> byId(String id) async {
     try {
-      final row = await _client.from('profiles').select().eq('id', id).single();
+      final row = await _client
+          .from('profiles')
+          .select(_profileColumns)
+          .eq('id', id)
+          .single();
       return Profile.fromJson(row);
     } catch (error) {
       throw mapError(error);

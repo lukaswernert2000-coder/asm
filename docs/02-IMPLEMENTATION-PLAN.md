@@ -41,7 +41,7 @@ Firebase Cloud Messaging · Sentry
 | **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) |
 | **Als Nächstes** | **Task 3.1 — Kategorie-Übersicht und Kategorie-Feed** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `docs: confirm task 2.7 flow live on the emulator` (gepusht) |
+| **Letzter Commit** | `fix(profile): select explicit columns matching the grant in byId()` |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -86,10 +86,22 @@ Alle Dart-Tests grün (168), `flutter analyze` 0 Probleme. Die Webseite
 `account-loeschen.html` aus Task 8.0 erfüllt die Google-Play-Pflicht bereits, ein
 veralteter Navigationspfad darin wurde korrigiert. Edge Function ist **deployt**
 (`xlpgrexkiigzqrcmkenv`, nach Nutzer-Freigabe — erster Versuch vom Auto-Mode-Classifier
-blockiert) und der Auth-Gate live **teilverifiziert** (401 ohne bzw. mit ungültigem
-Token). **Offen:** der volle destruktive Test mit einem echten, bestätigten Nutzer
-("Login mit denselben Daten scheitert nach dem Löschen") — braucht entweder einen
-manuellen E-Mail-Bestätigungs-Klick oder den service_role-Key, siehe DECISIONS.md.
+blockiert). **Inzwischen voll live verifiziert** (siehe M2-Komplettflow-Eintrag unten):
+Löschen + anschließender Login-Fehlversuch funktioniert wie im Plan gefordert.
+
+**2026-08-29, M2-Komplettflow live durchgespielt:** Auf Nutzerwunsch den gesamten
+M2-Abschlusskriterium-Flow einmal echt durchgeklickt (Erststart → Onboarding →
+Registrieren → E-Mail bestätigen → einloggen → Profil ausfüllen → abmelden → wieder
+einloggen → Account löschen → Login schlägt danach fehl) — **alles bestätigt**, bis auf
+den expliziten "echtes Gerät statt Emulator"-Teil, der laut `03-ARBEITEN-MIT-SONNET.md`
+Abschnitt 4 Nutzer-Aufgabe ist. Dabei einen **echten, vorher unbemerkten Bug gefunden und
+behoben**: `SupabaseProfileRepository.byId()` nutzte ein spaltenloses `select()` (=
+`select(*)`), das gegen die spaltenbeschränkten Grants aus `0001_profiles.sql` für
+**jeden** Nutzer mit `42501` fehlschlug (kein Test konnte das fangen, da alle
+Profil-Tests nur gegen ein gemocktes Repository-Interface laufen). Fix: explizite
+Spaltenliste passend zum Grant. Volle Details, inklusive der Deep-Link-Besonderheit
+(E-Mail-Bestätigungslink muss im **emulator-eigenen** Browser angetippt werden, nicht im
+Host-Browser) in DECISIONS.md.
 Fällt mit der ohnehin offenen "kein Test auf echtem Gerät"-Zeile zusammen, die M2 laut
 Abschlusskriterium unten sowieso noch braucht. Details zur bewusst ausgesparten
 `chat-images`-Bereinigung ebenfalls in DECISIONS.md. Task-2.6-Push ist CI-grün
@@ -1901,9 +1913,9 @@ Edge Function mit `service_role`-Key (nur dort, nie im Client, G7):
 - [x] Bestätigungsdialog: Nutzer muss seinen Nutzernamen eintippen
 - [x] Zusätzlich eine öffentliche Webseite `asm-app.de/account-loeschen` (Google-Play-Pflicht)
       — bereits in Task 8.0 gebaut, hier nur geprüft und einen veralteten Pfad korrigiert
-- [ ] Test: Nach dem Löschen liefert Login mit denselben Daten einen Fehler — Function ist
-      deployt und der Auth-Gate live geprüft (401 ohne/mit ungültigem Token), der volle
-      destruktive Test mit einem echten bestätigten Nutzer steht noch aus, siehe DECISIONS.md
+- [x] Test: Nach dem Löschen liefert Login mit denselben Daten einen Fehler — voller
+      destruktiver Test mit einem echten bestätigten Nutzer live durchgespielt, liefert
+      korrekt "E-Mail oder Passwort ist falsch", siehe DECISIONS.md
 - [x] Commit — `feat(profile): add in-app account deletion`
 
 ## Task 2.7: Splash, Onboarding und Willkommen (F19)
