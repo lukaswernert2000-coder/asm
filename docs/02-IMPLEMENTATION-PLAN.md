@@ -38,21 +38,28 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M2 · Authentifizierung und Profil |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.2 |
-| **Als Nächstes** | **Task 2.3 — Login, Passwort vergessen, Deep-Link-Callback** |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.3 |
+| **Als Nächstes** | **Task 2.4 — Auth-Guards im Router** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `a386992` feat(auth): add registration flow with validation |
+| **Letzter Commit** | `85232fd` feat(auth): add login, password reset and deep link callback |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`), CI lief zuletzt für M0 real und grün
 ([Run #1](https://github.com/lukaswernert2000-coder/asm/actions), `conclusion: success`).
 M1 war entgegen einer älteren Notiz doch schon gepusht (`git fetch` zeigte das in Task 2.1).
-Ob CI auf M1/M2 real durchlief, ist weiterhin nicht bestätigt (`gh` war auch in dieser
-Session nicht verfügbar) — im GitHub-Actions-Tab nachsehen. **Task 2.1 und 2.2 sind noch
-nicht gepusht** (Push braucht laut Arbeitsregeln explizite Zustimmung). Task 2.2 (erster
-UI-Task) lief komplett auf dem Android-**Emulator** gegen das echte Dev-Supabase-Projekt
-durch, siehe DECISIONS.md — das ist aber weiterhin **kein Test auf echter Hardware**.
-Bleibt offen wie schon seit M0: kein Test auf einem echten Android- oder iOS-Gerät.
+Ob CI auf M1/M2/M2.3 real durchlief, ist weiterhin nicht bestätigt (`gh` war auch in dieser
+Session nicht verfügbar) — im GitHub-Actions-Tab nachsehen. **Task 2.1–2.3 sind noch
+nicht gepusht** (Push braucht laut Arbeitsregeln explizite Zustimmung). Task 2.2 und 2.3
+liefen komplett auf dem Android-**Emulator** gegen das echte Dev-Supabase-Projekt durch,
+siehe DECISIONS.md — das ist aber weiterhin **kein Test auf echter Hardware**. Bleibt offen
+wie schon seit M0: kein Test auf einem echten Android- oder iOS-Gerät. Neu offen seit
+Task 2.3: der **echte E-Mail-Link-Tap für `asm://auth-callback`/`asm://reset-password`**
+wurde nicht durchgespielt (Supabase-E-Mail-Limit in dieser Session ausgeschöpft) — bei
+Bedarf mit einer echten/mailinator-Adresse nachholen, siehe DECISIONS.md. Zusätzlich: das
+Supabase-Projekt-Limit `auth.rate_limit.email_sent = 2`/Stunde ist beim manuellen Testen
+sehr schnell erreicht — künftige Sessions sollten E-Mail-auslösende Aktionen (Registrieren,
+Erneut senden, Passwort vergessen) sparsam einsetzen und wissen, dass "email rate limit
+exceeded" kein Bug ist.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -1764,12 +1771,28 @@ Validierung (in `lib/core/utils/validators.dart`, **unit-getestet**):
 
 ## Task 2.3: Login, Passwort vergessen, Deep-Link-Callback
 
-- [ ] Login-Screen mit E-Mail/Passwort, Fehlermeldung bei falschen Daten
+- [x] Login-Screen mit E-Mail/Passwort, Fehlermeldung bei falschen Daten
       (**nicht** "Nutzer existiert nicht" – das ist eine Nutzer-Enumeration; immer
-      "E-Mail oder Passwort ist falsch")
-- [ ] "Passwort vergessen" → `resetPasswordForEmail` mit Redirect `asm://reset-password`
-- [ ] Deep-Link-Handling: `asm://auth-callback` setzt die Session und leitet auf `/` weiter
-- [ ] Commit — `feat(auth): add login, password reset and deep link callback`
+      "E-Mail oder Passwort ist falsch") — echt auf dem Emulator gegen das Dev-Projekt
+      getestet: falsches Passwort für den Task-2.2-Testaccount zeigt exakt diese Meldung,
+      nie die rohe Supabase-Fehlermeldung
+- [x] "Passwort vergessen" → `resetPasswordForEmail` mit Redirect `asm://reset-password` —
+      `asm://reset-password` zusätzlich zu `supabase/config.toml`s `additional_redirect_urls`
+      hinzugefügt und gepusht (war nur `asm://auth-callback` gelistet, siehe Task 1.1)
+- [x] Deep-Link-Handling: `asm://auth-callback` setzt die Session und leitet auf `/` weiter —
+      zusätzlich `asm://reset-password` → `passwordRecovery` → `/reset-password`-Screen
+      (nicht explizit im Plan, aber ohne den Screen ist "Passwort vergessen" nicht nutzbar,
+      siehe DECISIONS.md). Session-Handling selbst kommt automatisch von `supabase_flutter`
+      (bestätigt im Paket-Quellcode, nicht angenommen) — eigener Code ist nur der globale
+      Redirect-Listener in `app.dart`, der auf `AuthChangeEvent` reagiert.
+      **Nicht vollständig End-to-End getestet:** das tatsächliche Antippen eines
+      Bestätigungs-/Reset-Links aus einer echten E-Mail — dafür bräuchte es ein
+      erreichbares Postfach, und das Supabase-Projekt-Limit (`email_sent = 2`/Stunde)
+      war durch die Tests in Task 2.2 bereits ausgeschöpft. Alles andere (native
+      `asm://`-Registrierung, Redirect-Allowlist, das eigene Redirect-Listener-Verhalten)
+      ist verifiziert — nur die reine Paket-interne Code-Exchange-Strecke nicht real
+      durchlaufen. Siehe DECISIONS.md für Details und wie es nachgeholt werden kann.
+- [x] Commit — `feat(auth): add login, password reset and deep link callback` (`85232fd`)
 
 ## Task 2.4: Auth-Guards im Router
 

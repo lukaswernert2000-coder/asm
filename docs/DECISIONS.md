@@ -500,4 +500,107 @@ nuetzlich fuer Task 2.3s Login-Tests (E-Mail ist unbestaetigt, gut um den
 "E-Mail nicht bestaetigt"-Pfad zu testen). Aufraeumen bei Bedarf in Supabase Studio unter
 Authentication → den Nutzer per E-Mail suchen und loeschen (cascaded das Profil).
 
+## 2026-08-29 · Task 2.3 · `asm://reset-password` fehlte in der Supabase-Redirect-Allowlist
+
+Task 1.1 (`e30c508`) hatte nur `asm://auth-callback` in `additional_redirect_urls`
+eingetragen. Ohne `asm://reset-password` dort ebenfalls zu listen, haette Supabase den
+`redirectTo`-Parameter von `resetPasswordForEmail` verworfen und auf `site_url` (`asm://`)
+zurueckfallen lassen — der Task-Wortlaut verlangt aber explizit `asm://reset-password`.
+Ergaenzt und mit `supabase config push` verifiziert gepusht: der ausgegebene Diff zeigte
+**ausschliesslich** die eine Zeile (`additional_redirect_urls = [..., "asm://reset-password"]`),
+keine der versehentlichen Rueckstellungen aus Task 1.1 (siehe Eintrag oben) ist diesmal
+aufgetreten — trotzdem immer den Diff lesen, nicht nur "updated" im Status.
+
+Die native `asm://`-Schema-Registrierung (Android-Intent-Filter, iOS `CFBundleURLTypes`)
+existierte bereits vollstaendig (vermutlich aus derselben Task-1.1-Session) — dafuer musste
+in Task 2.3 nichts geaendert werden.
+
+## 2026-08-29 · Task 2.3 · Deep-Link-Session-Handling kommt automatisch von `supabase_flutter`
+
+Kein eigener Code fuer "Deep-Link empfangen → Code gegen Session tauschen" noetig:
+`supabase_flutter`s `SupabaseAuth`-Klasse (intern von `Supabase.initialize()` gestartet)
+hoert bereits automatisch auf eingehende Links (`app_links`-Paket), erkennt Auth-Callbacks
+an `code`/`access_token`/`error`-Parametern und ruft selbststaendig
+`auth.getSessionFromUrl(uri)` auf — bestaetigt durch Lesen von
+`supabase_flutter-2.17.2/lib/src/supabase_auth.dart`, nicht angenommen. Das laeuft nur,
+weil `Supabase.initialize()` jetzt ueberhaupt aufgerufen wird (Task-2.2-Fix). Wichtig fuer
+kuenftige Tasks: `gotrue_client.dart` unterscheidet dabei zwei Events —
+`AuthChangeEvent.signedIn` fuer normale Logins/E-Mail-Bestaetigung, **und**
+`AuthChangeEvent.passwordRecovery` spezifisch fuer den `asm://reset-password`-Link. Beide
+sind bereits am Server (in `getSessionFromUrl`/`verifyOTP`) korrekt auseinandergehalten,
+nicht erst client-seitig zu erraten.
+
+**Eigener Code beschraenkt sich auf den globalen Redirect:** `AuthRepository.authEvents()`
+(neuer, separater Stream neben `authStateChanges()` — nur hier ist der rohe
+`AuthChangeEvent` noetig) + `authEventProvider` + ein `ref.listen` in `app.dart`, das bei
+`signedIn` nach `/` und bei `passwordRecovery` nach `/reset-password` navigiert. Bewusst
+**ein** `ref.listen` statt zwei (einer pro Zielrichtung waere naheliegend gewesen) — beide
+Events koennen (in der Theorie) kurz hintereinander feuern, und mit getrennten Listenern
+haette die Reihenfolge zweier `router.go()`-Aufrufe von der Riverpod-internen
+Listener-Reihenfolge abgehangen. Ein Switch ueber beide Events in einem Listener macht das
+deterministisch. Der Switch ist absichtlich exhaustiv (kein `default`, alle 8
+`AuthChangeEvent`-Werte einzeln, inkl. des deprecateten `userDeleted` mit
+`ignore`-Kommentar) statt mit `default:` — `very_good_analysis`s `no_default_cases`
+verlangt das, und es zwingt dazu, ein neuer Event-Wert in einer kuenftigen
+gotrue-Version bewusst einsortiert wird statt still im Default zu verschwinden.
+
+## 2026-08-29 · Task 2.3 · `ResetPasswordScreen` selbst gebaut — Plan nannte nur die Anfrage-Seite
+
+Der Task-Wortlaut deckt nur "Passwort vergessen → `resetPasswordForEmail`" ab, nicht was
+passiert, *nachdem* der Nutzer den Reset-Link antippt. Ohne einen Screen, der nach einem
+`passwordRecovery`-Event ein neues Passwort abfragt (`updatePassword`, neu auf
+`AuthRepository`, ruft `auth.updateUser(UserAttributes(password: ...))`), waere "Passwort
+vergessen" nicht wirklich benutzbar — der Nutzer wuerde nur eingeloggt und landete ohne
+Erklaerung im Feed, das alte Passwort bliebe gueltig. Screen erreichbar ausschliesslich
+ueber den globalen Redirect (keine In-App-Navigation dorthin), Route `/reset-password`
+neu in `routes.dart`. Reuse von `PasswordStrengthBar` aus Task 2.2. Nach Erfolg: SnackBar
+("Passwort aktualisiert", nutzt das schon vorhandene `snackBarTheme` aus `asm_theme.dart` —
+kein neuer Styling-Aufwand) + Redirect nach `/`.
+
+## 2026-08-29 · Task 2.3 · Login-Screen zeigt IMMER dieselbe Fehlermeldung, verwirft `error.message`
+
+Anders als bei allen anderen Screens (die `error.message` direkt anzeigen) faengt
+`LoginScreen._submit` jede `AppException` ab und zeigt **immer** "E-Mail oder Passwort ist
+falsch" — unabhaengig vom tatsaechlichen Supabase-Fehlertext. Grund: der Task-Wortlaut
+verbietet explizit, zwischen "Nutzer existiert nicht" und "Passwort falsch" zu
+unterscheiden (Nutzer-Enumeration). Auch der Fall "E-Mail nicht bestaetigt" (ein
+eigener, spezifischerer Supabase-Fehler, den man theoretisch anders anzeigen koennte)
+bekommt bewusst dieselbe generische Meldung — der Plan-Wortlaut ("immer") war eindeutig
+genug, um hier nicht selbst zu differenzieren. `ForgotPasswordScreen` folgt demselben
+Prinzip fuer ihre Erfolgsmeldung ("Falls ein Konto mit dieser E-Mail-Adresse existiert...")
+statt "E-Mail gesendet" nur bei existierendem Konto zu zeigen — Supabase selbst antwortet
+bei `resetPasswordForEmail` schon serverseitig unabhaengig davon, ob das Konto existiert
+(sonst waere die eigene client-seitige Vorsicht wirkungslos).
+
+## 2026-08-29 · Task 2.3 · Emulator-Verifikation: zwei echte Funde, eine Luecke offen geblieben
+
+**Fund 1:** `resetPasswordForEmail('nutzer@example.de')` (Task-2.2-Testaccount) schlug mit
+`Email address "nutzer@example.de" is invalid` fehl — Supabase lehnt die Reserved-Domain
+`example.*` fuer diesen Endpunkt ab (anders als bei `signUp`, das sie klaglos akzeptiert
+hatte). Kein Bug, aber gut zu wissen: `example.com`/`.de`/`.org`/`.net` taugen nicht fuer
+jeden Auth-Endpunkt als Test-Adresse.
+
+**Fund 2 (deshalb Umstieg auf Mailinator):** Fuer eine echte, ansteuerbare Test-Mailbox
+ohne eigenes Postfach wurde `asm-task23-verify@mailinator.com` verwendet (Mailinator ist
+ein oeffentlicher, fuer genau diesen Zweck ueblicher Wegwerf-Postfach-Dienst, Inbox ohne
+Login unter mailinator.com einsehbar). Die Registrierung damit schlug fehl mit
+`email rate limit exceeded` — `supabase/config.toml`s `auth.rate_limit.email_sent = 2`
+ist projektweit pro Stunde, nicht pro Empfaenger, und war durch Task 2.2s Tests (Signup +
+"Erneut senden") bereits ausgeschoepft. Kein Bug, aber ein hartes Limit fuers manuelle
+Testen in dieser Session.
+
+**Daraus resultierende Luecke:** Der eigentliche "E-Mail-Link antippen → Deep Link → Session
+gesetzt"-Rundlauf wurde **nicht** end-to-end mit einer echten E-Mail durchgespielt. Was
+stattdessen verifiziert ist: (1) native `asm://`-Registrierung existiert (Android + iOS),
+(2) Redirect-Allowlist ist korrekt (siehe Eintrag oben), (3) `supabase_flutter`s
+Auto-Handling ist im Paket-Quellcode bestaetigt, nicht angenommen, (4) der eigene
+Redirect-Listener in `app.dart` ist per Widget-Test mit einem gemockten Event-Stream fuer
+beide Events (`signedIn`, `passwordRecovery`) sowie fuer "andere Events loesen nichts aus"
+abgedeckt. **Nachholen, falls das je einen Unterschied macht:** eine Stunde nach den
+Task-2.2/2.3-Tests warten (Rate-Limit reset) oder `auth.rate_limit.email_sent` testweise
+per `supabase config push` erhoehen und danach zwingend zurueckdrehen, dann mit
+`asm-task23-verify@mailinator.com` registrieren, den echten Link von mailinator.com
+kopieren und via `adb shell am start -a android.intent.action.VIEW -d "<link>"` oeffnen —
+sollte laut Code-Analyse zu `AuthChangeEvent.signedIn` und Redirect auf `/` fuehren.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->
