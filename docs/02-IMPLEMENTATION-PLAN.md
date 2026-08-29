@@ -105,8 +105,11 @@ Onboarding-Gate sitzt in `guards.dart` (`/` → `/onboarding` beim allerersten S
 nicht als eigene GoRoute für Splash. **Logo ist ein Platzhalter** ("ASM" als Text) —
 Nutzer liefert das echte Logo erst am Ende des Milestones nach, siehe DECISIONS.md.
 Alle Tests grün (174), `flutter analyze` 0 Probleme. `flutter_native_splash` konfiguriert
-und generiert (nur Hintergrundfarbe, kein Bild). **Nicht verifiziert:** kein Test auf
-echtem Gerät (deckt sich mit der M2-Abschlusskriterium-Zeile unten).
+und generiert (nur Hintergrundfarbe, kein Bild). **Live auf dem Emulator bestätigt:**
+kompletter Flow Splash → Onboarding (alle 3 Seiten) → Willkommen → Gast-Feed, UND das
+Skip-Verhalten beim zweiten Start (Onboarding-Flag gesetzt → direkt zum Start-Tab) — Details
+und eine Beobachtung zum nativen Splash-Icon (faellt mangels eigenem App-Icon auf
+Flutter-Default zurueck, siehe Task 8.2) in DECISIONS.md.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 

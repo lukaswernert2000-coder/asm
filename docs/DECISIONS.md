@@ -1007,4 +1007,25 @@ musste als expliziter `dev_dependency` in `pubspec.yaml` ergaenzt werden
 Fake-Zeit vor (`tester.pump(Duration(seconds: 3))`), sonst bleibt `AsmApp` dort auf
 dem Splash haengen -- die dortigen Auth-Stream-Mocks emittieren nie von selbst.
 
+## 2026-08-29 · Task 2.7 · Live auf dem Emulator bestätigt, inkl. Skip-Verhalten beim zweiten Start
+
+Kompletter Flow einmal echt durchgeklickt (Emulator, App zuvor deinstalliert fuer einen
+echten Erststart): Splash → Onboarding Seite 1–3 (Punktindikator, Texte, "Fertig" statt
+"Überspringen" auf Seite 3 korrekt) → Willkommen-Screen (alle drei Buttons, Platzhalter-
+Wordmark "ASM") → "Erstmal umsehen" → Start-Tab als Gast, Bottom-Nav korrekt. Danach App
+per `am force-stop` + Neustart hart beendet und neu gestartet: **Onboarding wird beim
+zweiten Start korrekt uebersprungen**, App landet direkt auf dem Start-Tab — das ist genau
+der Plan-Testpunkt "Bei gesetztem Flag leitet der Router direkt auf `/` weiter", jetzt live
+bestaetigt statt nur im Widget-Test.
+
+**Beobachtung, kein Bug:** Der native Android-12-Splash (zwischen Prozessstart und erstem
+Flutter-Frame) zeigt kurz das Flutter-Standard-Icon statt eines eigenen Bilds — laut
+`flutter_native_splash`-Doku faellt `android_12` ohne eigenes `icon:` auf das App-
+Launcher-Icon zurueck, und das ist bei diesem Projekt noch das unveraenderte
+Flutter-Template-Icon (`flutter_launcher_icons` ist zwar als Dependency vorhanden, aber
+noch nicht mit echten Assets konfiguriert — das ist Task 8.2 Store-Assets, nicht Teil von
+Task 2.7). Hintergrundfarbe selbst ist korrekt `AsmColors.bg`. **Nachholen:** sobald in
+Task 8.2 ein echtes App-Icon existiert, hier pruefen, ob `android_12.icon` in
+`flutter_native_splash.yaml` gesetzt werden soll statt des Launcher-Icon-Fallbacks.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->
