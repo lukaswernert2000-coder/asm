@@ -38,21 +38,21 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M2 · Authentifizierung und Profil |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1 |
-| **Als Nächstes** | **Task 2.2 — Registrierungs-Screen** |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.2 |
+| **Als Nächstes** | **Task 2.3 — Login, Passwort vergessen, Deep-Link-Callback** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `e644bc4` feat(auth): add auth repository and session state |
+| **Letzter Commit** | `a386992` feat(auth): add registration flow with validation |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`), CI lief zuletzt für M0 real und grün
 ([Run #1](https://github.com/lukaswernert2000-coder/asm/actions), `conclusion: success`).
-**Korrektur zur letzten Notiz:** M1 war entgegen dem vorherigen Eintrag doch schon gepusht —
-`git fetch` zu Beginn von Task 2.1 zeigte `origin/master` deckungsgleich mit dem lokalen
-`HEAD` vor diesem Task. Ob CI auf M1 real durchlief, ist trotzdem nicht bestätigt (`gh` war
-in dieser Session nicht verfügbar) — im GitHub-Actions-Tab nachsehen. Task 2.1 ist noch
-**nicht gepusht** (Push braucht laut Arbeitsregeln explizite Zustimmung). Bleibt offen:
-**kein Test auf einem echten Gerät**, bisher nur Emulator — betrifft ab Task 2.2 auch
-UI-Tasks.
+M1 war entgegen einer älteren Notiz doch schon gepusht (`git fetch` zeigte das in Task 2.1).
+Ob CI auf M1/M2 real durchlief, ist weiterhin nicht bestätigt (`gh` war auch in dieser
+Session nicht verfügbar) — im GitHub-Actions-Tab nachsehen. **Task 2.1 und 2.2 sind noch
+nicht gepusht** (Push braucht laut Arbeitsregeln explizite Zustimmung). Task 2.2 (erster
+UI-Task) lief komplett auf dem Android-**Emulator** gegen das echte Dev-Supabase-Projekt
+durch, siehe DECISIONS.md — das ist aber weiterhin **kein Test auf echter Hardware**.
+Bleibt offen wie schon seit M0: kein Test auf einem echten Android- oder iOS-Gerät.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -1751,11 +1751,16 @@ Validierung (in `lib/core/utils/validators.dart`, **unit-getestet**):
 | Geburtsdatum | Datum in der Vergangenheit, Alter ≥ 14 | "Die Nutzung ist erst ab 14 Jahren erlaubt" |
 | Checkboxen | beide gesetzt | "Bitte bestätige AGB und Datenschutz" |
 
-- [ ] Tests: Jede Validierungsregel einzeln, plus ein Widget-Test "Absenden ist deaktiviert,
-      solange ein Feld ungültig ist"
-- [ ] Nach erfolgreicher Registrierung: Screen "E-Mail bestätigen" mit
-      "Erneut senden"-Button (60 s Cooldown)
-- [ ] Commit — `feat(auth): add registration flow with validation`
+- [x] Tests: Jede Validierungsregel einzeln, plus ein Widget-Test "Absenden ist deaktiviert,
+      solange ein Feld ungültig ist" — 20 Tests in `validators_test.dart` (inkl. `validateConsent`,
+      nicht nur die vier Tabellen-Felder) + 5 in `register_screen_test.dart`
+- [x] Nach erfolgreicher Registrierung: Screen "E-Mail bestätigen" mit
+      "Erneut senden"-Button (60 s Cooldown) — als interner Zustand von `RegisterScreen`,
+      keine eigene Route. Echt getestet: kompletter Flow lief auf dem Emulator gegen das
+      echte Dev-Supabase-Projekt durch (Registrierung → Bestätigungsscreen → Erneut senden
+      → 60s-Cooldown zählt runter). Details und ein dabei gefundener, unabhängiger
+      Startup-Bug in DECISIONS.md.
+- [x] Commit — `feat(auth): add registration flow with validation` (`a386992`)
 
 ## Task 2.3: Login, Passwort vergessen, Deep-Link-Callback
 

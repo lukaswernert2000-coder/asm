@@ -405,4 +405,99 @@ obwohl die Edge Function erst in Task 2.6 entsteht — ein echter Aufruf schlaeg
 404 fehl. Bewusst so belassen (Interface soll vollstaendig sein, der Aufruf-Body ist trivial),
 aber ungetestet.
 
+## 2026-08-29 · Task 2.2 · Kritischer Fund: `Supabase.initialize()` fehlte komplett in `main.dart`
+
+Beim ersten echten Emulator-Test von Task 2.2 (siehe Eintrag unten) crashte jeder Repository-
+Aufruf sofort mit `Bad state: You must initialize the supabase instance before calling
+Supabase.instance`. `main.dart` rief seit M0 nie `Supabase.initialize(url:, ...)` auf — nur
+`SentryFlutter.init` + `runApp`. `AppConfig.supabaseUrl`/`supabaseAnonKey` und
+`AppConfig.assertValid()` existierten bereits und lasen `env/dev.json` korrekt, das
+Initialisieren selbst fehlte einfach. **Bis Task 2.2 ist das nie aufgefallen**, weil M0/M1
+keinen einzigen echten Repository-Aufruf aus einem laufenden Screen heraus ausgeloest haben
+(alle Tests mocken `SupabaseClient`, alle bisherigen Screens waren Platzhalter ohne
+Datenzugriff) — Task 2.2 ist der erste Task, der `supabaseProvider` in der echten App
+ueberhaupt anfasst. Fix in `main.dart`: `Supabase.initialize(url: AppConfig.supabaseUrl,
+publishableKey: AppConfig.supabaseAnonKey)` als erste Zeile in `SentryFlutter.init`s
+`appRunner`, vor `runApp`. `publishableKey` statt des (in supabase_flutter 2.17.2)
+deprecateten `anonKey`-Parameters — gleicher Wert, aber ohne `deprecated_member_use`-Warnung
+(G9 verlangt 0 Issues).
+
+**Warum wichtig fuer kuenftige Sessions:** Jeder Task, der einen Screen mit echtem
+Repository-Zugriff baut (M2 Rest, M3+), haette diesen Bug sofort reproduziert — jetzt ist er
+weg, aber **nur weil Task 2.2 tatsaechlich auf einem Emulator lief statt sich auf
+`flutter test` zu verlassen**. `flutter analyze` und die komplette Testsuite (102 Tests)
+waren die ganze Zeit gruen, obwohl die App zur Laufzeit zu 100 % broken war. Lehre:
+`flutter test` allein reicht bei diesem Projekt nicht als Fertig-Kriterium fuer UI-Tasks,
+ein echter Lauf (Emulator oder Geraet) ist Pflicht — das deckt sich mit Abschnitt 5 in
+`03-ARBEITEN-MIT-SONNET.md`.
+
+## 2026-08-29 · Task 2.2 · Neue wiederverwendbare Komponenten ausserhalb von 01-DESIGN-SYSTEM.md
+
+`AsmCheckbox` (`lib/core/widgets/asm_checkbox.dart`) ist in Abschnitt 5 des Design-Systems
+nicht spezifiziert (nur Button/TextField/Chip/ListingCard/CategoryTile/ChatBubble/EmptyState).
+Gebaut nur aus vorhandenen Tokens (keine neuen Farben/Radien), Farblogik an `AsmChip`s
+aktiv/inaktiv-Pattern angelehnt. Wichtige Design-Entscheidung: **nur die Box selbst ist
+Tap-Ziel**, nicht die ganze Zeile inkl. Label — weil das Label bei AGB/Datenschutz eigene
+Links per `TapGestureRecognizer` enthaelt und ein Whole-Row-`GestureDetector` mit dem
+verschachtelten Recognizer um denselben Tap konkurrieren wuerde. Getestet inkl. genau dieser
+Interferenz (`asm_checkbox_test.dart`, "Tap auf einen Link im Label toggelt NICHT").
+
+`AsmTextField` um `obscureText`, `readOnly`, `onTap` erweitert (alle optional, Default
+unveraendert = alte Call-Sites bleiben unberuehrt) — fuer das Passwortfeld bzw. das
+Geburtsdatum-Feld, das per Tap `showDatePicker` statt der Tastatur oeffnet. `Formatters.date()`
+neu in `lib/core/utils/formatters.dart`: bewusst reine String-Interpolation mit
+`padLeft`, kein `intl`-`DateFormat`, weil `DateFormat` mit benanntem Locale
+`initializeDateFormatting()` braucht (sonst `LocaleDataException`) — fuer ein rein
+numerisches `TT.MM.JJJJ` unnoetiges Risiko.
+
+## 2026-08-29 · Task 2.2 · Seams fuer `showDatePicker` und `launchUrl` (gleiches Muster wie `RpcCaller`)
+
+`RegisterScreen` nimmt `pickBirthDate`/`launchLink` als optionale Konstruktor-Parameter mit
+echten Defaults, die `showDatePicker` bzw. `url_launcher`s `launchUrl` aufrufen. Grund: der
+native Material-Datepicker laesst sich in Widget-Tests nur fragil ueber lokalisierte
+Button-Texte ("OK"/"Abbrechen") steuern, und `launchUrl` hat ohne Platform-Mock in Tests gar
+keinen Kanal (`MissingPluginException`). Gleiches Prinzip wie `RpcCaller` in
+`SupabaseListingRepository` (Task 1.9, siehe oben): echten Aufruf hinter eine injizierbare
+Funktion ziehen statt die schwer mockbare Fremd-API direkt zu testen. Beide Defaults real auf
+dem Emulator verifiziert (Datepicker startet korrekt bei `now.year - 18`, AGB-/Datenschutz-Link
+oeffnet real Chrome mit der richtigen URL).
+
+## 2026-08-29 · Task 2.2 · "E-Mail bestätigen" als interner Zustand, `isUsernameTaken` auf `ProfileRepository`
+
+Der Plan nennt fuer den Bestätigungs-Screen keine eigene Datei/Route — als zweiter
+Build-Zweig in `_RegisterScreenState.build()` umgesetzt (`_registered`-Flag), nicht als
+`GoRoute`. `/register` selbst wurde neu in `app_router.dart` verdrahtet (nicht im Plan
+gelistet, aber sonst waere der Screen nie erreichbar) — `AsmRoutes.register` existierte
+schon als ungenutzte Konstante.
+
+`ProfileRepository` bekam `isUsernameTaken(String username)` (simple `select id where
+username = ...`-Query, kein RPC, deshalb wie `byId`/`bySeller` ungetestet gelassen — Task 1.9s
+`RpcCaller`-Problem betrifft nur `.rpc()`, nicht `.from().select()`). Dafuer erstmals
+`profileRepositoryProvider` in einer neuen Datei `lib/features/profile/presentation/
+profile_providers.dart` — Task 2.5 baut dort vermutlich den echten Profil-Controller,
+kann diese Datei dann einfach erweitern statt sie neu anzulegen.
+
+`AuthRepository` bekam zusaetzlich `resendConfirmation(String email)` (`auth.resend(type:
+OtpType.signup)`) fuer den "Erneut senden"-Button — in Task 2.1 nicht vorgesehen, aber
+naheliegende Erweiterung derselben Datei.
+
+## 2026-08-29 · Task 2.2 · AGB-/Datenschutz-Links: externe Platzhalter-URLs (Nutzer-Entscheidung)
+
+Die Rechtstexte existieren noch nicht (kommen erst in M7, siehe 00-SPEC.md §7 — vor
+Store-Release muss ohnehin ein Anwalt drueberschauen). Auf Nachfrage hat der Nutzer sich fuer
+externe Platzhalter-URLs entschieden statt reinem Text ohne Link oder einem In-App-
+Platzhalterscreen: `https://asm-app.de/agb` und `https://asm-app.de/datenschutz`
+(`RegisterScreen._agbLinkRecognizer`/`_datenschutzLinkRecognizer`), passend zum bereits in
+Task 2.6 geplanten Muster `asm-app.de/account-loeschen`. **Zeigen bis M7 einen 404** — kein
+Bug, sondern erwartet, bis die Website steht.
+
+## 2026-08-29 · Task 2.2 · Test-Account bleibt absichtlich in der Dev-Datenbank
+
+Die manuelle Verifikation auf dem Emulator hat einen echten Nutzer im Dev-Supabase-Projekt
+angelegt: `gear_hunter_42` / `nutzer@example.de`, Geburtsdatum 29.08.2008. Wie schon bei der
+`sold`-Listing aus Task 1.9 **absichtlich stehen gelassen** — harmlos ohne echte Nutzer,
+nuetzlich fuer Task 2.3s Login-Tests (E-Mail ist unbestaetigt, gut um den
+"E-Mail nicht bestaetigt"-Pfad zu testen). Aufraeumen bei Bedarf in Supabase Studio unter
+Authentication → den Nutzer per E-Mail suchen und loeschen (cascaded das Profil).
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->
