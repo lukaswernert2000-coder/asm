@@ -38,10 +38,10 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M1 · Backend und Datenmodell |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1–1.7 |
-| **Als Nächstes** | **Task 1.8 — Such-Funktion (RPC)** |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1–1.8 |
+| **Als Nächstes** | **Task 1.9 — Dart-Modelle und Repositories** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `1fa7cb3` feat(db): add storage buckets with per-user policies |
+| **Letzter Commit** | `0c50281` feat(db): add search_listings rpc with filters and distance |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist jetzt auf GitHub (`lukaswernert2000-coder/asm`), CI lief real und grün
@@ -1578,9 +1578,11 @@ $$;
 > die RLS-Policies auf `listings` greifen also weiterhin. Mit `security definer` wäre
 > das Altersgate ausgehebelt.
 
-- [ ] **Schritt 1: Migration anwenden**
-- [ ] **Schritt 2: Testdaten anlegen** — 20 Inserate über verschiedene Kategorien, Preise, PLZ
-- [ ] **Schritt 3: Jeden Filter einzeln prüfen**
+- [x] **Schritt 1: Migration anwenden**
+- [x] **Schritt 2: Testdaten anlegen** — 20 Inserate über 8 Kategorien, Preise 1.200–65.000 Cent,
+      8 Städte/PLZ, ein Test-User via Studio. Bleibt in der DB, siehe [`DECISIONS.md`](DECISIONS.md).
+- [x] **Schritt 3: Jeden Filter einzeln prüfen** — Text+Kategorie+Preis+Radius+Sort (Plan-Beispiel),
+      Kategorie-Vererbung, Status-Ein-/Ausschluss, Preis-Range+Sort, Propulsion-Array — alle korrekt
 
 ```sql
 select title, price_cents, distance_km, total_count
@@ -1593,9 +1595,12 @@ from public.search_listings(
 );
 ```
 
-- [ ] **Schritt 4: `explain analyze`** auf der Query – der GIN-Index auf `search_tsv`
-      und der GiST-Index auf der Position müssen benutzt werden
-- [ ] **Schritt 5: Commit** — `feat(db): add search_listings rpc with filters and distance`
+- [x] **Schritt 4: `explain analyze`** — GiST-Geoindex wird bei Radius-Filtern natürlich
+      gewählt. GIN-Textindex wird bei 20 Testzeilen vom Planner übersprungen (Seq Scan
+      ist bei der Größe billiger) — mit `enable_seqscan = off` erzwungen und als valide
+      nutzbar bestätigt. Erwartetes Verhalten bei kleiner Tabelle, kein Bug.
+      Siehe [`DECISIONS.md`](DECISIONS.md).
+- [x] **Schritt 5: Commit** — `feat(db): add search_listings rpc with filters and distance`
 
 ---
 
