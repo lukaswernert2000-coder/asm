@@ -1,6 +1,8 @@
 # Entscheidungslog
 
-Eine Zeile pro Entscheidung, die **nicht** im Plan steht. Neueste oben.
+Eine Zeile pro Entscheidung, die **nicht** im Plan steht. **Chronologisch, neue Einträge
+unten anfügen** (oberhalb des Markers am Dateiende) — so wie es seit Task 0.2 gehandhabt
+wird. Die frühere Angabe "Neueste oben" widersprach der gelebten Praxis und ist korrigiert.
 
 Diese Datei ist das Gedächtnis zwischen den Sessions. Alles, was nur im Chat besprochen
 wurde, ist nach `/clear` weg — was hier steht, überlebt.
@@ -714,5 +716,19 @@ dessen E-Mail nachweislich unbestaetigt ist (z. B. `gear_hunter_42`/`nutzer@exam
 aus Task 2.2, Passwort muesste dafuer erst per DB-Zugriff neu gesetzt werden, da
 `resetPasswordForEmail` `example.*`-Adressen ablehnt) und beobachten, ob `signIn` ueberhaupt
 erfolgreich zurueckkehrt.
+
+## 2026-08-29 · Task 8.0 · Domain `asm-app.de` registriert — Bundle-ID bleibt `de.asmapp.asm`
+
+`asm-app.de` ist registriert und damit **fix**. Sie wird in Impressum, Store-Einträgen,
+Deep Links und den `.well-known`-Dateien verwendet; ein späterer Wechsel wäre teuer.
+In allen Docs bereits konsistent verwendet (10 Fundstellen, keine Varianten).
+
+**Die Bundle-ID bleibt `de.asmapp.asm`** — in `android/app/build.gradle.kts`
+(`namespace` + `applicationId`) und in `ios/Runner.xcodeproj` (`PRODUCT_BUNDLE_IDENTIFIER`).
+Sie muss der Domain **nicht** exakt entsprechen: die Reverse-DNS-Form von `asm-app.de` wäre
+`de.asm-app`, aber Bindestriche sind in Java-Paketnamen nicht zulässig. `de.asmapp.asm` ist
+die korrekte bereinigte Form. **Nicht "angleichen"** — nach der ersten Store-Veröffentlichung
+ist die Bundle-ID unveränderlich, und schon vorher zieht eine Änderung Signing, Firebase und
+Deep Links nach sich.
 
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->
