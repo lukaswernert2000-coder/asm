@@ -2025,6 +2025,19 @@ Bottom-Sheet mit: Kategorie, Preis (RangeSlider + zwei Eingabefelder), Zustand
 **Ergebnis:** Ein vollständiges Inserat inklusive Fotos, F-Kennzeichen und Besitznachweis
 lässt sich anlegen und veröffentlichen. **Der aufwendigste Meilenstein.**
 
+> ⚠️ **Vor dem ersten Task hier: Altersgate/RLS-Konflikt aus Task 3.1 auflösen.**
+> Sobald irgendwo in M4 (oder später, z. B. Chat-Start) ein Kauf-/Kontaktieren-Button für
+> ein Inserat entsteht, greift ein offener Punkt: Die RLS-Policy `listings_public_read`
+> (Task 1.4) blockt `requires_age_18`-Zeilen aktuell **komplett** auf SELECT-Ebene für jeden
+> Nicht-Erwachsenen — Gäste und verifizierte Minderjährige bekommen so ein Inserat gar nicht
+> erst zurück. Das widerspricht der Nutzer-Vorgabe vom 2026-08-30: Inserate bleiben für
+> **alle** ansehbar, nur der Kauf wird für nicht-volljährige/nicht eingeloggte Nutzer
+> gesperrt. Voller Kontext in [`DECISIONS.md`](DECISIONS.md), Eintrag
+> "Task 3.1 · Altersgate bewusst nicht verdrahtet". **Mit dem Nutzer abstimmen, bevor hier
+> Code entsteht** — das ist eine Datenmodell-/Policy-Entscheidung (RLS ändern vs. eigene
+> View/RPC), keine, die Sonnet allein trifft. `blocksForAge()` in `guards.dart` ist fertig
+> und getestet und wartet auf genau diesen Moment.
+
 ## Task 4.1: Bild-Pipeline
 **Dateien:** `lib/features/listings/data/image_service.dart`, Test dazu
 
