@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Datenschutzerklärung · ASM</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="wordmark" href="index.html">ASM</a>
+  <nav>
+    <a href="datenschutz.html">Datenschutz</a>
+    <a href="impressum.html">Impressum</a>
+    <a href="agb.html">AGB</a>
+    <a href="nutzungsbedingungen.html">Nutzungsbedingungen</a>
+  </nav>
+</header>
+<main class="legal">
+<p class="draft-notice">⚠️ ENTWURF – anwaltlich prüfen, bevor diese Seite live geht</p><h1>Datenschutzerklärung</h1>
+<p>Stand: [DATUM DER VERÖFFENTLICHUNG]</p>
+<p>Diese Erklärung beschreibt, welche personenbezogenen Daten ASM (Airsoft Marketplace, "wir") verarbeitet, wenn du unsere App oder diese Website nutzt.</p>
+<h2>1. Verantwortlicher</h2>
+<p>Verantwortlich im Sinne der Datenschutz-Grundverordnung (DSGVO) ist die im <a href="impressum.html">Impressum</a> genannte Person bzw. das dort genannte Unternehmen.</p>
+<h2>2. Welche Daten wir verarbeiten</h2>
+<ul>
+<li><strong>Nutzername, E-Mail-Adresse, Passwort (als Hash)</strong> – um dein Konto zu erstellen und abzusichern. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertrag).</li>
+<li><strong>Geburtsdatum</strong> – als Altersnachweis für Kategorien mit gesetzlicher 18+-Grenze (§ 42a WaffG). Wird <strong>nicht</strong> an andere Nutzer weitergegeben, nur intern zur Ja/Nein-Prüfung verwendet. Rechtsgrundlage: Art. 6 Abs. 1 lit. c DSGVO (rechtliche Verpflichtung).</li>
+<li><strong>Postleitzahl (keine GPS-Daten)</strong> – für die Entfernungsangabe im Feed ("12 km entfernt"), aufgelöst über einen in der App gebündelten Datensatz, nicht über Standortermittlung. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.</li>
+<li><strong>Anzeigename, Profilbild, Bio (optional)</strong> – für dein öffentliches Profil. Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung durch freiwillige Angabe).</li>
+<li><strong>Inseratsdaten und Fotos</strong> – Kernfunktion der App. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.</li>
+<li><strong>Chat-Nachrichten zwischen Käufer und Verkäufer</strong> – zur Verhandlung zu einem Inserat. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.</li>
+<li><strong>Absturz- und Fehlerberichte</strong> (Sentry, ohne personenbezogene Daten – <code>sendDefaultPii: false</code>) – für die Stabilität der App. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse).</li>
+<li><strong>Push-Benachrichtigungs-Token</strong> (sobald Chat-Push aktiv ist) – für die Benachrichtigung bei neuen Nachrichten. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.</li>
+</ul>
+<p>Wir erheben <strong>keine</strong> Standortdaten per GPS und <strong>keine</strong> Daten zu Werbezwecken. Es sind keine Werbe-SDKs in der App enthalten.</p>
+<h2>3. Wo deine Daten verarbeitet werden</h2>
+<p>Unsere Datenbank läuft bei Supabase in der Region <strong>eu-central-1 (Frankfurt, Deutschland)</strong>. Für folgende Auftragsverarbeiter liegt bzw. wird ein Auftragsverarbeitungsvertrag (AVV) abgeschlossen:</p>
+<ul>
+<li><strong>Supabase</strong> – Datenbank, Authentifizierung, Datei-Speicher, Echtzeit-Chat</li>
+<li><strong>Sentry</strong> – Absturz- und Fehlerberichte</li>
+<li><strong>Google (Firebase Cloud Messaging)</strong> – Push-Benachrichtigungen</li>
+</ul>
+<blockquote><strong>Offene Frage für die Anwaltsprüfung:</strong> AVVs mit allen drei Anbietern sind vor dem Live-Betrieb abzuschließen bzw. zu prüfen, insbesondere die Übermittlung an Google (FCM) im Hinblick auf etwaige Drittlandtransfers in die USA.</blockquote>
+<h2>4. Wie lange wir deine Daten speichern</h2>
+<p>Kontodaten und Inserate bleiben gespeichert, solange dein Konto besteht. Nach Löschung deines Kontos (siehe unten) werden deine Daten gelöscht, soweit keine gesetzlichen Aufbewahrungspflichten entgegenstehen.</p>
+<blockquote><strong>Offene Frage für die Anwaltsprüfung:</strong> Genaue Löschfristen für Chat-Verläufe und archivierte Inserate sind noch festzulegen.</blockquote>
+<h2>5. Deine Rechte</h2>
+<p>Du hast das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch (Art. 21) bezüglich deiner personenbezogenen Daten. Du kannst außerdem jederzeit Beschwerde bei einer Datenschutz-Aufsichtsbehörde einlegen.</p>
+<p>Konto-Löschung kannst du direkt in der App unter <strong>Profil → Einstellungen → Account löschen</strong> vornehmen, oder ohne installierte App über die Seite <a href="https://asm-app.de/account-loeschen">asm-app.de/account-loeschen</a>. Für Auskunfts- und sonstige Anfragen wende dich an <strong>support@asm-app.de</strong>.</p>
+<h2>6. Schriften und Drittanbieter-Inhalte</h2>
+<p>Diese Website und die App laden keine Schriften oder Skripte von Drittanbieter-Servern zur Laufzeit (z. B. kein Google Fonts CDN) – alle Schriftdateien sind lokal eingebunden. Diese Website setzt keine Tracking- oder Analyse-Cookies.</p>
+<h2>7. Kontakt</h2>
+<p>Fragen zum Datenschutz beantworten wir unter <strong>support@asm-app.de</strong>.</p>
+
+</main>
+<footer class="site-footer">
+  <p>© 2026 ASM · <a href="mailto:support@asm-app.de">support@asm-app.de</a></p>
+</footer>
+</body>
+</html>
