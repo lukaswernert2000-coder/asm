@@ -239,4 +239,23 @@ Rückstellung, dritter Push meldete "up to date" auf allen Services. **Lektion:*
 künftigen `supabase config push` den ausgegebenen Diff lesen, nicht nur auf Erfolg prüfen —
 das Kommando hat keinen `--only`/Scope-Flag, um das zu verhindern.
 
+## 2026-08-29 · Task 1.2 · `supabase login` aus der Claude-Code-Session heraus unmöglich — Sandbox versteckt `%APPDATA%\npm`
+
+`supabase db push` scheiterte zunächst an fehlendem Auth (`LegacyPlatformAuthRequiredError`), und der automatische Browser-Login-Flow scheitert aus dieser Session heraus grundsätzlich (`Cannot use automatic login flow inside non-TTY environments` — das Tool hat kein echtes Terminal). Beim Versuch, den Nutzer stattdessen selbst `supabase login` ausführen zu lassen, zeigte sich ein zweites, unabhängiges Problem: Der frühere `npm i -g supabase` (Task 1.1, aus einer Claude-Code-Session heraus) landete in einer für die Session unsichtbaren Sandbox-Schattenkopie von `%APPDATA%\Roaming` — `supabase` war aus jedem Tool-Aufruf heraus auffindbar, aber im echten Terminal des Nutzers schlicht nicht vorhanden. **Gegenmittel:** Nutzer hat `npm install -g supabase` und `supabase login` selbst in seinem echten Terminal ausgeführt (nicht über Claude Code) — das umgeht die Sandbox, und das resultierende Access-Token in `~/.supabase` lag außerhalb der redirect-betroffenen Ordner, dadurch für die Session wieder sichtbar. **Lektion:** Jede globale Paketinstallation unter `%APPDATA%`/`%LOCALAPPDATA%`, die über eine Claude-Code-Session läuft, ist für den Nutzer selbst unsichtbar — muss der Nutzer immer selbst im eigenen Terminal ausführen, nicht Claude überlassen.
+
+## 2026-08-29 · Task 1.2 · Funktionale RLS-Verifikation ausgelassen — nur strukturell geprüft
+
+Schritt 3 verlangt einen echten Test-User (Trigger legt Profil-Zeile an, RLS blockt `birth_date`
+für fremde User). Der Auto-Mode-Classifier hat sowohl das Auslesen des service_role-Keys
+(`--reveal`) als auch jede Berührung von `auth.users` (selbst nur Spalten-Introspektion per
+`information_schema`) blockiert — zu Recht, beides ist Credential- bzw. Auth-Tabellen-Zugriff,
+kein Workaround versucht. Stattdessen nur strukturell verifiziert (rein auf `public`-Katalogen,
+unkritisch): Tabelle `profiles`, alle drei RLS-Policies (`profiles_select_all`,
+`profiles_update_own`, `profiles_moderator_all`), der Trigger `on_auth_user_created` auf
+`auth.users`, und die drei Funktionen `handle_new_user`/`is_adult`/`is_moderator` existieren
+exakt wie in der Migration definiert. Nutzer hat auf Nachfrage entschieden, dass das für jetzt
+reicht. **Nachholen:** Sobald ein echter Registrierungs-Flow in der App existiert (spätestens
+wenn Auth-Screens gebaut werden), den funktionalen Teil einmal live nachziehen — insbesondere
+den `birth_date`-Spalten-Grant gegen einen zweiten, fremden Nutzer testen.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

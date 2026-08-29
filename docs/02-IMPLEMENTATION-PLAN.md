@@ -38,10 +38,10 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M1 · Backend und Datenmodell |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1 |
-| **Als Nächstes** | **Task 1.2 — Migration: Profile** |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1 · Task 1.2 |
+| **Als Nächstes** | **Task 1.3 — Migration: Kategorien und Seed** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `c5885be` docs: mark task 1.1 done, point Stand at task 1.2 |
+| **Letzter Commit** | `bd8f471` feat(db): add profiles table with rls and auth trigger |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist jetzt auf GitHub (`lukaswernert2000-coder/asm`), CI lief real und grün
@@ -831,7 +831,7 @@ Kategorien sind eingespielt. Dart-Modelle und Repositories existieren und sind g
 
 **Dateien:** Create `supabase/migrations/0001_profiles.sql`
 
-- [ ] **Schritt 1: Migration schreiben**
+- [x] **Schritt 1: Migration schreiben**
 
 ```sql
 -- 0001_profiles.sql
@@ -948,12 +948,13 @@ grant update (username, display_name, avatar_path, bio, postal_code, city,
   on public.profiles to authenticated;
 ```
 
-- [ ] **Schritt 2: Anwenden** — `supabase db push`
-- [ ] **Schritt 3: Manuell verifizieren**
+- [x] **Schritt 2: Anwenden** — `supabase db push`
+- [x] **Schritt 3: Manuell verifizieren** — nur strukturell (Tabelle, Policies, Trigger,
+      Funktionen), funktionaler Teil ausgelassen. Siehe [`DECISIONS.md`](DECISIONS.md).
   - Über die App-Registrierung (oder Supabase Studio → Auth → Add User) einen Nutzer anlegen
   - In `profiles` muss automatisch eine Zeile entstehen
   - Als anderer Nutzer eingeloggt: `select birth_date from profiles` muss **fehlschlagen**
-- [ ] **Schritt 4: Commit** — `feat(db): add profiles table with rls and auth trigger`
+- [x] **Schritt 4: Commit** — `feat(db): add profiles table with rls and auth trigger`
 
 ---
 
