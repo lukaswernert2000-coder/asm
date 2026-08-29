@@ -39,7 +39,7 @@ Firebase Cloud Messaging · Sentry
 |---|---|
 | **Meilenstein** | M2 · Authentifizierung und Profil |
 | **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.4 |
-| **Als Nächstes** | **Task 2.5 — Profil ansehen und bearbeiten** |
+| **Als Nächstes** | **Außer der Reihe, Punkt B — die ungepushten Commits pushen** (siehe unten; danach C, D, dann erst Task 2.5) |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
 | **Letzter Commit** | `4386768` feat(router): add auth and age guards |
 | **Stand vom** | 2026-08-29 |
