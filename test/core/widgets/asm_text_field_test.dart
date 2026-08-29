@@ -127,4 +127,25 @@ void main() {
     await tester.tap(find.byType(TextField));
     expect(tapped, isTrue);
   });
+
+  testWidgets(
+    'unterdrueckt das Theme-Border des inneren TextFields in jedem Zustand '
+    '(sonst zeichnet InputDecorator zusaetzlich zur Container-Border sein '
+    'eigenes Theme-Border -- der "doppelte Rand")',
+    (tester) async {
+      final controller = TextEditingController();
+      await tester.pumpWidget(
+        _wrap(AsmTextField(controller: controller, label: 'E-Mail')),
+      );
+
+      final field = tester.widget<TextField>(find.byType(TextField));
+      final decoration = field.decoration!;
+      expect(decoration.border, InputBorder.none);
+      expect(decoration.enabledBorder, InputBorder.none);
+      expect(decoration.focusedBorder, InputBorder.none);
+      expect(decoration.errorBorder, InputBorder.none);
+      expect(decoration.focusedErrorBorder, InputBorder.none);
+      expect(decoration.disabledBorder, InputBorder.none);
+    },
+  );
 }

@@ -85,7 +85,17 @@ class _AsmTextFieldState extends State<AsmTextField> {
             style: AsmTextStyles.bodyM.copyWith(color: AsmColors.textPrimary),
             cursorColor: AsmColors.brandBright,
             decoration: const InputDecoration(
+              // Alle Border-Varianten explizit auf `none`, nicht nur die
+              // generische `border` -- der App-Theme setzt eigene
+              // enabledBorder/focusedBorder/... (siehe AsmTheme.dark), die
+              // InputDecorator sonst bevorzugt und zusaetzlich zur
+              // Container-Border dieses Widgets zeichnet ("doppelter Rand").
               border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              errorBorder: InputBorder.none,
+              focusedErrorBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
               counterText: '',
               isDense: true,
               contentPadding: EdgeInsets.symmetric(vertical: AsmSpacing.sm),
