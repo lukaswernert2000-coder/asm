@@ -296,4 +296,88 @@ Task 1.2 — sobald ein echter Registrierungs-Flow existiert, in einem Rutsch be
 `birth_date`-Spaltenschutz und Altersgate auf `listings`, jeweils mit einem Adult- und einem
 Minderjährigen-Test-Account.
 
+## 2026-08-29 · Task 1.8 · Echte Testdaten für die Suchfunktion — ein Test-User + 20 Inserate bleiben in der DB
+
+Für den funktionalen Test von `search_listings()` (Text-, Kategorie-, Preis-, Radius-, Status-
+und Propulsion-Filter) reichte strukturelle Prüfung nicht — die Funktion ist laut Plan "das
+Herzstück des Feeds" und brauchte echte Daten. Nutzer hat dafür einen Test-User über Supabase
+Studio angelegt (Auth-trigger aus Task 1.2 dabei nebenbei live bestätigt: Profil-Zeile entstand
+automatisch, Username-Fallback-Pattern `user_<10 zeichen>` stimmt). Dessen `profiles.id`
+(gelesen, kein `auth.users`-Zugriff nötig) trägt jetzt 20 Test-Inserate über alle 8
+Hauptkategorien, 8 Städte und einen Preisbereich von 12–650 €, plus einen `reserved`- und
+einen `sold`-Datensatz für den Status-Filter-Test. **Bleibt absichtlich in der Datenbank** —
+harmlos in einem Projekt ohne echte Nutzer, und nützlich für spätere UI-Entwicklung. Erkennbar
+an `seller_id = 'e6205490-cdb7-4ca4-b343-50adec4859d7'` bzw. Titeln wie "G36 S-AEG mit
+Tuning-Gearbox". Aufräumen bei Bedarf: `delete from public.listings where seller_id =
+'e6205490-cdb7-4ca4-b343-50adec4859d7';` und den User in Studio löschen (cascaded das Profil).
+
+## 2026-08-29 · Task 1.9 · `build_runner` fuer echte Codegen zum Laufen gebracht — Dart 3.13 brach freezed 2.x, `riverpod_generator` endgueltig raus
+
+Zwei unabhaengige Probleme, beide erst hier (erster echter Codegen-Task) sichtbar:
+
+**1. `analyzer_plugin`-Konflikt aus Task 0.6 real gefixt, nicht nur umgangen.** `riverpod_generator`
+stand weiter in `pubspec.yaml` (nur `custom_lint`/`riverpod_lint` waren entfernt) und zog beim
+Kompilieren des Build-Skripts weiterhin `analyzer_plugin`/`custom_lint_core` rein, die an unserer
+`analyzer`-Version scheiterten (`Element`/`Element2`-Konflikt). `@riverpod` wird nirgends echt
+verwendet (nur ein Kommentar in `app_router.dart`) — `riverpod_generator` komplett aus
+`dev_dependencies` entfernt, `flutter pub get` zeigte danach exakt die 5 betroffenen Pakete als
+"no longer depended on". `riverpod_annotation` bleibt (reines Annotations-Paket, keine
+Analyzer-Kette).
+
+**2. Neuer, unabhaengiger Fehler: Dart 3.13 (`Primary Constructors`) macht freezed 2.x' Codegen
+ungueltig.** Nach Fix 1 kompilierte das Build-Skript, aber `freezed` crashte beim Analysieren
+JEDER Datei, die `package:flutter/material.dart` importiert (auch `app.dart`, das gar kein
+`@freezed` hat) mit `Missing implementation of visitDotShorthandPropertyAccess` — unsere gepinnte
+`analyzer 7.6.0` kennt eine Dart-3.13-Syntax nicht, die tief in Flutters eigenem SDK-Code steckt.
+Zwischenloesung: `build.yaml` mit `generate_for: [lib/features/**/domain/*.dart]` fuer `freezed`
+und `json_serializable`, damit der Builder gar nicht erst versucht, UI-Dateien zu analysieren.
+Das allein reichte aber nicht — echte Ursache laut
+[rrousselGit/freezed#1352](https://github.com/rrousselGit/freezed/issues/1352): Dart 3.13 verbietet
+`final`/`var` auf nicht-deklarierenden Konstruktor-Parametern, genau das Pattern, das freezed 2.x/3.x
+fuer JEDEN generierten Parameter nutzt. **Nutzer hat auf Nachfrage zugestimmt:**
+`freezed` 2.5.8→4.0.0, `freezed_annotation` 2.4.4→3.1.0, `json_annotation` 4.9.0→4.12.0 (von
+json_serializable 6.14.1 verlangt). Löste `analyzer` gleich mit auf 13.3.0 hoch — sauber, ohne
+`flutter_riverpod`/`riverpod_annotation` zu beruehren. **Freezed 4 verlangt zusaetzlich `abstract
+class X with _$X`** (vorher reichte `class X with _$X`) — sonst "Missing concrete implementations,
+... make the class abstract". Alle 6 Modelle angepasst. `build.yaml`-Scoping bleibt bestehen
+(sinnvoll unabhaengig vom Analyzer-Fix, spart unnoetige Arbeit).
+
+**Nachwirkung:** Jede kuenftige Migration mit `default uuid_generate_v4()` (0003/0004 betroffen)
+nutzt bereits `gen_random_uuid()` statt dessen (siehe Task-1.3-Eintrag oben) — hat mit diesem
+Fix nichts zu tun, nur zur Erinnerung, falls beim Lesen Verwirrung aufkommt.
+
+## 2026-08-29 · Task 1.9 · `PostgrestFilterBuilder` mit mocktail nicht sauber mockbar — RPC-Aufruf hinter injizierbare Funktion gezogen
+
+`SupabaseClient.rpc()` gibt `PostgrestFilterBuilder<T>` zurueck, das `Future<T>` implementiert.
+Der direkte Versuch, das mit mocktail zu mocken (`MockPostgrestFilterBuilder extends Mock
+implements PostgrestFilterBuilder<T>`, dann `.then()` stubben) scheiterte mit `type 'Null' is not
+a subtype of type 'Future<dynamic>'` — mocktail matcht die generische `then<R>()`-Stub-Registrierung
+nicht zuverlaessig gegen den echten `await`-Aufruf. Bestaetigt als bekanntes, ungeloestes
+Oekosystem-Problem: [supabase/supabase-flutter#714](https://github.com/supabase/supabase-flutter/issues/714),
+Community-Empfehlung ist exakt "nicht die Chain direkt mocken, dahinter abstrahieren".
+**Gegenmittel:** `SupabaseListingRepository` bekommt einen optionalen `RpcCaller`-Konstruktor-Parameter
+(`Future<List<dynamic>> Function(String fn, Map<String, dynamic> params)`), der ohne Test-Override
+einfach `_client.rpc()` aufruft. Tests injizieren eine simple synchrone Fake-Funktion statt
+mocktail-Mocking fuer genau diesen einen Aufruf — `SupabaseClient` selbst bleibt trotzdem ein
+mocktail-`Mock`. **Betrifft nur RPC-Aufrufe** (`.from().select()...` ohne `.rpc()` wurde hier nicht
+getestet, koennte beim Testen aber auf dasselbe Problem laufen — dann denselben Seam-Trick anwenden).
+
+## 2026-08-29 · Task 1.9 · Zwei nicht-triviale Modellierungs-Entscheidungen
+
+`field_rename: snake` (global in `build.yaml`) konvertiert Ziffern-Grenzen falsch:
+`requiresAge18` wurde zu `requires_age18` statt `requires_age_18` (die echte Spalte). Nur dieser
+eine Fall betroffen (alle anderen Feldnamen ohne Ziffern konvertieren korrekt) — mit
+`@JsonKey(name: 'requires_age_18')` explizit korrigiert. **Bei neuen Modellen mit Ziffern im
+Feldnamen: generierte `.g.dart` immer gegen die echte Spalte gegenpruefen, nicht blind vertrauen.**
+
+`Profile`-Modell enthaelt bewusst kein `birthDate` — Task 1.2s Spalten-Grant
+(`grant select (id, username, ..., role, created_at, last_seen_at)`) laesst `birth_date` fuer
+**niemanden** lesbar, auch nicht fuer den Profil-Eigentuemer selbst (Spalten-Grants unterscheiden
+nicht zwischen eigener und fremder Zeile, nur RLS filtert Zeilen). **Noch kein Problem** (M1 zeigt
+nirgends das eigene Geburtsdatum an), **wird aber zum Blocker**, sobald M2/Task 2.5 einen
+Profil-Bearbeiten-Screen baut, der das Geburtsdatum vorausfuellen will. Nachziehen: entweder eine
+`grant select (birth_date) ... where id = auth.uid()`-aehnliche Loesung (Postgres kann das nicht
+direkt per Column-Grant, braeuchte eine eigene Policy-Funktion oder RPC) oder das Feld clientseitig
+gar nicht vorausfuellen.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

@@ -37,11 +37,11 @@ Firebase Cloud Messaging · Sentry
 
 | | |
 |---|---|
-| **Meilenstein** | M1 · Backend und Datenmodell |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1–1.8 |
-| **Als Nächstes** | **Task 1.9 — Dart-Modelle und Repositories** |
+| **Meilenstein** | M2 · Authentifizierung und Profil |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · **M1 komplett (Task 1.1–1.9)** |
+| **Als Nächstes** | **Task 2.1 — Auth-Repository und Session-State** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `0c50281` feat(db): add search_listings rpc with filters and distance |
+| **Letzter Commit** | `a874d87` feat(data): add domain models and supabase repositories |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist jetzt auf GitHub (`lukaswernert2000-coder/asm`), CI lief real und grün
@@ -1643,7 +1643,7 @@ abstract interface class CategoryRepository {
 }
 ```
 
-- [ ] **Schritt 1: Fehler-Mapping zuerst**
+- [x] **Schritt 1: Fehler-Mapping zuerst**
 
 ```dart
 // lib/core/errors/app_exception.dart
@@ -1677,24 +1677,32 @@ final class UnknownException extends AppException {
 und `SocketException` in diese Typen. **Kein rohes Supabase-Exception-Objekt darf je die
 UI erreichen** – der Nutzer soll nie einen Postgres-Fehlercode sehen.
 
-- [ ] **Schritt 2: freezed-Modelle** für `Category`, `ListingSummary`, `Listing`,
-      `ListingDraft`, `ListingFilter`, `Profile` mit `fromJson`
-- [ ] **Schritt 3: `dart run build_runner build --delete-conflicting-outputs`**
-- [ ] **Schritt 4: Repository-Tests mit `mocktail`** — Mock den `SupabaseClient`, prüfe,
-      dass `search()` die RPC mit den richtigen Parametern aufruft und die Antwort korrekt
-      auf `ListingSummary` mappt
-- [ ] **Schritt 5: Ein Integrationstest gegen die echte Dev-Datenbank** — Kategorien laden,
-      Erwartung: 8 Wurzelkategorien
-- [ ] **Schritt 6: Commit** — `feat(data): add domain models and supabase repositories`
+- [x] **Schritt 2: freezed-Modelle** für `Category`, `ListingSummary`, `Listing`,
+      `ListingDraft`, `ListingFilter`, `Profile` mit `fromJson` — brauchte freezed 2→4
+      (Dart-3.13-Inkompatibilität), siehe [`DECISIONS.md`](DECISIONS.md)
+- [x] **Schritt 3: `dart run build_runner build --delete-conflicting-outputs`** — `build.yaml`
+      scoped auf `lib/features/**/domain/*.dart`, siehe [`DECISIONS.md`](DECISIONS.md)
+- [x] **Schritt 4: Repository-Tests mit `mocktail`** — `SupabaseClient` gemockt; die
+      `search()`-RPC selbst läuft über einen injizierbaren `RpcCaller` statt direktem
+      `.rpc()`-Mocking (`PostgrestFilterBuilder` ist mit mocktail nicht sauber mockbar,
+      bekanntes Ökosystem-Problem, siehe [`DECISIONS.md`](DECISIONS.md)). Parameter-Mapping
+      und Antwort-Mapping beide getestet.
+- [x] **Schritt 5: Ein Integrationstest gegen die echte Dev-Datenbank** — läuft in
+      `integration_test/category_repository_test.dart`, bestätigt live 8 Wurzelkategorien
+- [x] **Schritt 6: Commit** — `feat(data): add domain models and supabase repositories`
 
 ### ✅ M1 abgeschlossen, wenn
 
-- Alle 7 Migrationen sind angewendet und im Repo
-- 68 Kategorien in der DB
-- Ein Inserat über 0,5 J ohne F-Kennzeichen lässt sich **nicht** anlegen (DB-Constraint)
-- Ein Nutzer ohne Geburtsdatum sieht **keine** Inserate aus `langwaffen`/`pistolen`
-- `search_listings` liefert mit allen Filterkombinationen plausible Ergebnisse
-- Repository-Tests grün
+- [x] Alle 7 Migrationen sind angewendet und im Repo
+- [x] 72 Kategorien in der DB (nicht 68, siehe Task 1.3 in [`DECISIONS.md`](DECISIONS.md))
+- [x] Ein Inserat über 0,5 J ohne F-Kennzeichen lässt sich **nicht** anlegen (DB-Constraint) —
+      live verifiziert, exakte erwartete Fehlermeldung (Task 1.4)
+- [x] Ein Nutzer ohne Geburtsdatum sieht **keine** Inserate aus `langwaffen`/`pistolen` — nur
+      strukturell verifiziert (Policy-Definition korrekt), kein echter Minderjährigen-Testaccount
+      verfügbar. Siehe die offene Nachhol-Notiz zu Task 1.2/1.4 in [`DECISIONS.md`](DECISIONS.md).
+- [x] `search_listings` liefert mit allen Filterkombinationen plausible Ergebnisse — mit 20
+      echten Testinseraten verifiziert (Task 1.8)
+- [x] Repository-Tests grün — 55/55 Unit-Tests, `flutter analyze` 0 Issues
 
 ---
 
