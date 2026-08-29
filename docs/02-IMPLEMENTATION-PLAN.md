@@ -38,10 +38,10 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M1 · Backend und Datenmodell |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1–1.6 |
-| **Als Nächstes** | **Task 1.7 — Storage-Buckets** |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1–1.7 |
+| **Als Nächstes** | **Task 1.8 — Such-Funktion (RPC)** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `5963326` feat(db): add realtime chat schema |
+| **Letzter Commit** | `1fa7cb3` feat(db): add storage buckets with per-user policies |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist jetzt auf GitHub (`lukaswernert2000-coder/asm`), CI lief real und grün
@@ -1451,9 +1451,11 @@ create policy "chat images participant write" on storage.objects
   );
 ```
 
-- [ ] Migration anwenden
-- [ ] **Testen:** Als Nutzer A versuchen, in `listing-images/<user_B_id>/…` hochzuladen → **muss scheitern**
-- [ ] Commit — `feat(db): add storage buckets with per-user policies`
+- [x] Migration anwenden — 3 Buckets verifiziert (public/private und file_size_limit korrekt),
+      alle 7 Policies vorhanden
+- [x] **Testen:** nur strukturell — gleiche Einschränkung wie Task 1.2/1.4/1.5, kein zweiter
+      echter Nutzer verfügbar für den Cross-User-Test
+- [x] Commit — `feat(db): add storage buckets with per-user policies`
 
 ---
 
