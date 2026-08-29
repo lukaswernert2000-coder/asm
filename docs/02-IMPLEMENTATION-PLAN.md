@@ -167,7 +167,9 @@ dafür musste der neue Key in `main.dart`s und `fake_shared_preferences.dart`s
 CI rot laufen ließ). 30 neue Tests, davon einer mit echtem Scroll-/Fling-Gesten-Test für
 Nachladen und Pull-to-Refresh (kein Mock der Scroll-Mechanik) — lief beim ersten Versuch
 durch. **Nicht live auf Emulator/Gerät verifiziert**, gleicher Grund wie Task 3.1 (keine
-Web-Plattform). 206 Tests grün, `flutter analyze` 0 Probleme.
+Web-Plattform). 206 Tests grün, `flutter analyze` 0 Probleme. Task-3.2-Push ist auf Anhieb
+CI-grün ([Run #18](https://github.com/lukaswernert2000-coder/asm/actions/runs/33279486113),
+`conclusion: success`).
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
