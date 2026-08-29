@@ -39,17 +39,17 @@ Firebase Cloud Messaging · Sentry
 |---|---|
 | **Meilenstein** | M2 · Authentifizierung und Profil |
 | **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.4 |
-| **Als Nächstes** | **Außer der Reihe, Punkt B — die ungepushten Commits pushen** (siehe unten; danach C, D, dann erst Task 2.5) |
+| **Als Nächstes** | **Außer der Reihe, Punkt D — Task 8.0 Teil A (Website und Rechtstexte)**, danach erst Task 2.5 |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
 | **Letzter Commit** | `4386768` feat(router): add auth and age guards |
 | **Stand vom** | 2026-08-29 |
 
-Repo ist auf GitHub (`lukaswernert2000-coder/asm`), CI lief zuletzt für M0 real und grün
-([Run #1](https://github.com/lukaswernert2000-coder/asm/actions), `conclusion: success`).
-M1 war entgegen einer älteren Notiz doch schon gepusht (`git fetch` zeigte das in Task 2.1).
-Ob CI auf M1/M2/M2.3 real durchlief, ist weiterhin nicht bestätigt (`gh` war auch in dieser
-Session nicht verfügbar) — im GitHub-Actions-Tab nachsehen. **Task 2.1–2.4 sind noch
-nicht gepusht** (Push braucht laut Arbeitsregeln explizite Zustimmung). Task 2.2–2.4
+Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
+(Nutzer hat dem Push zugestimmt, Außer-der-Reihe-Punkt B) — CI lief danach zum ersten Mal
+wirklich über den vollständigen M1+M2-Code (vorher liefen nur M0/Doku-Pushes durch) und war
+grün ([Run #4](https://github.com/lukaswernert2000-coder/asm/actions/runs/33254178642),
+`conclusion: success`). Außer-der-Reihe-Punkte A–C sind damit erledigt, offen bleibt **D
+(Task 8.0 Teil A — Website und Rechtstexte)**, dann erst Task 2.5. Task 2.2–2.4
 liefen (jeweils zumindest teilweise) auf dem Android-**Emulator** gegen das echte
 Dev-Supabase-Projekt durch, siehe DECISIONS.md — das ist aber weiterhin **kein Test auf
 echter Hardware**. Bleibt offen wie schon seit M0: kein Test auf einem echten Android- oder
