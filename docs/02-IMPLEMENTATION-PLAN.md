@@ -38,19 +38,21 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M2 · Authentifizierung und Profil |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · **M1 komplett (Task 1.1–1.9)** |
-| **Als Nächstes** | **Task 2.1 — Auth-Repository und Session-State** |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1 |
+| **Als Nächstes** | **Task 2.2 — Registrierungs-Screen** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `a874d87` feat(data): add domain models and supabase repositories |
+| **Letzter Commit** | `e644bc4` feat(auth): add auth repository and session state |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`), CI lief zuletzt für M0 real und grün
 ([Run #1](https://github.com/lukaswernert2000-coder/asm/actions), `conclusion: success`).
-**Ganz M1 (Task 1.1–1.9, Commits `784c91b`..`a874d87`) ist noch nicht gepusht** — existiert
-nur lokal, `origin/master` steht noch auf M0-Stand. CI hat den restaurierten
-`build_runner`-Schritt (Task 1.9) also noch nie real gesehen, nur lokal geprüft. Vor dem
-nächsten Push einmal beobachten, ob die Pipeline durchläuft. Bleibt außerdem: **kein Test auf
-einem echten Gerät**, bisher nur Emulator — betrifft aber nur UI-Tasks, M1 hatte keine.
+**Korrektur zur letzten Notiz:** M1 war entgegen dem vorherigen Eintrag doch schon gepusht —
+`git fetch` zu Beginn von Task 2.1 zeigte `origin/master` deckungsgleich mit dem lokalen
+`HEAD` vor diesem Task. Ob CI auf M1 real durchlief, ist trotzdem nicht bestätigt (`gh` war
+in dieser Session nicht verfügbar) — im GitHub-Actions-Tab nachsehen. Task 2.1 ist noch
+**nicht gepusht** (Push braucht laut Arbeitsregeln explizite Zustimmung). Bleibt offen:
+**kein Test auf einem echten Gerät**, bisher nur Emulator — betrifft ab Task 2.2 auch
+UI-Tasks.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -1724,10 +1726,12 @@ Test: `test/features/auth/auth_controller_test.dart`
 `AuthRepository.signUp/signIn/signOut/resetPassword/deleteAccount`,
 `currentUserProvider`, `isLoggedInProvider`, `isAdultProvider`
 
-- [ ] Test: `authStateProvider` liefert `null` ohne Session, `AsmUser` mit Session
-- [ ] Test: Nach `signOut` ist der State wieder `null`
-- [ ] Implementieren über `supabase.auth.onAuthStateChange` als Stream-Provider
-- [ ] Commit — `feat(auth): add auth repository and session state`
+- [x] Test: `authStateProvider` liefert `null` ohne Session, `AsmUser` mit Session
+- [x] Test: Nach `signOut` ist der State wieder `null`
+- [x] Implementieren über `supabase.auth.onAuthStateChange` als Stream-Provider
+- [x] Commit — `feat(auth): add auth repository and session state` (`e644bc4`) — zusätzlich
+      `AsmUser` (Domainmodell, nicht in "Dateien" gelistet, aber von "Produziert" verlangt)
+      und `isAdultProvider` (RPC `is_adult`, noch ungetestet). Details in DECISIONS.md.
 
 ## Task 2.2: Registrierungs-Screen
 

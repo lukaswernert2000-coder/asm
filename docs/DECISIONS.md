@@ -380,4 +380,29 @@ Profil-Bearbeiten-Screen baut, der das Geburtsdatum vorausfuellen will. Nachzieh
 direkt per Column-Grant, braeuchte eine eigene Policy-Funktion oder RPC) oder das Feld clientseitig
 gar nicht vorausfuellen.
 
+## 2026-08-29 · Task 2.1 · `AsmUser` als eigenes Domainmodell, `isAdultProvider` ausserhalb von `AuthRepository`
+
+Der Plan nennt fuer Task 2.1 nur `auth_repository.dart` und `auth_controller.dart` als Dateien,
+aber "Produziert" verlangt `AsmUser`. Angelegt als `lib/features/auth/domain/asm_user.dart`
+(freezed, ohne `.g.dart`/JSON — wie `ListingFilter`, da die Quelle `supabase_flutter`s
+`User`-Objekt aus dem Auth-Stream ist, keine Postgrest-Row). Das Mapping `User -> AsmUser?`
+liegt in `SupabaseAuthRepository`, nicht im Domainmodell, damit die Domain-Schicht frei von
+SDK-Importen bleibt.
+
+`isAdultProvider` ist **kein** `AuthRepository`-Methodenname aus der "Produziert"-Zeile,
+sondern ein eigener `FutureProvider`, der `supabase.rpc<bool>('is_adult')` direkt aufruft
+(die Funktion aus `0001_profiles.sql`, die schon die Listing-Policies nutzen). Grund: die
+Spaltenrechte in `0001_profiles.sql` geben `birth_date` keinen `select`-Grant (siehe Eintrag
+oben zu Task 1.9) — kein Client-Feld auf `AsmUser` kann das herleiten, nur die RPC kennt den
+Wert. **Noch ungetestet**, weil Task 2.1 nur Tests fuer `authStateProvider` verlangt. Wird
+zuerst in Task 2.4 (Router-Guards) wirklich konsumiert — falls dort ein Test die RPC direkt
+mocken soll, greift vermutlich dasselbe `PostgrestFilterBuilder`-mocktail-Problem wie in
+Task 1.9 (Eintrag oben): dann denselben `RpcCaller`-Seam verwenden statt `SupabaseClient.rpc`
+direkt zu mocken.
+
+`AuthRepository.deleteAccount()` ruft schon jetzt `functions.invoke('delete-account')` auf,
+obwohl die Edge Function erst in Task 2.6 entsteht — ein echter Aufruf schlaegt bis dahin mit
+404 fehl. Bewusst so belassen (Interface soll vollstaendig sein, der Aufruf-Body ist trivial),
+aber ungetestet.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->
