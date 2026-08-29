@@ -48,6 +48,8 @@ Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt 
 (Nutzer hat dem Push zugestimmt, Außer-der-Reihe-Punkt B) — CI lief danach zum ersten Mal
 wirklich über den vollständigen M1+M2-Code (vorher liefen nur M0/Doku-Pushes durch) und war
 grün ([Run #4](https://github.com/lukaswernert2000-coder/asm/actions/runs/33254178642),
+`conclusion: success`). Der Task-8.0A-Push ist ebenfalls gepusht und CI-grün
+([Run #5](https://github.com/lukaswernert2000-coder/asm/actions/runs/33255167140),
 `conclusion: success`). **Task 8.0 Teil A (Schritte 1–6, 9):** vier Rechtstexte
 (`assets/legal/*.md`, Entwürfe mit Platzhaltern für Impressum-Pflichtangaben),
 `tool/gen_website.dart`, `website/style.css`, `index.html`, `account-loeschen.html` —
