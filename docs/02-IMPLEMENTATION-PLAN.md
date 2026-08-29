@@ -38,10 +38,10 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M1 · Backend und Datenmodell |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1 · Task 1.2 · Task 1.3 · Task 1.4 · Task 1.5 |
-| **Als Nächstes** | **Task 1.6 — Migration: Chat** |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1–1.6 |
+| **Als Nächstes** | **Task 1.7 — Storage-Buckets** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `7eed4a5` feat(db): add favorites, blocks and reports |
+| **Letzter Commit** | `5963326` feat(db): add realtime chat schema |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist jetzt auf GitHub (`lukaswernert2000-coder/asm`), CI lief real und grün
@@ -1381,9 +1381,11 @@ create policy messages_mark_read on public.messages
 alter publication supabase_realtime add table public.messages;
 ```
 
-- [ ] Migration anwenden
-- [ ] **Realtime im Dashboard prüfen:** Database → Replication → `messages` ist aktiv
-- [ ] Commit — `feat(db): add realtime chat schema`
+- [x] Migration anwenden (`id`-Defaults auf `gen_random_uuid()`, siehe Task 1.3 in
+      [`DECISIONS.md`](DECISIONS.md))
+- [x] **Realtime geprüft** — per SQL statt Dashboard: `pg_publication_tables` bestätigt
+      `messages` in `supabase_realtime`
+- [x] Commit — `feat(db): add realtime chat schema`
 
 ---
 
