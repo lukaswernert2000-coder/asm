@@ -19,7 +19,11 @@ String? redirect({
   required String location,
   required bool isLoggedIn,
   required bool emailConfirmed,
+  bool hasSeenOnboarding = true,
 }) {
+  if (location == AsmRoutes.home && !hasSeenOnboarding) {
+    return AsmRoutes.onboarding;
+  }
   if (_isProtected(location) && !isLoggedIn) {
     return '${AsmRoutes.login}?from=$location';
   }

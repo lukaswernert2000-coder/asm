@@ -958,4 +958,53 @@ damit dieselbe Grenze wie in der Task-1.2-Session beruehrt. **Nachholen:** eine 
 beiden Optionen mit dem Nutzer abstimmen, sobald ein echter Geraetetest ansteht
 (deckt sich mit der ohnehin offenen "kein Test auf echter Hardware"-Zeile oben).
 
+## 2026-08-29 · Task 2.7 · Logo-Platzhalter, Architektur-Entscheidungen Splash/Onboarding
+
+**Logo:** Nutzer hat ein fertiges Logo (Chrome-Schriftzug "ASM Airsoft Marketplace")
+geschickt, konnte es aber nicht als Datei bereitstellen (Chat-Anhänge sind für Sonnet
+nicht als Datei lesbar, nur als Bild sichtbar). Auf Nutzerwunsch mit einem Text-Platzhalter
+("ASM" in `AsmTextStyles.displayL`) weitergemacht — Splash und Willkommen-Screen nutzen
+denselben Platzhalter. **Nachholen:** Nutzer liefert die
+Datei am Ende des Milestones (M2), dann `assets/images/`, Splash/Willkommen und
+`flutter_native_splash.yaml` (`image:`-Zeile) nachziehen.
+
+**Splash ist keine eigene GoRoute:** Der Plan nennt nur `/onboarding` als produzierte
+Route, keine `/splash`. Splash sitzt deshalb als reiner Anzeige-Gate in `AsmApp`
+(`app.dart`) — waehrend Session (`authStateProvider`) und Kategorien
+(`rootCategoriesProvider`) noch laden, wird `SplashScreen` statt `MaterialApp.router`
+gerendert, mit einem 3-Sekunden-`Timer` als Sicherheitsnetz. Das Onboarding-Gate selbst
+laeuft ueber `guards.dart` (`redirect()` bekommt einen neuen optionalen
+`hasSeenOnboarding`-Parameter, Default `true` um alle bestehenden Guard-Tests unveraendert
+zu lassen): `/` ohne gesetztes Flag leitet zu `/onboarding` um.
+
+**Zwei vorher fehlende Bausteine ergaenzt, nicht im Plan-Dateiumfang genannt:**
+- `rootCategoriesProvider`/`categoryRepositoryProvider`
+  (`lib/features/categories/presentation/category_providers.dart`) — Task 1.9 hatte nur
+  das Repository, keinen Provider. Wird fuer "Splash wartet auf Kategorien" gebraucht,
+  Task 3.1 wird ihn weiterverwenden.
+- `sharedPreferencesProvider` (`lib/core/storage/shared_preferences_provider.dart`) --
+  bewusst die neue `SharedPreferencesWithCache`-API (async `create()` einmalig in
+  `main()`, danach synchrone `getBool`/`setBool`) statt der in `shared_preferences: 2.5.5`
+  als "legacy" gefuehrten `SharedPreferences.getInstance()`-Singleton-API.
+
+**Ungetesteter Rand:** Auf der letzten Onboarding-Seite ersetzt "Fertig" das
+"Überspringen" — im Plan nicht explizit benannt (nur "Überspringen oben rechts"
+erwaehnt), aber ohne einen Abschluss-Button waere die dritte Seite eine Sackgasse.
+
+**Test-Ripple:** Der neue `hasSeenOnboardingProvider`-Read in `appRouterProvider`
+und `rootCategoriesProvider`-Read in `AsmApp` haben bestehende Tests kompilier- bzw.
+laufzeitunfaehig gemacht, die `appRouterProvider`/`AsmApp` ohne die beiden neuen
+Provider-Overrides aufgebaut hatten (`app_test.dart`, `app_router_test.dart`,
+`delete_account_screen_test.dart`, `profile_screen_test.dart`,
+`public_profile_screen_test.dart`) — an allen Stellen einen
+`sharedPreferencesProvider`-Override ergaenzt (Default `hasSeenOnboarding: true`, damit
+sich am bisherigen Verhalten nichts aendert). Dafuer `test/helpers/fake_shared_preferences.dart`
+angelegt (erste Datei in einem neuen `test/helpers/`-Ordner) --
+`InMemorySharedPreferencesAsync` aus `shared_preferences_platform_interface`, das Paket
+musste als expliziter `dev_dependency` in `pubspec.yaml` ergaenzt werden
+(`depend_on_referenced_packages`-Lint). `app_test.dart` braucht zusaetzlich einen
+`rootCategoriesProvider`-Override und pumpt nach dem Aufbau einmal 3 Sekunden
+Fake-Zeit vor (`tester.pump(Duration(seconds: 3))`), sonst bleibt `AsmApp` dort auf
+dem Splash haengen -- die dortigen Auth-Stream-Mocks emittieren nie von selbst.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

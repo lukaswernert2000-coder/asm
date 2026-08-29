@@ -3,14 +3,18 @@ import 'dart:async';
 import 'package:asm/app.dart';
 import 'package:asm/core/router/app_router.dart';
 import 'package:asm/core/router/routes.dart';
+import 'package:asm/core/storage/shared_preferences_provider.dart';
 import 'package:asm/features/auth/data/auth_repository.dart';
 import 'package:asm/features/auth/domain/asm_user.dart';
 import 'package:asm/features/auth/presentation/auth_controller.dart';
+import 'package:asm/features/categories/presentation/category_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthChangeEvent;
+
+import 'helpers/fake_shared_preferences.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -20,7 +24,7 @@ void main() {
   late StreamController<AsmUser?> authChanges;
   late ProviderContainer container;
 
-  setUp(() {
+  setUp(() async {
     repository = MockAuthRepository();
     eventController = StreamController<AuthChangeEvent>.broadcast();
     authChanges = StreamController<AsmUser?>.broadcast();
@@ -30,7 +34,13 @@ void main() {
       () => repository.authStateChanges(),
     ).thenAnswer((_) => authChanges.stream);
     container = ProviderContainer(
-      overrides: [authRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        authRepositoryProvider.overrideWithValue(repository),
+        sharedPreferencesProvider.overrideWithValue(
+          await fakeSharedPreferences(),
+        ),
+        rootCategoriesProvider.overrideWith((ref) async => []),
+      ],
     );
     addTearDown(container.dispose);
     addTearDown(eventController.close);
@@ -41,6 +51,10 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const AsmApp()),
     );
+    // Task 2.7: AsmApp zeigt erst SplashScreen, bis Session und Kategorien
+    // geladen sind (max. 3 s) -- hier ueber das Timeout hinaus vorspulen,
+    // die Tests in dieser Datei testen Auth-Redirects, nicht Splash.
+    await tester.pump(const Duration(seconds: 3));
   }
 
   testWidgets('navigiert zu / bei AuthChangeEvent.signedIn', (tester) async {

@@ -1,6 +1,7 @@
 import 'package:asm/core/errors/app_exception.dart';
 import 'package:asm/core/router/app_router.dart';
 import 'package:asm/core/router/routes.dart';
+import 'package:asm/core/storage/shared_preferences_provider.dart';
 import 'package:asm/core/widgets/asm_button.dart';
 import 'package:asm/features/auth/data/auth_repository.dart';
 import 'package:asm/features/auth/domain/asm_user.dart';
@@ -13,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+
+import '../../../helpers/fake_shared_preferences.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -50,6 +53,9 @@ void main() {
       overrides: [
         authRepositoryProvider.overrideWithValue(authRepository),
         profileRepositoryProvider.overrideWithValue(profileRepository),
+        sharedPreferencesProvider.overrideWithValue(
+          await fakeSharedPreferences(),
+        ),
       ],
     );
     addTearDown(container.dispose);

@@ -1,17 +1,45 @@
+import 'dart:async';
+
 import 'package:asm/core/router/app_router.dart';
 import 'package:asm/core/router/routes.dart';
 import 'package:asm/core/theme/asm_theme.dart';
 import 'package:asm/features/auth/presentation/auth_controller.dart';
+import 'package:asm/features/categories/presentation/category_providers.dart';
+import 'package:asm/features/onboarding/presentation/splash_screen.dart';
 import 'package:asm/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthChangeEvent;
 
-class AsmApp extends ConsumerWidget {
+class AsmApp extends ConsumerStatefulWidget {
   const AsmApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AsmApp> createState() => _AsmAppState();
+}
+
+class _AsmAppState extends ConsumerState<AsmApp> {
+  bool _splashTimedOut = false;
+  late final Timer _splashTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Sicherheitsnetz aus Task 2.7: Splash haelt normalerweise nur so lange,
+    // bis Session und Kategorien geladen sind, aber nie laenger als das hier.
+    _splashTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _splashTimedOut = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _splashTimer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
 
     // Deckt sowohl den asm://auth-callback-Deep-Link als auch einen normalen
@@ -40,6 +68,17 @@ class AsmApp extends ConsumerWidget {
           break;
       }
     });
+
+    final sessionSettled = !ref.watch(authStateProvider).isLoading;
+    final categoriesSettled = !ref.watch(rootCategoriesProvider).isLoading;
+    final ready = _splashTimedOut || (sessionSettled && categoriesSettled);
+
+    if (!ready) {
+      return const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: SplashScreen(),
+      );
+    }
 
     return MaterialApp.router(
       title: 'ASM',

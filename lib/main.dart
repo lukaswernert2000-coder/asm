@@ -1,8 +1,11 @@
 import 'package:asm/app.dart';
 import 'package:asm/core/config/app_config.dart';
+import 'package:asm/core/storage/shared_preferences_provider.dart';
+import 'package:asm/features/onboarding/presentation/onboarding_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
@@ -21,7 +24,17 @@ Future<void> main() async {
         url: AppConfig.supabaseUrl,
         publishableKey: AppConfig.supabaseAnonKey,
       );
-      runApp(const ProviderScope(child: AsmApp()));
+      final prefs = await SharedPreferencesWithCache.create(
+        cacheOptions: const SharedPreferencesWithCacheOptions(
+          allowList: {hasSeenOnboardingPrefsKey},
+        ),
+      );
+      runApp(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: const AsmApp(),
+        ),
+      );
     },
   );
 }

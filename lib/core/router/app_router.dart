@@ -10,6 +10,9 @@ import 'package:asm/features/auth/presentation/login_screen.dart';
 import 'package:asm/features/auth/presentation/register_screen.dart';
 import 'package:asm/features/auth/presentation/reset_password_screen.dart';
 import 'package:asm/features/listings/presentation/my_listings_screen.dart';
+import 'package:asm/features/onboarding/presentation/onboarding_providers.dart';
+import 'package:asm/features/onboarding/presentation/onboarding_screen.dart';
+import 'package:asm/features/onboarding/presentation/welcome_screen.dart';
 import 'package:asm/features/profile/presentation/delete_account_screen.dart';
 import 'package:asm/features/profile/presentation/edit_profile_screen.dart';
 import 'package:asm/features/profile/presentation/profile_screen.dart';
@@ -31,6 +34,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       location: state.uri.toString(),
       isLoggedIn: ref.read(isLoggedInProvider),
       emailConfirmed: ref.read(currentUserProvider)?.emailConfirmed ?? false,
+      hasSeenOnboarding: ref.read(hasSeenOnboardingProvider),
     ),
     routes: [
       if (kDebugMode)
@@ -142,6 +146,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           icon: LucideIcons.settings,
           title: 'Einstellungen',
         ),
+      ),
+      GoRoute(
+        path: AsmRoutes.onboarding,
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: AsmRoutes.welcome,
+        builder: (context, state) => const WelcomeScreen(),
       ),
     ],
   );

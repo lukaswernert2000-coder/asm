@@ -96,6 +96,38 @@ void main() {
 
       expect(result, isNull);
     });
+
+    test('leitet / beim allerersten Start zu /onboarding um', () {
+      final result = redirect(
+        location: AsmRoutes.home,
+        isLoggedIn: false,
+        emailConfirmed: false,
+        hasSeenOnboarding: false,
+      );
+
+      expect(result, AsmRoutes.onboarding);
+    });
+
+    test('laesst / unangetastet, sobald das Onboarding-Flag gesetzt ist', () {
+      final result = redirect(
+        location: AsmRoutes.home,
+        isLoggedIn: false,
+        emailConfirmed: false,
+      );
+
+      expect(result, isNull);
+    });
+
+    test('das Onboarding-Gate greift nur auf /, nicht auf andere Routen', () {
+      final result = redirect(
+        location: AsmRoutes.search,
+        isLoggedIn: false,
+        emailConfirmed: false,
+        hasSeenOnboarding: false,
+      );
+
+      expect(result, isNull);
+    });
   });
 
   group('blocksForAge', () {

@@ -37,11 +37,11 @@ Firebase Cloud Messaging · Sentry
 
 | | |
 |---|---|
-| **Meilenstein** | M2 · Authentifizierung und Profil |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.5 · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) |
-| **Als Nächstes** | **Task 2.7 — Splash, Onboarding und Willkommen (F19)** — Task 2.6 ist inhaltlich fertig, ein Verifikations-Detail bleibt offen, siehe unten |
+| **Meilenstein** | M3 · Kategorien, Feed und Suche |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) |
+| **Als Nächstes** | **Task 3.1 — Kategorie-Übersicht und Kategorie-Feed** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `feat(profile): add in-app account deletion` (Edge Function + Screen, ungepusht) |
+| **Letzter Commit** | `feat(onboarding): add splash, onboarding and welcome screens` (ungepusht) |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -93,6 +93,18 @@ manuellen E-Mail-Bestätigungs-Klick oder den service_role-Key, siehe DECISIONS.
 Fällt mit der ohnehin offenen "kein Test auf echtem Gerät"-Zeile zusammen, die M2 laut
 Abschlusskriterium unten sowieso noch braucht. Details zur bewusst ausgesparten
 `chat-images`-Bereinigung ebenfalls in DECISIONS.md.
+**Task 2.7:** `SplashScreen` (reiner Wartebildschirm, Logik sitzt in `AsmApp`),
+`OnboardingScreen` (3 Seiten, Punktindikator, "Überspringen"/"Fertig"),
+`WelcomeScreen`, dazu zwei vorher fehlende Bausteine nachgezogen:
+`rootCategoriesProvider`/`categoryRepositoryProvider` (Task 1.9 hatte nur das
+Repository, keinen Provider) und `sharedPreferencesProvider` (neue
+`SharedPreferencesWithCache`-API statt der veralteten `getInstance()`-Variante).
+Onboarding-Gate sitzt in `guards.dart` (`/` → `/onboarding` beim allerersten Start),
+nicht als eigene GoRoute für Splash. **Logo ist ein Platzhalter** ("ASM" als Text) —
+Nutzer liefert das echte Logo erst am Ende des Milestones nach, siehe DECISIONS.md.
+Alle Tests grün (174), `flutter analyze` 0 Probleme. `flutter_native_splash` konfiguriert
+und generiert (nur Hintergrundfarbe, kein Bild). **Nicht verifiziert:** kein Test auf
+echtem Gerät (deckt sich mit der M2-Abschlusskriterium-Zeile unten).
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -1884,8 +1896,9 @@ Edge Function mit `service_role`-Key (nur dort, nie im Client, G7):
 - [x] Bestätigungsdialog: Nutzer muss seinen Nutzernamen eintippen
 - [x] Zusätzlich eine öffentliche Webseite `asm-app.de/account-loeschen` (Google-Play-Pflicht)
       — bereits in Task 8.0 gebaut, hier nur geprüft und einen veralteten Pfad korrigiert
-- [ ] Test: Nach dem Löschen liefert Login mit denselben Daten einen Fehler — **offen**,
-      Deploy vom Auto-Mode-Classifier blockiert, siehe DECISIONS.md
+- [ ] Test: Nach dem Löschen liefert Login mit denselben Daten einen Fehler — Function ist
+      deployt und der Auth-Gate live geprüft (401 ohne/mit ungültigem Token), der volle
+      destruktive Test mit einem echten bestätigten Nutzer steht noch aus, siehe DECISIONS.md
 - [x] Commit — `feat(profile): add in-app account deletion`
 
 ## Task 2.7: Splash, Onboarding und Willkommen (F19)
@@ -1896,19 +1909,20 @@ Test: `test/features/onboarding/onboarding_screen_test.dart`
 
 **Produziert:** `hasSeenOnboardingProvider` (aus `shared_preferences`), Route `/onboarding`
 
-- [ ] Splash: nur `AsmColors.bg` + Logo, hält, bis Session und Kategorien geladen sind
+- [x] Splash: nur `AsmColors.bg` + Logo, hält, bis Session und Kategorien geladen sind
       (max. 3 s, danach trotzdem weiter). Zusätzlich `flutter_native_splash`, damit
-      zwischen Systemsplash und App-Splash kein weißer Blitz entsteht
-- [ ] Onboarding, 3 Seiten, `PageView` mit Punktindikator, "Überspringen" oben rechts:
+      zwischen Systemsplash und App-Splash kein weißer Blitz entsteht — **Logo ist ein
+      Platzhalter** (Text "ASM"), echtes Logo kommt am Ende des Milestones, siehe DECISIONS.md
+- [x] Onboarding, 3 Seiten, `PageView` mit Punktindikator, "Überspringen" oben rechts:
   1. **"Gear finden, das wirklich passt."** — Kategorien vom S-AEG bis zum Plattenträger
   2. **"Sicher handeln."** — F-Kennzeichen-Pflicht, Besitznachweis, 18+-Regel
   3. **"Direkt verhandeln."** — Chat mit dem Verkäufer
-- [ ] Willkommen-Screen: "Konto erstellen" (primary) / "Anmelden" (secondary) /
+- [x] Willkommen-Screen: "Konto erstellen" (primary) / "Anmelden" (secondary) /
       "Erstmal umsehen" (ghost → als Gast in den Feed)
-- [ ] Onboarding erscheint nur beim allerersten Start (`shared_preferences`-Flag)
-- [ ] Test: Bei gesetztem Flag leitet der Router direkt auf `/` weiter
-- [ ] Test: "Überspringen" setzt das Flag und navigiert zum Willkommen-Screen
-- [ ] Commit — `feat(onboarding): add splash, onboarding and welcome screens`
+- [x] Onboarding erscheint nur beim allerersten Start (`shared_preferences`-Flag)
+- [x] Test: Bei gesetztem Flag leitet der Router direkt auf `/` weiter
+- [x] Test: "Überspringen" setzt das Flag und navigiert zum Willkommen-Screen
+- [x] Commit — `feat(onboarding): add splash, onboarding and welcome screens`
 
 ### ✅ M2 abgeschlossen, wenn
 
