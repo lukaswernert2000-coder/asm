@@ -41,7 +41,7 @@ Firebase Cloud Messaging · Sentry
 | **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) |
 | **Als Nächstes** | **Task 3.1 — Kategorie-Übersicht und Kategorie-Feed** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `feat(onboarding): add splash, onboarding and welcome screens` (ungepusht) |
+| **Letzter Commit** | `docs: confirm task 2.7 flow live on the emulator` (gepusht) |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
