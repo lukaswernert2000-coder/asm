@@ -62,7 +62,9 @@ erweitert. Zwei echte, vorher unbemerkte Layout-Bugs bei 400 px Breite gefunden 
 behoben (`LoginScreen`, `PublicProfileScreen`), Details in DECISIONS.md. **Nicht live auf
 dem Emulator verifiziert** — die Registrierung eines Testkontos scheiterte am
 Geburtsdatum-Datepicker (`adb`-Taps unzuverlässig, wie schon in der Task-2.4-Session),
-verlässt sich auf die 160 grünen Tests. Task 2.2–2.4
+verlässt sich auf die 160 grünen Tests. Task-2.5-Push ist CI-grün
+([Run #6](https://github.com/lukaswernert2000-coder/asm/actions/runs/33258058007),
+`conclusion: success`). Task 2.2–2.4
 liefen (jeweils zumindest teilweise) auf dem Android-**Emulator** gegen das echte
 Dev-Supabase-Projekt durch, siehe DECISIONS.md — das ist aber weiterhin **kein Test auf
 echter Hardware**. Bleibt offen wie schon seit M0: kein Test auf einem echten Android- oder
