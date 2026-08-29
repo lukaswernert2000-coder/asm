@@ -38,10 +38,10 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M3 · Kategorien, Feed und Suche |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1 komplett (Code-seitig, siehe unten — nicht live verifiziert) |
-| **Als Nächstes** | **Task 3.2 — Paginierter Feed** |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1 komplett (Code-seitig, siehe unten — nicht live verifiziert) · Task 3.2 komplett (Code-seitig, siehe unten — nicht live verifiziert) |
+| **Als Nächstes** | **Task 3.3 — Suche** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `feat(categories): add category overview and category feed` |
+| **Letzter Commit** | `feat(listings): add paginated feed with pull to refresh` |
 | **Stand vom** | 2026-08-30 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -148,6 +148,26 @@ nicht möglich. Task-3.1-Push ist CI-grün, erst nach einem Formatierungs-Fix
 ([Run #14](https://github.com/lukaswernert2000-coder/asm/actions/runs/33278330235) rot an
 `dart format --set-exit-if-changed .`, [Run #15](https://github.com/lukaswernert2000-coder/asm/actions/runs/33278516881)
 `conclusion: success`).
+
+**2026-08-30, Task 3.2:** `listingFeedProvider(ListingFilter)` als `FamilyAsyncNotifier`
+(`listing_feed_controller.dart`, kein Codegen — Projekt-Konvention seit Task 1.9) mit
+`loadMore()`/`refresh()`, State ist ein anonymes Record `{items, total, isLoadingMore}`.
+`CategoryScreen`s Haupt-Feed nutzt jetzt `listingFeedProvider` statt des schlanken
+Task-3.1-`categoryFeedProvider` — Letzterer bleibt für "Neu eingestellt" auf der Startseite
+bestehen (keine Pagination nötig dort). Nachladen bei 80 % Scrolltiefe (`ScrollController`),
+Pull-to-Refresh (`RefreshIndicator`), dabei hängen Shimmer-Platzhalter ans Ende der Liste
+statt den ganzen Screen zu ersetzen — dafür `AsmSkeleton` um eine vierte Variante `.card`
+ergänzt (eine einzelne Shimmer-Karte, rein additiv, ändert nichts an den drei bestehenden
+Layouts). Grid-/Listen-Umschalter als Icon-Button in der `CategoryScreen`-AppBar,
+Präferenz in `shared_preferences` (`listingViewModeProvider`/`setListingViewMode()`, exakt
+das Muster von `hasSeenOnboardingProvider`/`markOnboardingSeen()` aus Task 2.7 kopiert) —
+dafür musste der neue Key in `main.dart`s und `fake_shared_preferences.dart`s
+`SharedPreferencesWithCache`-Allowlist ergänzt werden, sonst würde er still verworfen.
+`dart format lib test` diesmal **vor** dem Push gelaufen (Lehre aus Task 3.1, wo das erst
+CI rot laufen ließ). 30 neue Tests, davon einer mit echtem Scroll-/Fling-Gesten-Test für
+Nachladen und Pull-to-Refresh (kein Mock der Scroll-Mechanik) — lief beim ersten Versuch
+durch. **Nicht live auf Emulator/Gerät verifiziert**, gleicher Grund wie Task 3.1 (keine
+Web-Plattform). 206 Tests grün, `flutter analyze` 0 Probleme.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -1991,13 +2011,13 @@ Session landet im Login und danach wieder auf `/create`.
 **Produziert:** `listingFeedProvider(ListingFilter)` als `AsyncNotifier` mit
 `loadMore()` und `refresh()`
 
-- [ ] `AsmSkeleton.listingGrid` beim ersten Laden, Shimmer-Karten beim Nachladen
-- [ ] Pull-to-Refresh
-- [ ] Nachladen bei 80 % Scrolltiefe, `total_count` aus der RPC begrenzt das Nachladen
-- [ ] Grid-/Listen-Umschalter, Auswahl in `shared_preferences`
-- [ ] `AsmEmptyState` bei 0 Treffern, `AsmErrorView` mit Retry bei Fehler
-- [ ] Test: Provider lädt Seite 1, `loadMore()` hängt Seite 2 an, `total` wird respektiert
-- [ ] Commit — `feat(listings): add paginated feed with pull to refresh`
+- [x] `AsmSkeleton.listingGrid` beim ersten Laden, Shimmer-Karten beim Nachladen
+- [x] Pull-to-Refresh
+- [x] Nachladen bei 80 % Scrolltiefe, `total_count` aus der RPC begrenzt das Nachladen
+- [x] Grid-/Listen-Umschalter, Auswahl in `shared_preferences`
+- [x] `AsmEmptyState` bei 0 Treffern, `AsmErrorView` mit Retry bei Fehler
+- [x] Test: Provider lädt Seite 1, `loadMore()` hängt Seite 2 an, `total` wird respektiert
+- [x] Commit — `feat(listings): add paginated feed with pull to refresh`
 
 ## Task 3.3: Suche
 - [ ] Suchfeld mit 350 ms Debounce

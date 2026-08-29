@@ -1,6 +1,7 @@
 import 'package:asm/app.dart';
 import 'package:asm/core/config/app_config.dart';
 import 'package:asm/core/storage/shared_preferences_provider.dart';
+import 'package:asm/features/listings/presentation/listing_providers.dart';
 import 'package:asm/features/onboarding/presentation/onboarding_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +27,7 @@ Future<void> main() async {
       );
       final prefs = await SharedPreferencesWithCache.create(
         cacheOptions: const SharedPreferencesWithCacheOptions(
-          allowList: {hasSeenOnboardingPrefsKey},
+          allowList: {hasSeenOnboardingPrefsKey, listingViewModePrefsKey},
         ),
       );
       runApp(

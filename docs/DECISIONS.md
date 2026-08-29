@@ -1125,4 +1125,32 @@ Scope-Entscheidung gewesen, nicht einfach für einen schnellen Check gemacht. Ve
 wie schon bei Task 2.5 auf die Testsuite (194 Tests grün, `flutter analyze` 0 Probleme) — ein
 echter Emulator-/Gerätelauf für Task 3.1 steht noch aus.
 
+## 2026-08-30 · Task 3.2 · `categoryFeedProvider` bleibt bestehen, `AsmSkeleton` um `.card` ergänzt, keine doppelte Seitengröße
+
+Der Plan-Wortlaut sagt, Task 3.2 "ersetzt" den Task-3.1-Zwischenprovider — tatsächlich bleibt
+`categoryFeedProvider` unverändert bestehen, weil "Neu eingestellt" auf der Startseite eine
+kleine, nicht paginierte Vorschauliste ist und keine Pagination braucht. Nur `CategoryScreen`s
+Haupt-Feed wechselt auf das neue `listingFeedProvider`. Für die "Shimmer-Karten beim
+Nachladen"-Anforderung wurde `AsmSkeleton` (Task 0.5) um eine vierte, rein additive Variante
+`.card` ergänzt (eine einzelne Shimmer-Karte) — die drei bestehenden Layouts
+(`.listingGrid`/`.listingList`/`.detail`) sind unverändert. `ListingFeedNotifier` übergibt
+nirgends mehr explizit `limit:` an `search()` — ein erster Versuch mit einer eigenen
+`listingFeedPageSize`-Konstante (Wert 24) kollidierte mit `very_good_analysis`s
+`avoid_redundant_argument_values`, weil dieser Wert zufällig exakt `search()`s eigenem
+Default entspricht. Jetzt gibt es nur eine Quelle für die Seitengröße (der Default in
+`listing_repository.dart`), nicht zwei synchron zu haltende Zahlen.
+
+## 2026-08-30 · Task 3.2 · Grid-/Listen-Präferenz kopiert das `hasSeenOnboardingProvider`-Muster, Allowlist-Falle erneut getroffen
+
+`listingViewModeProvider`/`setListingViewMode()` sind bewusst 1:1 nach dem Vorbild von
+`hasSeenOnboardingProvider`/`markOnboardingSeen()` (Task 2.7) gebaut: ein einfacher `Provider`,
+der `shared_preferences` liest, plus eine freie Funktion mit `WidgetRef`, die schreibt und
+den Provider invalidiert — deshalb ist `setListingViewMode()` auch nicht isoliert mit einem
+konstruierten `ProviderContainer` getestet, sondern nur über den echten Umschalter-Button in
+`CategoryScreen`. Wie schon bei `hasSeenOnboardingPrefsKey` muss ein neuer
+`shared_preferences`-Key explizit in der `SharedPreferencesWithCache`-Allowlist stehen, sonst
+wird er beim Schreiben still verworfen — sowohl in `main.dart` als auch in
+`test/helpers/fake_shared_preferences.dart` ergänzt (Letzteres jetzt mit optionalem
+`listingViewMode`-Parameter, Default `null`).
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

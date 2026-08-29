@@ -1,3 +1,4 @@
+import 'package:asm/core/storage/shared_preferences_provider.dart';
 import 'package:asm/core/supabase/supabase_provider.dart';
 import 'package:asm/features/listings/data/listing_repository.dart';
 import 'package:asm/features/listings/domain/listing.dart';
@@ -9,9 +10,34 @@ final listingRepositoryProvider = Provider<ListingRepository>(
   (ref) => SupabaseListingRepository(ref.watch(supabaseProvider)),
 );
 
-/// Schlanker, einmaliger `search()`-Aufruf ohne Pagination -- Zwischenloesung
-/// fuer Task 3.1 (Kategorie-Feed, "Neu eingestellt"). Task 3.2 ersetzt dies
-/// durch `listingFeedProvider` als `AsyncNotifier` mit `loadMore()`/`refresh()`.
+enum ListingViewMode { grid, list }
+
+const listingViewModePrefsKey = 'listing_view_mode';
+
+/// Grid ist der Default, solange nichts gespeichert ist. Siehe
+/// 01-DESIGN-SYSTEM.md Abschnitt 5.4 ("Umschaltbar ueber ein Icon in der
+/// AppBar, Auswahl in shared_preferences merken").
+final Provider<ListingViewMode> listingViewModeProvider =
+    Provider<ListingViewMode>((ref) {
+      final raw = ref
+          .watch(sharedPreferencesProvider)
+          .getString(listingViewModePrefsKey);
+      return raw == ListingViewMode.list.name
+          ? ListingViewMode.list
+          : ListingViewMode.grid;
+    });
+
+Future<void> setListingViewMode(WidgetRef ref, ListingViewMode mode) async {
+  await ref
+      .read(sharedPreferencesProvider)
+      .setString(listingViewModePrefsKey, mode.name);
+  ref.invalidate(listingViewModeProvider);
+}
+
+/// Schlanker, einmaliger `search()`-Aufruf ohne Pagination -- fuer Stellen,
+/// die keine Pagination brauchen (z. B. "Neu eingestellt" auf der
+/// Startseite). Der paginierte Haupt-Feed nutzt `listingFeedProvider`
+/// (`listing_feed_controller.dart`, Task 3.2).
 final FutureProviderFamily<
   ({List<ListingSummary> items, int total}),
   ListingFilter

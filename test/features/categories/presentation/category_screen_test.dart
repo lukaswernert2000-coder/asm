@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:asm/core/storage/shared_preferences_provider.dart';
+import 'package:asm/core/widgets/asm_skeleton.dart';
 import 'package:asm/features/categories/data/category_repository.dart';
 import 'package:asm/features/categories/domain/category.dart';
 import 'package:asm/features/categories/presentation/category_providers.dart';
@@ -11,6 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+
+import '../../../helpers/fake_shared_preferences.dart';
 
 class MockCategoryRepository extends Mock implements CategoryRepository {}
 
@@ -44,6 +50,7 @@ void main() {
     isActive: true,
     parentId: 'p1',
   );
+  const filter = ListingFilter(categorySlug: 'langwaffen');
 
   ListingSummary summary(String id) => ListingSummary(
     id: id,
@@ -61,6 +68,9 @@ void main() {
     categorySlug: 'langwaffen',
   );
 
+  List<ListingSummary> summaries(int count, {int startAt = 0}) =>
+      List.generate(count, (i) => summary('l${startAt + i}'));
+
   setUp(() {
     categoryRepository = MockCategoryRepository();
     listingRepository = MockListingRepository();
@@ -72,11 +82,17 @@ void main() {
     ).thenAnswer((_) async => [child]);
   });
 
-  Future<void> pumpScreen(WidgetTester tester) async {
+  Future<void> pumpScreen(
+    WidgetTester tester, {
+    ListingViewMode listingViewMode = ListingViewMode.grid,
+  }) async {
     final container = ProviderContainer(
       overrides: [
         categoryRepositoryProvider.overrideWithValue(categoryRepository),
         listingRepositoryProvider.overrideWithValue(listingRepository),
+        sharedPreferencesProvider.overrideWithValue(
+          await fakeSharedPreferences(listingViewMode: listingViewMode),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -92,9 +108,7 @@ void main() {
     tester,
   ) async {
     when(
-      () => listingRepository.search(
-        const ListingFilter(categorySlug: 'langwaffen'),
-      ),
+      () => listingRepository.search(filter),
     ).thenAnswer((_) async => (items: [summary('l1')], total: 1));
 
     await pumpScreen(tester);
@@ -110,9 +124,7 @@ void main() {
     tester,
   ) async {
     when(
-      () => listingRepository.search(
-        const ListingFilter(categorySlug: 'langwaffen'),
-      ),
+      () => listingRepository.search(filter),
     ).thenAnswer((_) async => (items: [summary('l1')], total: 1));
     when(
       () => listingRepository.search(
@@ -133,14 +145,94 @@ void main() {
 
   testWidgets('zeigt Leerzustand ohne Treffer', (tester) async {
     when(
-      () => listingRepository.search(
-        const ListingFilter(categorySlug: 'langwaffen'),
-      ),
+      () => listingRepository.search(filter),
     ).thenAnswer((_) async => (items: <ListingSummary>[], total: 0));
 
     await pumpScreen(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('Keine Inserate gefunden'), findsOneWidget);
+  });
+
+  testWidgets('scrollen nahe ans Ende laedt die naechste Seite nach', (
+    tester,
+  ) async {
+    when(
+      () => listingRepository.search(filter),
+    ).thenAnswer((_) async => (items: summaries(20), total: 40));
+    when(
+      () => listingRepository.search(filter, offset: 20),
+    ).thenAnswer((_) async => (items: summaries(20, startAt: 20), total: 40));
+
+    await pumpScreen(tester);
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(GridView), const Offset(0, -100000));
+    await tester.pumpAndSettle();
+
+    verify(
+      () => listingRepository.search(filter, offset: 20),
+    ).called(1);
+    expect(find.text('Inserat l20'), findsOneWidget);
+  });
+
+  testWidgets('zeigt Skeleton-Karten waehrend des Nachladens', (tester) async {
+    when(
+      () => listingRepository.search(filter),
+    ).thenAnswer((_) async => (items: summaries(20), total: 40));
+    final completer = Completer<({List<ListingSummary> items, int total})>();
+    when(
+      () => listingRepository.search(filter, offset: 20),
+    ).thenAnswer((_) => completer.future);
+
+    await pumpScreen(tester);
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(GridView), const Offset(0, -100000));
+    await tester.pump();
+
+    expect(find.byWidgetPredicate((w) => w is AsmSkeleton), findsWidgets);
+
+    completer.complete((items: summaries(20, startAt: 20), total: 40));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('Pull-to-Refresh laedt Seite 1 neu', (tester) async {
+    var callCount = 0;
+    when(
+      () => listingRepository.search(filter),
+    ).thenAnswer((_) async {
+      callCount++;
+      return callCount == 1
+          ? (items: [summary('l1')], total: 1)
+          : (items: [summary('l2')], total: 1);
+    });
+
+    await pumpScreen(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('Inserat l1'), findsOneWidget);
+
+    await tester.fling(find.byType(GridView), const Offset(0, 300), 1000);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Inserat l2'), findsOneWidget);
+  });
+
+  testWidgets('Umschalter wechselt vom Grid- zum Listen-Layout', (
+    tester,
+  ) async {
+    when(
+      () => listingRepository.search(filter),
+    ).thenAnswer((_) async => (items: [summary('l1')], total: 1));
+
+    await pumpScreen(tester);
+    await tester.pumpAndSettle();
+    expect(find.byType(GridView), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Als Liste anzeigen'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(GridView), findsNothing);
+    expect(find.text('Inserat l1'), findsOneWidget);
   });
 }

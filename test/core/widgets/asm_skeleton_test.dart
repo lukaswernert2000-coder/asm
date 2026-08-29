@@ -11,6 +11,13 @@ void main() {
     'listingGrid': const AsmSkeleton.listingGrid(),
     'listingList': const AsmSkeleton.listingList(),
     'detail': const AsmSkeleton.detail(),
+    // .card ist fuer eine einzelne Grid-/Listenzelle mit begrenzter Groesse
+    // gedacht (Task 3.2), nicht fuer volle Bildschirmhoehe wie die anderen drei.
+    'card': const SizedBox(
+      width: 160,
+      height: 220,
+      child: AsmSkeleton.card(),
+    ),
   }.entries) {
     testWidgets('${entry.key} rendert ohne CircularProgressIndicator', (
       tester,

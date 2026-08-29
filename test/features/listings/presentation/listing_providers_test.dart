@@ -1,3 +1,4 @@
+import 'package:asm/core/storage/shared_preferences_provider.dart';
 import 'package:asm/features/listings/data/listing_repository.dart';
 import 'package:asm/features/listings/domain/listing.dart';
 import 'package:asm/features/listings/domain/listing_filter.dart';
@@ -7,9 +8,45 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../helpers/fake_shared_preferences.dart';
+
 class MockListingRepository extends Mock implements ListingRepository {}
 
 void main() {
+  group('listingViewModeProvider', () {
+    test('faellt ohne gespeicherten Wert auf grid zurueck', () async {
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(
+            await fakeSharedPreferences(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(listingViewModeProvider), ListingViewMode.grid);
+    });
+
+    test('liest einen gespeicherten Wert', () async {
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(
+            await fakeSharedPreferences(
+              listingViewMode: ListingViewMode.list,
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(listingViewModeProvider), ListingViewMode.list);
+    });
+
+    // setListingViewMode() nimmt ein WidgetRef (gleiches Muster wie
+    // markOnboardingSeen) -- ueber den echten Umschalter-Button in
+    // CategoryScreen getestet, nicht isoliert mit einem konstruierten Ref.
+  });
+
   test('categoryFeedProvider ruft search() mit dem Filter auf', () async {
     final repository = MockListingRepository();
     const filter = ListingFilter(categorySlug: 'langwaffen');

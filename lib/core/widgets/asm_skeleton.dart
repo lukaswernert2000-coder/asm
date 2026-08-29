@@ -3,9 +3,11 @@ import 'package:asm/core/theme/asm_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-enum _SkeletonLayout { listingGrid, listingList, detail }
+enum _SkeletonLayout { listingGrid, listingList, detail, card }
 
-/// Ladeskelett. Genau drei Layouts, siehe 01-DESIGN-SYSTEM.md Abschnitt 5.8.
+/// Ladeskelett. Drei Layouts laut 01-DESIGN-SYSTEM.md Abschnitt 5.8, dazu
+/// `.card` (ein einzelnes Shimmer-Card-Element, z. B. zum Anhaengen ans Ende
+/// einer bereits geladenen Liste beim Nachladen, Task 3.2).
 /// Kein `CircularProgressIndicator` als Ganzseiten-Ladeanzeige (G14).
 class AsmSkeleton extends StatelessWidget {
   const AsmSkeleton.listingGrid({super.key})
@@ -13,6 +15,7 @@ class AsmSkeleton extends StatelessWidget {
   const AsmSkeleton.listingList({super.key})
     : _layout = _SkeletonLayout.listingList;
   const AsmSkeleton.detail({super.key}) : _layout = _SkeletonLayout.detail;
+  const AsmSkeleton.card({super.key}) : _layout = _SkeletonLayout.card;
 
   final _SkeletonLayout _layout;
 
@@ -116,6 +119,7 @@ class AsmSkeleton extends StatelessWidget {
       _SkeletonLayout.listingGrid => _listingGrid(),
       _SkeletonLayout.listingList => _listingList(),
       _SkeletonLayout.detail => _detail(),
+      _SkeletonLayout.card => _card(),
     };
 
     return Shimmer.fromColors(
