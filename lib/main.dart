@@ -3,6 +3,7 @@ import 'package:asm/core/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   AppConfig.assertValid();
@@ -15,6 +16,12 @@ Future<void> main() async {
         ..environment = AppConfig.environment
         ..tracesSampleRate = AppConfig.isProd ? 0.2 : 1.0;
     },
-    appRunner: () => runApp(const ProviderScope(child: AsmApp())),
+    appRunner: () async {
+      await Supabase.initialize(
+        url: AppConfig.supabaseUrl,
+        publishableKey: AppConfig.supabaseAnonKey,
+      );
+      runApp(const ProviderScope(child: AsmApp()));
+    },
   );
 }

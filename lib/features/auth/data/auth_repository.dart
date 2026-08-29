@@ -10,6 +10,7 @@ abstract interface class AuthRepository {
     Map<String, dynamic>? data,
   });
   Future<void> signIn({required String email, required String password});
+  Future<void> resendConfirmation(String email);
   Future<void> signOut();
   Future<void> resetPassword(String email);
   Future<void> deleteAccount();
@@ -53,6 +54,15 @@ class SupabaseAuthRepository implements AuthRepository {
   Future<void> signIn({required String email, required String password}) async {
     try {
       await _client.auth.signInWithPassword(email: email, password: password);
+    } catch (error) {
+      throw mapError(error);
+    }
+  }
+
+  @override
+  Future<void> resendConfirmation(String email) async {
+    try {
+      await _client.auth.resend(email: email, type: OtpType.signup);
     } catch (error) {
       throw mapError(error);
     }

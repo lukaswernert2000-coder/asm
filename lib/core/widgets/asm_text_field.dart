@@ -10,6 +10,9 @@ class AsmTextField extends StatefulWidget {
     required this.label,
     this.errorText,
     this.maxLength,
+    this.obscureText = false,
+    this.readOnly = false,
+    this.onTap,
     super.key,
   });
 
@@ -17,6 +20,9 @@ class AsmTextField extends StatefulWidget {
   final String label;
   final String? errorText;
   final int? maxLength;
+  final bool obscureText;
+  final bool readOnly;
+  final VoidCallback? onTap;
 
   @override
   State<AsmTextField> createState() => _AsmTextFieldState();
@@ -73,6 +79,9 @@ class _AsmTextFieldState extends State<AsmTextField> {
             controller: widget.controller,
             focusNode: _focusNode,
             maxLength: widget.maxLength,
+            obscureText: widget.obscureText,
+            readOnly: widget.readOnly,
+            onTap: widget.onTap,
             style: AsmTextStyles.bodyM.copyWith(color: AsmColors.textPrimary),
             cursorColor: AsmColors.brandBright,
             decoration: const InputDecoration(

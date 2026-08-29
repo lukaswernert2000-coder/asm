@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 abstract interface class ProfileRepository {
   Future<Profile> byId(String id);
   Future<Profile?> current();
+  Future<bool> isUsernameTaken(String username);
 }
 
 class SupabaseProfileRepository implements ProfileRepository {
@@ -27,5 +28,19 @@ class SupabaseProfileRepository implements ProfileRepository {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) return null;
     return byId(userId);
+  }
+
+  @override
+  Future<bool> isUsernameTaken(String username) async {
+    try {
+      final rows = await _client
+          .from('profiles')
+          .select('id')
+          .eq('username', username)
+          .limit(1);
+      return rows.isNotEmpty;
+    } catch (error) {
+      throw mapError(error);
+    }
   }
 }

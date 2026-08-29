@@ -31,4 +31,9 @@ void main() {
       'vor 2 Tagen',
     );
   });
+
+  test('date formatiert als TT.MM.JJJJ mit fuehrenden Nullen', () {
+    expect(Formatters.date(DateTime(2012, 3, 7)), '07.03.2012');
+    expect(Formatters.date(DateTime(2026, 12, 25)), '25.12.2026');
+  });
 }

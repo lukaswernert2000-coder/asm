@@ -20,4 +20,12 @@ abstract final class Formatters {
     if (diff.inHours < 24) return 'vor ${diff.inHours} Std.';
     return 'vor ${diff.inDays} Tagen';
   }
+
+  /// Rein numerisch (kein Monatsname) — braucht deshalb kein
+  /// `initializeDateFormatting`, anders als `intl`s `DateFormat`.
+  static String date(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    return '$day.$month.${date.year}';
+  }
 }

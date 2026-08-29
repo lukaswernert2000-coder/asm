@@ -88,4 +88,43 @@ void main() {
     expect(counter.style?.fontSize, AsmTextStyles.bodyS.fontSize);
     expect(counter.style?.color, AsmColors.textTertiary);
   });
+
+  testWidgets('obscureText versteckt die Eingabe', (tester) async {
+    final controller = TextEditingController();
+    await tester.pumpWidget(
+      _wrap(
+        AsmTextField(
+          controller: controller,
+          label: 'Passwort',
+          obscureText: true,
+        ),
+      ),
+    );
+
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.obscureText, isTrue);
+  });
+
+  testWidgets('readOnly mit onTap ruft den Callback auf, ohne Tastatur', (
+    tester,
+  ) async {
+    final controller = TextEditingController();
+    var tapped = false;
+    await tester.pumpWidget(
+      _wrap(
+        AsmTextField(
+          controller: controller,
+          label: 'Geburtsdatum',
+          readOnly: true,
+          onTap: () => tapped = true,
+        ),
+      ),
+    );
+
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.readOnly, isTrue);
+
+    await tester.tap(find.byType(TextField));
+    expect(tapped, isTrue);
+  });
 }

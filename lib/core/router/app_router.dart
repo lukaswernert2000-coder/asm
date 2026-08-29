@@ -2,16 +2,17 @@ import 'package:asm/core/router/routes.dart';
 import 'package:asm/core/widgets/_gallery_screen.dart';
 import 'package:asm/core/widgets/asm_empty_state.dart';
 import 'package:asm/core/widgets/asm_shell.dart';
+import 'package:asm/features/auth/presentation/register_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-/// Klassischer (nicht generierter) Provider — `build_runner` ist derzeit
-/// kaputt, siehe DECISIONS.md ("build_runner durch analyzer_plugin
-/// blockiert"). Sobald das behoben ist, kann das auf `@riverpod` umgestellt
-/// werden.
+/// Klassischer (nicht generierter) Provider — `riverpod_generator` wurde in
+/// Task 1.9 bewusst aus den Dependencies entfernt (siehe DECISIONS.md),
+/// `build_runner` selbst laeuft seitdem wieder normal fuer freezed. Alle
+/// Provider in dieser App bleiben deshalb absichtlich handgeschrieben.
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: AsmRoutes.home,
@@ -74,6 +75,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AsmRoutes.create,
         builder: (context, state) => const _CreatePlaceholder(),
+      ),
+      GoRoute(
+        path: AsmRoutes.register,
+        builder: (context, state) => const RegisterScreen(),
       ),
     ],
   );
