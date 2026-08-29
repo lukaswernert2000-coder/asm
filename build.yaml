@@ -1,0 +1,11 @@
+targets:
+  $default:
+    builders:
+      freezed:
+        generate_for:
+          - lib/features/**/domain/*.dart
+      json_serializable:
+        generate_for:
+          - lib/features/**/domain/*.dart
+        options:
+          field_rename: snake
