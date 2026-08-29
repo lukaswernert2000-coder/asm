@@ -258,4 +258,30 @@ reicht. **Nachholen:** Sobald ein echter Registrierungs-Flow in der App existier
 wenn Auth-Screens gebaut werden), den funktionalen Teil einmal live nachziehen — insbesondere
 den `birth_date`-Spalten-Grant gegen einen zweiten, fremden Nutzer testen.
 
+## 2026-08-29 · Task 1.3 · `uuid_generate_v4()` nicht auffindbar — auf `gen_random_uuid()` umgestellt
+
+`create table categories (... default uuid_generate_v4() ...)` schlug beim Push fehl:
+`function uuid_generate_v4() does not exist (SQLSTATE 42883)`. Ursache: Supabase installiert
+die `uuid-ossp`-Extension aus Task 1.1/0001 ins Schema `extensions`, nicht `public` — der
+Such-Pfad der Migration schließt `extensions` nicht ein, ein unqualifizierter Aufruf schlägt
+also fehl. Task 1.2 hatte denselben Aufruf nie ausgeführt (die `profiles.id`-Spalte hat keinen
+Default), daher blieb der Bug bis jetzt unbemerkt. **Gegenmittel:** `gen_random_uuid()`
+verwendet — seit Postgres 13 fest im Core (`pg_catalog`), kein Extension- oder
+Schema-Problem möglich. Migration war nach dem Fehlschlag sauber zurückgerollt (keine
+Teil-Tabelle), Retry lief clean durch. **Wichtig für alle folgenden Migrationen** (ab Task 1.4
+nutzen `listings`/`listing_images` laut Plan denselben `uuid_generate_v4()`-Aufruf): dort
+ebenfalls durch `gen_random_uuid()` ersetzen, nicht wörtlich aus dem Plan übernehmen. Die
+`uuid-ossp`-Extension aus 0001 bleibt bestehen (harmlos, nur ungenutzt) — kein Grund, die
+bereits angewendete Migration 0001 anzufassen.
+
+## 2026-08-29 · Task 1.3 · Kategorien-Taxonomie hat 72 statt der im Plan geschätzten 68
+
+Der Plan schätzt "8 Haupt- + ~60 Unterkategorien = 68", verweist für den Inhalt aber
+verbindlich auf `00-SPEC.md` Abschnitt 5. Die dort vollständig ausgezählte Taxonomie hat
+tatsächlich 64 Unterkategorien (4+7+6+8+12+12+9+6), macht **72** Kategorien gesamt. Spec vor
+Plan-Schätzung übernommen — `00-SPEC.md` ist laut `CLAUDE.md` die Quelle für Produktentscheidungen,
+die Zahl im Plan war erkennbar nur eine grobe Vorab-Schätzung ("~60"). Alle 72 Zeilen aus der
+Spec 1:1 übernommen, keine ausgelassen oder erfunden. Verifiziert: Kinderzahl pro
+Hauptkategorie stimmt exakt mit der Spec-Tabelle überein, Flags korrekt auf allen Ebenen vererbt.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

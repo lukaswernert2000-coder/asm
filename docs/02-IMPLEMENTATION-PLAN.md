@@ -38,10 +38,10 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M1 · Backend und Datenmodell |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1 · Task 1.2 |
-| **Als Nächstes** | **Task 1.3 — Migration: Kategorien und Seed** |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1 · Task 1.2 · Task 1.3 |
+| **Als Nächstes** | **Task 1.4 — Migration: Inserate und Bilder** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `bd8f471` feat(db): add profiles table with rls and auth trigger |
+| **Letzter Commit** | `5747008` feat(db): add categories with asvz taxonomy seed |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist jetzt auf GitHub (`lukaswernert2000-coder/asm`), CI lief real und grün
@@ -965,7 +965,8 @@ grant update (username, display_name, avatar_path, bio, postal_code, city,
 **Produziert:** Tabelle `categories` mit den 8 Haupt- und ~60 Unterkategorien aus
 [`00-SPEC.md` Abschnitt 5](00-SPEC.md#5-kategorie-taxonomie).
 
-- [ ] **Schritt 1: Schema**
+- [x] **Schritt 1: Schema** — `id`-Default auf `gen_random_uuid()` korrigiert, siehe
+      [`DECISIONS.md`](DECISIONS.md)
 
 ```sql
 -- 0002_categories.sql
@@ -994,7 +995,7 @@ create policy categories_moderator_write on public.categories
   for all using (public.is_moderator());
 ```
 
-- [ ] **Schritt 2: Seed schreiben**
+- [x] **Schritt 2: Seed schreiben**
 
 Alle 8 Hauptkategorien plus Unterkategorien aus der Spec. **Wichtig:** Die vier
 `requires_*`-Flags werden auf Eltern **und** Kindern gesetzt (denormalisiert) – die
@@ -1035,9 +1036,12 @@ from (values
 join public.categories p on p.slug = v.parent_slug;
 ```
 
-- [ ] **Schritt 3: Anwenden und zählen** — `select count(*) from categories;`
-      Erwartung: 8 Hauptkategorien + 60 Unterkategorien = **68**
-- [ ] **Schritt 4: Prüfen, dass Flags vererbt sind**
+- [x] **Schritt 3: Anwenden und zählen** — `select count(*) from categories;`
+      Ergebnis: **72** (8 Haupt- + 64 Unterkategorien — die vollständige Taxonomie in
+      `00-SPEC.md` hat mehr Unterkategorien als die hier im Plan geschätzten "~60";
+      siehe [`DECISIONS.md`](DECISIONS.md))
+- [x] **Schritt 4: Prüfen, dass Flags vererbt sind** — für `langwaffen%` (age_18/f_marking)
+      und `asg-05j%` (alle vier Flags) geprüft, jeweils auf Eltern und allen Kindern korrekt
 
 ```sql
 select slug, requires_age_18, requires_f_marking
@@ -1045,7 +1049,7 @@ from public.categories where slug like 'langwaffen%';
 -- alle Zeilen muessen true/true zeigen
 ```
 
-- [ ] **Schritt 5: Commit** — `feat(db): add categories with asvz taxonomy seed`
+- [x] **Schritt 5: Commit** — `feat(db): add categories with asvz taxonomy seed`
 
 ---
 
