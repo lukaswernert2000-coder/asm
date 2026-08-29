@@ -44,10 +44,13 @@ Firebase Cloud Messaging · Sentry
 | **Letzter Commit** | `a874d87` feat(data): add domain models and supabase repositories |
 | **Stand vom** | 2026-08-29 |
 
-Repo ist jetzt auf GitHub (`lukaswernert2000-coder/asm`), CI lief real und grün
-([Run #1](https://github.com/lukaswernert2000-coder/asm/actions), `conclusion: success`,
-~3 Min. Laufzeit) — die alte Einschränkung dazu ist erledigt. Bleibt: **kein Test auf einem
-echten Gerät**, bisher nur Emulator. Nachholen, sobald eins verfügbar ist.
+Repo ist auf GitHub (`lukaswernert2000-coder/asm`), CI lief zuletzt für M0 real und grün
+([Run #1](https://github.com/lukaswernert2000-coder/asm/actions), `conclusion: success`).
+**Ganz M1 (Task 1.1–1.9, Commits `784c91b`..`a874d87`) ist noch nicht gepusht** — existiert
+nur lokal, `origin/master` steht noch auf M0-Stand. CI hat den restaurierten
+`build_runner`-Schritt (Task 1.9) also noch nie real gesehen, nur lokal geprüft. Vor dem
+nächsten Push einmal beobachten, ob die Pipeline durchläuft. Bleibt außerdem: **kein Test auf
+einem echten Gerät**, bisher nur Emulator — betrifft aber nur UI-Tasks, M1 hatte keine.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
