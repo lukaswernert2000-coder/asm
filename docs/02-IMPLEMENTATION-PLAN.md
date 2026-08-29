@@ -38,10 +38,10 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M1 · Backend und Datenmodell |
-| **Fertig** | M0 komplett (Task 0.1–0.8) |
-| **Als Nächstes** | **Task 1.1 — Supabase-Projekt und CLI** — braucht zuerst dich: Account, Projekt in `eu-central-1`, Zahlungsdaten (siehe `03-ARBEITEN-MIT-SONNET.md` Abschnitt 4) |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1 |
+| **Als Nächstes** | **Task 1.2 — Migration: Profile** |
 | **Offen in M0** | keins — mit zwei Einschränkungen, siehe unten |
-| **Letzter Commit** | `99b0d99` test(l10n): verify context.l10n actually resolves at runtime |
+| **Letzter Commit** | `e30c508` feat(auth): configure asm:// redirects and require email confirmation |
 | **Stand vom** | 2026-08-29 |
 
 M0 ist funktional fertig und auf dem Emulator durchverifiziert, aber zwei Punkte aus dem
