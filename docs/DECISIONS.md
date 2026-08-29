@@ -731,4 +731,69 @@ die korrekte bereinigte Form. **Nicht "angleichen"** — nach der ersten Store-V
 ist die Bundle-ID unveränderlich, und schon vorher zieht eine Änderung Signing, Firebase und
 Deep Links nach sich.
 
+## 2026-08-29 · Task 8.0 Teil A · Impressum mit Platzhaltern statt erfundener Daten
+
+`impressum.md` braucht nach § 5 DDG einen echten Namen und eine echte Postanschrift.
+Sonnet kennt beides nicht zuverlässig genug, um es in ein Dokument zu schreiben, das
+später live geht — eine erfundene oder geratene Adresse wäre ein Compliance-Fehler, kein
+harmloser Platzhalter. Alle personenbezogenen Felder (Name, Adresse, Telefon,
+Registereintrag) stehen deshalb als `[PLATZHALTER: ...]` im Text und müssen vor
+Veröffentlichung vom Nutzer selbst ausgefüllt werden. Auch offen: ob ASM als
+Privatperson, Kleingewerbe oder Unternehmen betrieben wird — entscheidet, welche Felder
+überhaupt Pflicht sind, im Text als offene Frage für die Anwaltsprüfung markiert.
+
+## 2026-08-29 · Task 8.0 Teil A · `tool/gen_website.dart`: eigener Markdown-Konverter statt `package:markdown`
+
+Kein Markdown-Paket in `pubspec.yaml` vorhanden, und eins nur für dieses ~150-Zeilen-Skript
+hinzuzufügen widerspräche der Regel "erst fragen bei neuen Paketen" aus `CLAUDE.md` sowie
+der Plan-eigenen Schätzung "rund 60 Zeilen" für das Skript. Stattdessen ein
+handgeschriebener, zeilenbasierter Konverter, der genau den in den vier Rechtstexten
+verwendeten Dialekt abdeckt: `#`/`##`/`###`, straffe Listen, Zitate (`>`), `**fett**`,
+`` `code` ``, `[Links](url)`, `---`. Zwei echte Bugs dabei gefunden und behoben, bevor der
+generierte Output visuell im Browser geprüft wurde (nicht blind übernommen):
+
+1. Zitat-Bug: Der Blank-Line-Handler rief bedingungslos sowohl `flushParagraph()` als
+   auch `flushQuote()` auf — beide teilten sich denselben Text-Puffer, `flushParagraph()`
+   lief zuerst und leerte ihn, sodass jedes `> `-Zitat als normaler Absatz gerendert wurde.
+   Behoben mit einem `inQuote`-bewussten `flushBlock()`, das nur eine der beiden Funktionen
+   aufruft.
+2. Link-Regex-Bug: `\[(.+?)\]\((.+?)\)` ist nicht-gierig, aber `.+?` kann über andere
+   `]`-Zeichen zurueckbacktracken, wenn direkt danach keine `(` folgt. In Absätzen, die
+   sowohl einen `[PLATZHALTER]` (ohne Link) als auch weiter hinten einen echten
+   `[Text](datei.md)`-Link enthalten, wurde der gesamte Bereich dazwischen faelschlich als
+   ein einziger Link samt Linktext verschluckt. Behoben mit `[^\[\]]+`/`[^()]+` statt
+   `.+?` — kann nicht über Klammern hinweg backtracken.
+
+Ein drittes, kein Bug: mehrzeilige Blöcke wie die Adresse im Impressum (Name/Straße/PLZ
+je eigene Zeile, keine Leerzeile dazwischen) wurden vom Konverter korrekt gemäß
+Markdown-Semantik zu einem Fließtext-Absatz zusammengefügt — optisch aber nicht gewollt.
+Nicht den Konverter um "harte Zeilenumbrüche" erweitert (hätte echte Fließtext-Absätze
+anderswo genauso kaputt umgebrochen), sondern die Adressblöcke in `impressum.md` als
+Aufzählungen umformuliert.
+
+## 2026-08-29 · Task 8.0 Teil A · Landingpage ohne Screenshots und Store-Badges
+
+Schritt 5 verlangt "drei Screenshots" und "Store-Badges (später)" auf `index.html`. Es
+gibt noch keine echten App-Screenshots (`assets/images/` ist leer, der Feed existiert
+architektonisch noch nicht über M0-Platzhalter hinaus) und keine Store-Einträge — beides
+zu faken wäre irreführend. Stattdessen vier Feature-Karten mit Text (Kategorien,
+Rechtsrahmen, Chat, Melden/Blockieren), inhaltlich aus `docs/README.md`s bereits
+abgestimmter Produktbeschreibung übernommen, nicht neu erfunden. **Nachholen:** Screenshots
+einbauen, sobald der Feed (M3) echte UI zum Fotografieren hat.
+
+## 2026-08-29 · Task 8.0 Teil A · `pubspec.yaml` unverändert gelassen
+
+`assets/legal/*.md` ist noch in keinem `assets:`-Eintrag registriert — die App lädt diese
+Dateien noch nirgends zur Laufzeit (das ist Task 7.2). Eine Registrierung jetzt wäre totes
+Konfigurationsgewicht ohne Verwendung. Task 7.2 ergänzt `assets/legal/` in `pubspec.yaml`,
+wenn `flutter_markdown` die Dateien tatsächlich rendert.
+
+## 2026-08-29 · Task 8.0 Teil A · Schritt 7 (Postfach) und Schritt 8 (Upload) offen — brauchen Hostinger-Zugriff
+
+Beide Schritte verlangen Zugriff auf den Hostinger-Account des Nutzers (E-Mail-Postfach
+anlegen bzw. Dateien per Dateimanager/FTP hochladen). Sonnet hat keinen Zugriff darauf und
+kann das nicht automatisieren. `website/` ist lokal fertig und lokal per
+`npx --yes serve website` geprüft (alle sechs Seiten, Mobile-Breite, alle Links) —
+Hochladen und Postfach-Einrichtung bleiben eine manuelle Aufgabe des Nutzers.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

@@ -38,18 +38,22 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M2 · Authentifizierung und Profil |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.4 |
-| **Als Nächstes** | **Außer der Reihe, Punkt D — Task 8.0 Teil A (Website und Rechtstexte)**, danach erst Task 2.5 |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.4 · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) |
+| **Als Nächstes** | **Task 2.5 — Profil ansehen und bearbeiten** (Außer-der-Reihe-Liste A–D damit abgearbeitet, Rest von 8.0A ist unabhängiges Nutzer-To-do) |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `4386768` feat(router): add auth and age guards |
+| **Letzter Commit** | `b7741fb` feat(web): add landing page and legal documents |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
 (Nutzer hat dem Push zugestimmt, Außer-der-Reihe-Punkt B) — CI lief danach zum ersten Mal
 wirklich über den vollständigen M1+M2-Code (vorher liefen nur M0/Doku-Pushes durch) und war
 grün ([Run #4](https://github.com/lukaswernert2000-coder/asm/actions/runs/33254178642),
-`conclusion: success`). Außer-der-Reihe-Punkte A–C sind damit erledigt, offen bleibt **D
-(Task 8.0 Teil A — Website und Rechtstexte)**, dann erst Task 2.5. Task 2.2–2.4
+`conclusion: success`). **Task 8.0 Teil A (Schritte 1–6, 9):** vier Rechtstexte
+(`assets/legal/*.md`, Entwürfe mit Platzhaltern für Impressum-Pflichtangaben),
+`tool/gen_website.dart`, `website/style.css`, `index.html`, `account-loeschen.html` —
+lokal per `npx serve` geprüft. **Schritte 7–8 (Postfach anlegen, Hochladen zu Hostinger)
+kann Sonnet nicht ausführen** und bleiben offen für den Nutzer, sind aber unabhängig vom
+App-Code — blockieren Task 2.5 nicht. Details und Abwägungen in DECISIONS.md. Task 2.2–2.4
 liefen (jeweils zumindest teilweise) auf dem Android-**Emulator** gegen das echte
 Dev-Supabase-Projekt durch, siehe DECISIONS.md — das ist aber weiterhin **kein Test auf
 echter Hardware**. Bleibt offen wie schon seit M0: kein Test auf einem echten Android- oder
@@ -2127,14 +2131,14 @@ EU-Standort wählen (Litauen oder Niederlande) und den AV-Vertrag von Hostinger 
 **Task 7.2 unverändert weiterverwendet**. Task 7.2 schrumpft dadurch auf „Markdown in der
 App rendern und verlinken".
 
-- [ ] **Schritt 1: Domain klären**
+- [x] **Schritt 1: Domain klären**
 
 Prüfen, ob `asm-app.de` frei/vorhanden ist. Falls nicht: Alternative wählen und den Namen
 **in allen Docs konsistent ersetzen** (`00-SPEC.md` §7.2, dieser Plan, `CLAUDE.md`).
 Die Domain taucht später in Store-Einträgen, Deep Links und im Impressum auf – ein
 späterer Wechsel ist teuer.
 
-- [ ] **Schritt 2: Rechtstexte als Markdown anlegen — eine Quelle, zwei Ziele**
+- [x] **Schritt 2: Rechtstexte als Markdown anlegen — eine Quelle, zwei Ziele**
 
 `assets/legal/*.md` ist die **einzige** Quelle. Website und App rendern beide daraus.
 Zwei Kopien pflegen zu müssen ist der sichere Weg zu widersprüchlichen Rechtstexten.
@@ -2155,13 +2159,13 @@ Apple nach Guideline 1.2 ab):
 > Recht. Als solche kennzeichnen (`<!-- ENTWURF – anwaltlich pruefen -->` oben in jeder
 > Datei) und vor dem Release ersetzen.
 
-- [ ] **Schritt 3: `tool/gen_website.dart` schreiben**
+- [x] **Schritt 3: `tool/gen_website.dart` schreiben**
 
 Liest `assets/legal/*.md`, rendert jede Datei in das HTML-Template und schreibt sie nach
 `website/`. Rund 60 Zeilen, verhindert dauerhaftes Auseinanderlaufen von App und Website.
 Aufruf: `dart run tool/gen_website.dart`.
 
-- [ ] **Schritt 4: `website/style.css` aus den Design-Tokens**
+- [x] **Schritt 4: `website/style.css` aus den Design-Tokens**
 
 Dieselben Farben und Schriften wie die App – Website und App sollen erkennbar
 zusammengehören. Werte aus `01-DESIGN-SYSTEM.md` Abschnitt 2 und 3 als CSS-Variablen:
@@ -2176,7 +2180,7 @@ zusammengehören. Werte aus `01-DESIGN-SYSTEM.md` Abschnitt 2 und 3 als CSS-Vari
 Schriften **lokal einbinden** (`website/fonts/`), nicht über die Google-Fonts-CDN –
 gleiche DSGVO-Begründung wie **G12** in der App.
 
-- [ ] **Schritt 5: `index.html` — Landingpage**
+- [x] **Schritt 5: `index.html` — Landingpage**
 
 Zweck ist nicht Marketing, sondern: Store-Pflichtfeld „Support-URL" bedienen und
 Vertrauen schaffen. Inhalt: Logo-Lockup, ein Satz was ASM ist, Store-Badges (später),
@@ -2186,12 +2190,16 @@ drei Screenshots, Links auf alle Rechtsseiten, `support@asm-app.de`.
 personenbezogene Daten und brauchst dafür eigene Datenschutz-Angaben. Eine
 `mailto:`-Adresse reicht und ist rechtlich sauberer.
 
-- [ ] **Schritt 6: `account-loeschen.html` — Google-Play-Pflichtseite**
+- [x] **Schritt 6: `account-loeschen.html` — Google-Play-Pflichtseite**
 
 Google verlangt eine **öffentlich erreichbare Web-URL** zur Löschung; die In-App-Löschung
 aus Task 2.6 allein genügt nicht. Die Seite muss beschreiben:
 welche Daten gelöscht werden, welche wie lange aufbewahrt werden und wie man die Löschung
 ohne installierte App anstößt (E-Mail an `support@`).
+
+> ⚠️ **Schritt 7 und 8 kann Sonnet nicht ausführen** — beides braucht Zugriff auf den
+> Hostinger-Account des Nutzers (Postfach anlegen, Dateien hochladen). Bleibt offen bis
+> der Nutzer das selbst macht.
 
 - [ ] **Schritt 7: E-Mail-Postfach einrichten**
 
@@ -2203,7 +2211,7 @@ Apple-Guideline 1.2 („veröffentlichte Kontaktmöglichkeit"), Löschanfragen, 
 Per Hostinger-Dateimanager oder FTP nach `public_html/`. Danach jede URL im Browser öffnen –
 HTTPS aktiv, kein Zertifikatsfehler, keine Weiterleitung.
 
-- [ ] **Schritt 9: Commit** — `feat(web): add landing page and legal documents`
+- [x] **Schritt 9: Commit** — `feat(web): add landing page and legal documents` (`b7741fb`)
 
 ### Teil B — blockiert bis Task 8.3 / 8.4
 
