@@ -63,6 +63,39 @@ void main() {
 
       expect(result, isNull);
     });
+
+    test('leitet /settings ohne Session zu /login mit from-Parameter um', () {
+      final result = redirect(
+        location: AsmRoutes.settings,
+        isLoggedIn: false,
+        emailConfirmed: false,
+      );
+
+      expect(result, '/login?from=${AsmRoutes.settings}');
+    });
+
+    test(
+      'leitet /profile/edit ohne Session zu /login um (Sub-Pfad von /profile)',
+      () {
+        final result = redirect(
+          location: AsmRoutes.editProfile,
+          isLoggedIn: false,
+          emailConfirmed: false,
+        );
+
+        expect(result, '/login?from=${AsmRoutes.editProfile}');
+      },
+    );
+
+    test('laesst /user/:id (Fremdprofil) ohne Session unangetastet — Browsing ist Gast erlaubt', () {
+      final result = redirect(
+        location: AsmRoutes.publicProfile('abc-123'),
+        isLoggedIn: false,
+        emailConfirmed: false,
+      );
+
+      expect(result, isNull);
+    });
   });
 
   group('blocksForAge', () {

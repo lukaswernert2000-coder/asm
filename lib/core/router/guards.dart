@@ -6,6 +6,7 @@ const List<String> _protectedRoutes = [
   AsmRoutes.favorites,
   AsmRoutes.myListings,
   AsmRoutes.profile,
+  AsmRoutes.settings,
 ];
 
 bool _isProtected(String location) {

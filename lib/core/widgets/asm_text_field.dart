@@ -13,6 +13,7 @@ class AsmTextField extends StatefulWidget {
     this.obscureText = false,
     this.readOnly = false,
     this.onTap,
+    this.maxLines = 1,
     super.key,
   });
 
@@ -23,6 +24,7 @@ class AsmTextField extends StatefulWidget {
   final bool obscureText;
   final bool readOnly;
   final VoidCallback? onTap;
+  final int maxLines;
 
   @override
   State<AsmTextField> createState() => _AsmTextFieldState();
@@ -82,6 +84,7 @@ class _AsmTextFieldState extends State<AsmTextField> {
             obscureText: widget.obscureText,
             readOnly: widget.readOnly,
             onTap: widget.onTap,
+            maxLines: widget.maxLines,
             style: AsmTextStyles.bodyM.copyWith(color: AsmColors.textPrimary),
             cursorColor: AsmColors.brandBright,
             decoration: const InputDecoration(

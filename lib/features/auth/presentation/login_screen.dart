@@ -111,8 +111,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               onPressed: _isValid && !_submitting ? _submit : null,
             ),
             const SizedBox(height: AsmSpacing.lg),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            // Wrap statt Row: bei "Noch kein Konto?" + Button-Innenabstand
+            // reicht die Breite auf schmalen Geraeten nicht (RenderFlex-
+            // Overflow) -- Wrap faellt dort einfach in eine zweite Zeile.
+            Wrap(
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text(
                   'Noch kein Konto?',

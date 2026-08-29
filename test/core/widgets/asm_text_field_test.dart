@@ -128,6 +128,23 @@ void main() {
     expect(tapped, isTrue);
   });
 
+  testWidgets('maxLines erlaubt mehrzeilige Eingabe (Standard bleibt 1)', (
+    tester,
+  ) async {
+    final controller = TextEditingController();
+    await tester.pumpWidget(
+      _wrap(AsmTextField(controller: controller, label: 'E-Mail')),
+    );
+    expect(tester.widget<TextField>(find.byType(TextField)).maxLines, 1);
+
+    await tester.pumpWidget(
+      _wrap(
+        AsmTextField(controller: controller, label: 'Bio', maxLines: 4),
+      ),
+    );
+    expect(tester.widget<TextField>(find.byType(TextField)).maxLines, 4);
+  });
+
   testWidgets(
     'unterdrueckt das Theme-Border des inneren TextFields in jedem Zustand '
     '(sonst zeichnet InputDecorator zusaetzlich zur Container-Border sein '

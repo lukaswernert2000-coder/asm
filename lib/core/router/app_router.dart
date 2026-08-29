@@ -9,6 +9,10 @@ import 'package:asm/features/auth/presentation/forgot_password_screen.dart';
 import 'package:asm/features/auth/presentation/login_screen.dart';
 import 'package:asm/features/auth/presentation/register_screen.dart';
 import 'package:asm/features/auth/presentation/reset_password_screen.dart';
+import 'package:asm/features/listings/presentation/my_listings_screen.dart';
+import 'package:asm/features/profile/presentation/edit_profile_screen.dart';
+import 'package:asm/features/profile/presentation/profile_screen.dart';
+import 'package:asm/features/profile/presentation/public_profile_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -74,10 +78,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: AsmRoutes.profile,
-                builder: (context, state) => const _BranchPlaceholder(
-                  icon: LucideIcons.user,
-                  title: 'Profil',
-                ),
+                builder: (context, state) => const ProfileScreen(),
               ),
             ],
           ),
@@ -85,7 +86,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AsmRoutes.create,
-        builder: (context, state) => const _CreatePlaceholder(),
+        builder: (context, state) => const _TitledPlaceholder(
+          icon: LucideIcons.plus,
+          title: 'Inserat erstellen',
+        ),
       ),
       GoRoute(
         path: AsmRoutes.register,
@@ -107,6 +111,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AsmRoutes.confirmEmail,
         builder: (context, state) => const ConfirmEmailRequiredScreen(),
       ),
+      GoRoute(
+        path: AsmRoutes.editProfile,
+        builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: AsmRoutes.myListings,
+        builder: (context, state) => const MyListingsScreen(),
+      ),
+      GoRoute(
+        path: '/user/:id',
+        builder: (context, state) =>
+            PublicProfileScreen(userId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: AsmRoutes.favorites,
+        builder: (context, state) => const _TitledPlaceholder(
+          icon: LucideIcons.heart,
+          title: 'Favoriten',
+        ),
+      ),
+      GoRoute(
+        path: AsmRoutes.settings,
+        builder: (context, state) => const _TitledPlaceholder(
+          icon: LucideIcons.settings,
+          title: 'Einstellungen',
+        ),
+      ),
     ],
   );
 });
@@ -125,17 +156,19 @@ class _BranchPlaceholder extends StatelessWidget {
   }
 }
 
-class _CreatePlaceholder extends StatelessWidget {
-  const _CreatePlaceholder();
+/// Fuer Routen, die per `push` (mit Zurueck-Pfeil) statt als Branch erreicht
+/// werden -- anders als [_BranchPlaceholder] mit eigener `AppBar`.
+class _TitledPlaceholder extends StatelessWidget {
+  const _TitledPlaceholder({required this.icon, required this.title});
+
+  final IconData icon;
+  final String title;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: const AsmEmptyState(
-        icon: LucideIcons.plus,
-        title: 'Inserat erstellen',
-      ),
+      appBar: AppBar(title: Text(title)),
+      body: AsmEmptyState(icon: icon, title: title),
     );
   }
 }

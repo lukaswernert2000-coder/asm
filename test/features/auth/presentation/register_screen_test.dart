@@ -134,7 +134,7 @@ void main() {
 
     await tester.tapOnText(find.textRange.ofSubstring('AGB'));
 
-    expect(launchedUrls, [Uri.parse('https://asm-app.de/agb')]);
+    expect(launchedUrls, [Uri.parse('https://asm-app.de/agb.html')]);
   });
 
   testWidgets(
@@ -146,7 +146,9 @@ void main() {
         find.textRange.ofSubstring('Datenschutzerklärung'),
       );
 
-      expect(launchedUrls, [Uri.parse('https://asm-app.de/datenschutz')]);
+      expect(launchedUrls, [
+        Uri.parse('https://asm-app.de/datenschutz.html'),
+      ]);
     },
   );
 }

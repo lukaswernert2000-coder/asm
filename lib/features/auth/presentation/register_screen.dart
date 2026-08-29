@@ -67,10 +67,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _birthDateController = TextEditingController();
 
   late final _agbLinkRecognizer = TapGestureRecognizer()
-    ..onTap = () => widget.launchLink(Uri.parse('https://asm-app.de/agb'));
+    ..onTap = () => widget.launchLink(Uri.parse('https://asm-app.de/agb.html'));
   late final _datenschutzLinkRecognizer = TapGestureRecognizer()
     ..onTap = () =>
-        widget.launchLink(Uri.parse('https://asm-app.de/datenschutz'));
+        widget.launchLink(Uri.parse('https://asm-app.de/datenschutz.html'));
 
   DateTime? _birthDate;
   bool _agbChecked = false;
