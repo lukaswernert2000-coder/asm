@@ -144,7 +144,10 @@ Details in DECISIONS.md. `blocksForAge()` bleibt unverändert fertig/getestet, a
 **Nicht live auf Emulator/Gerät verifiziert** — 194 Tests grün, `flutter analyze`
 0 Probleme, verlässt sich wie schon bei Task 2.5 auf die Testsuite; das Projekt hat bewusst
 keine Web-Plattform (nur Android/iOS seit Task 0.1), ein schneller Browser-Check war deshalb
-nicht möglich.
+nicht möglich. Task-3.1-Push ist CI-grün, erst nach einem Formatierungs-Fix
+([Run #14](https://github.com/lukaswernert2000-coder/asm/actions/runs/33278330235) rot an
+`dart format --set-exit-if-changed .`, [Run #15](https://github.com/lukaswernert2000-coder/asm/actions/runs/33278516881)
+`conclusion: success`).
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
