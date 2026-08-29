@@ -603,4 +603,36 @@ per `supabase config push` erhoehen und danach zwingend zurueckdrehen, dann mit
 kopieren und via `adb shell am start -a android.intent.action.VIEW -d "<link>"` oeffnen —
 sollte laut Code-Analyse zu `AuthChangeEvent.signedIn` und Redirect auf `/` fuehren.
 
+## 2026-08-29 · Bugfix (kein Plan-Task) · `AsmTextField` zeichnete einen doppelten Rand — seit M0 vorhanden, in Task 2.3 vom Nutzer entdeckt
+
+Nutzer meldete: Eingabefelder auf dem Registrieren-Screen sehen aus, "als hätten sie zwei
+Ränder". Root Cause (per Lesen von `flutter/lib/src/material/input_decorator.dart`
+bestätigt, nicht vermutet): `AsmTextField`s innerer `TextField` setzte nur
+`InputDecoration(border: InputBorder.none, ...)` — die generische `border`-Eigenschaft.
+`InputDecorator._buildBorder` (Zeile ~2362) nimmt aber bevorzugt die
+zustandsspezifischen Border-Felder (`enabledBorder`/`focusedBorder`/`errorBorder`/
+`focusedErrorBorder`), und faellt nur auf die generische `border` zurueck, wenn diese
+`null` sind. Da `AsmTextField` diese vier Felder nie explizit setzte, fuellte
+`InputDecoration.applyDefaults()` sie aus `AsmTheme.dark`s `inputDecorationTheme` auf
+(das echte `OutlineInputBorder`s fuer genau diese vier Zustaende definiert, fuer die
+Material-3-Formularfelder ausserhalb dieses Custom-Widgets gedacht). Ergebnis: der innere
+`TextField` zeichnete sein eigenes, vom Theme geerbtes Rand-Rechteck **zusaetzlich** zur
+`Border.all(...)` des aeusseren `Container`, horizontal eingerueckt durch dessen Padding
+— zwei konzentrische abgerundete Rechtecke. Betraf **jedes** Eingabefeld in der App
+(Login, Registrierung, Passwort vergessen, Neues Passwort, ...) seit `asm_text_field.dart`
+in M0 entstand — nur bisher nicht aufgefallen, weil `asm_text_field_test.dart`s
+Test-Wrapper ein Standard-`MaterialApp` **ohne** `AsmTheme.dark` nutzt und den Bug
+strukturell gar nicht sehen konnte (die Tests pruefen nur die Border-Farbe des aeusseren
+Containers, nie den inneren `TextField`).
+
+**Fix:** alle sechs Border-Felder (`border`, `enabledBorder`, `focusedBorder`,
+`errorBorder`, `focusedErrorBorder`, `disabledBorder`) explizit auf `InputBorder.none`
+gesetzt, nicht nur die generische `border`. Regressionstest prueft direkt, dass alle
+sechs Felder auf der Widget-Instanz `InputBorder.none` sind (theme-unabhaengig, deckt
+den tatsaechlichen Mechanismus ab). Visuell auf dem Emulator verifiziert: Vorher/Nachher-
+Crop-Vergleich (4×-Zoom auf eine Feldecke) zeigt vorher zwei sichtbare Randlinien, danach
+eine. **Nicht angefasst:** der Test-Wrapper ohne echtes Theme — bliebe ein blinder Fleck
+fuer aehnliche Theme-Leck-Bugs, aber Fix des Wrappers war nicht Teil dieser Meldung und
+haette den Scope unnoetig vergroessert.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

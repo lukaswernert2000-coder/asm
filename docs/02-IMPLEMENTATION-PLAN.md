@@ -41,7 +41,7 @@ Firebase Cloud Messaging · Sentry
 | **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.3 |
 | **Als Nächstes** | **Task 2.4 — Auth-Guards im Router** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `85232fd` feat(auth): add login, password reset and deep link callback |
+| **Letzter Commit** | `ca685f7` fix(ui): remove double border on AsmTextField (Bugfix, kein Task) |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`), CI lief zuletzt für M0 real und grün
