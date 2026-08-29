@@ -38,10 +38,10 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M1 · Backend und Datenmodell |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1 · Task 1.2 · Task 1.3 |
-| **Als Nächstes** | **Task 1.4 — Migration: Inserate und Bilder** |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · Task 1.1 · Task 1.2 · Task 1.3 · Task 1.4 |
+| **Als Nächstes** | **Task 1.5 — Migration: Favoriten, Blocks, Meldungen** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `5747008` feat(db): add categories with asvz taxonomy seed |
+| **Letzter Commit** | `f3d3c13` feat(db): add listings and images with age gate and f-marking constraint |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist jetzt auf GitHub (`lukaswernert2000-coder/asm`), CI lief real und grün
@@ -1057,7 +1057,8 @@ from public.categories where slug like 'langwaffen%';
 
 **Dateien:** Create `supabase/migrations/0003_listings.sql`
 
-- [ ] **Schritt 1: Schema**
+- [x] **Schritt 1: Schema** — beide `uuid_generate_v4()`-Defaults auf `gen_random_uuid()`
+      umgestellt (siehe Task 1.3 in [`DECISIONS.md`](DECISIONS.md))
 
 ```sql
 -- 0003_listings.sql
@@ -1195,7 +1196,8 @@ create policy listing_images_owner_write on public.listing_images
   );
 ```
 
-- [ ] **Schritt 2: Die Waffenrecht-Constraint testen** (das ist der wichtigste Test im Projekt)
+- [x] **Schritt 2: Die Waffenrecht-Constraint testen** (das ist der wichtigste Test im Projekt)
+      — bestätigt: exakt `new row violates check constraint "f_marking_required_above_half_joule"`
 
 ```sql
 -- muss FEHLSCHLAGEN:
@@ -1206,9 +1208,9 @@ values ('<uuid>', '<cat>', 'Testgewehr ohne F', 'Beschreibung mit mehr als dreis
 -- ERWARTET: new row violates check constraint "f_marking_required_above_half_joule"
 ```
 
-- [ ] **Schritt 3: Altersgate testen** — mit einem Nutzer ohne `birth_date`
-      `select count(*) from listings where category_id = '<langwaffen>'` → **0**
-- [ ] **Schritt 4: Commit** — `feat(db): add listings and images with age gate and f-marking constraint`
+- [x] **Schritt 3: Altersgate testen** — nur strukturell (Policy-Definition geprüft), kein
+      echter Nutzer ohne `birth_date` verfügbar. Siehe [`DECISIONS.md`](DECISIONS.md).
+- [x] **Schritt 4: Commit** — `feat(db): add listings and images with age gate and f-marking constraint`
 
 ---
 

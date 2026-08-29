@@ -284,4 +284,16 @@ die Zahl im Plan war erkennbar nur eine grobe Vorab-Schätzung ("~60"). Alle 72 
 Spec 1:1 übernommen, keine ausgelassen oder erfunden. Verifiziert: Kinderzahl pro
 Hauptkategorie stimmt exakt mit der Spec-Tabelle überein, Flags korrekt auf allen Ebenen vererbt.
 
+## 2026-08-29 · Task 1.4 · Altersgate-Test (Schritt 3) wieder nur strukturell — gleicher Grund wie Task 1.2
+
+Wie bei Task 1.2 fehlt ein echter Nutzer ohne `birth_date`, um die RLS-Policy `listings_public_read`
+funktional zu testen (`auth.users` bleibt für den Classifier tabu). Stattdessen die Policy-Definition
+per `pg_policies` geprüft: `qual` verlangt exakt `status in (...) and (not exists (... requires_age_18)
+or is_adult())` — strukturell korrekt verdrahtet. Die Waffenrecht-Constraint (Schritt 2, der laut Plan
+wichtigste Test) brauchte dagegen keine echte Identität (reine Tabellen-Check-Constraint, per Rollback-
+Insert mit Zufalls-UUIDs getestet) und wurde live bestätigt. **Nachholen:** siehe die offene Notiz zu
+Task 1.2 — sobald ein echter Registrierungs-Flow existiert, in einem Rutsch beides live testen:
+`birth_date`-Spaltenschutz und Altersgate auf `listings`, jeweils mit einem Adult- und einem
+Minderjährigen-Test-Account.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->
