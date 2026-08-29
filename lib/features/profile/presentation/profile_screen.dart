@@ -147,6 +147,12 @@ class _ProfileContent extends ConsumerWidget {
           color: AsmColors.dangerText,
           onTap: () => ref.read(authRepositoryProvider).signOut(),
         ),
+        _MenuRow(
+          icon: LucideIcons.trash2,
+          label: 'Account löschen',
+          color: AsmColors.dangerText,
+          onTap: () => context.push(AsmRoutes.deleteAccount),
+        ),
       ],
     );
   }

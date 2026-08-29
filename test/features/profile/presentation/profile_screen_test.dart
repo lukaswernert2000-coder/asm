@@ -174,4 +174,39 @@ void main() {
       expect(find.widgetWithText(AppBar, 'Meine Inserate'), findsOneWidget);
     },
   );
+
+  testWidgets('Account löschen navigiert zur Loesch-Bestaetigung', (
+    tester,
+  ) async {
+    when(() => profileRepository.current()).thenAnswer((_) async => profile);
+    tester.view.physicalSize = const Size(400, 2000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final container = ProviderContainer(
+      overrides: [
+        authRepositoryProvider.overrideWithValue(authRepository),
+        profileRepositoryProvider.overrideWithValue(profileRepository),
+        listingRepositoryProvider.overrideWithValue(listingRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final router = container.read(appRouterProvider);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await tester.pump();
+    router.go(AsmRoutes.profile);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Account löschen'));
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(AppBar, 'Account löschen'), findsOneWidget);
+  });
 }

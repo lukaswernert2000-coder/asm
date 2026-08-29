@@ -5,6 +5,7 @@ abstract final class AsmRoutes {
   static const chats = '/chats';
   static const profile = '/profile';
   static const editProfile = '/profile/edit';
+  static const deleteAccount = '/profile/delete-account';
 
   static const login = '/login';
   static const register = '/register';

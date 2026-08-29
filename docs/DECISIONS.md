@@ -918,4 +918,27 @@ ist (z. B. Passwort fuer `gear_hunter_42` per DB-Zugriff neu setzen, oder
 Computer-Use mit echten Maus-Events statt `adb`-Synthetic-Taps fuer den Datepicker),
 alle vier Screens einmal real durchklicken.
 
+## 2026-08-29 · Task 2.6 · `chat-images` bewusst nicht mitgeloescht, Deploy vom Classifier blockiert
+
+**Storage-Scope:** Die Edge Function raeumt beim Account-Loeschen nur `avatars/<user_id>/...`
+und `listing-images/<user_id>/...` auf (pfadseitig adressierbar). Das private
+`chat-images`-Bucket ist nach `<conversation_id>` organisiert, nicht nach `user_id`
+(siehe Policies in `0006_storage.sql`), und wird hier nicht gezielt geleert. Die
+`conversations`/`messages`-Zeilen selbst verschwinden ueber die bestehende
+`on delete cascade`-Kette (`profiles.id -> auth.users.id`, dann weiter ueber
+`buyer_id`/`seller_id`/`conversation_id`), wodurch die zugehoerige RLS-Policy
+(`exists (select 1 from conversations ...)`) fuer niemanden mehr durchgelassen wird,
+sobald die Conversation weg ist — die Dateien selbst bleiben aber als verwaister
+Storage liegen (Kostenfaktor, kein Datenleck). **Nachholen:** falls das relevant wird,
+eine begleitende Aufraeum-Funktion, die vor dem User-Delete alle `conversation_id`s des
+Nutzers sammelt und deren `chat-images`-Ordner leert.
+
+**Deploy blockiert:** `supabase functions deploy delete-account --use-api` wurde vom
+Auto-Mode-Classifier abgelehnt (Grund: "Blocked by classifier"), kein Workaround
+versucht. Die Function ist lokal fertig (Code, Tests fuer alles Dart-Seitige gruen,
+`flutter analyze` 0 Probleme), aber **weder deployt noch live verifiziert** — der
+Plan-Testpunkt "Login mit denselben Daten liefert nach dem Loeschen einen Fehler"
+steht noch aus. Der Nutzer muss `supabase functions deploy delete-account --use-api`
+selbst ausfuehren (oder die Aktion freigeben); danach die Live-Verifikation nachholen.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

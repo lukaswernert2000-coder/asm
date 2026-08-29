@@ -10,6 +10,7 @@ import 'package:asm/features/auth/presentation/login_screen.dart';
 import 'package:asm/features/auth/presentation/register_screen.dart';
 import 'package:asm/features/auth/presentation/reset_password_screen.dart';
 import 'package:asm/features/listings/presentation/my_listings_screen.dart';
+import 'package:asm/features/profile/presentation/delete_account_screen.dart';
 import 'package:asm/features/profile/presentation/edit_profile_screen.dart';
 import 'package:asm/features/profile/presentation/profile_screen.dart';
 import 'package:asm/features/profile/presentation/public_profile_screen.dart';
@@ -114,6 +115,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AsmRoutes.editProfile,
         builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: AsmRoutes.deleteAccount,
+        builder: (context, state) => const DeleteAccountScreen(),
       ),
       GoRoute(
         path: AsmRoutes.myListings,

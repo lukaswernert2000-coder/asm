@@ -39,9 +39,9 @@ Firebase Cloud Messaging · Sentry
 |---|---|
 | **Meilenstein** | M2 · Authentifizierung und Profil |
 | **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · Task 2.1–2.5 · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) |
-| **Als Nächstes** | **Task 2.6 — Account löschen (Store-Pflicht)** |
+| **Als Nächstes** | **Task 2.6 fertigstellen — Edge Function deployen und live verifizieren** (Code fertig, siehe unten) |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `ec1d562` feat(profile): add profile view and edit screens |
+| **Letzter Commit** | `feat(profile): add in-app account deletion` (Edge Function + Screen, ungepusht) |
 | **Stand vom** | 2026-08-29 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -79,6 +79,16 @@ Bug ist. Neu offen seit Task 2.4: das Altersgate (`blocksForAge` in `guards.dart
 fertig und getestet, aber an keine Route angebunden — `/category/:slug` kommt erst in M3;
 und ob "eingeloggt, aber E-Mail unbestätigt" (`/create`-Hinweis-Regel) über einen normalen
 Login je erreichbar ist, wurde nicht live geprüft. Beides mit Details in DECISIONS.md.
+**Task 2.6:** `delete-account`-Edge-Function (erste Function im Projekt, `@supabase/server`
+mit `auth: "user"`), `DeleteAccountScreen` mit Bestätigungsdialog (Nutzername eintippen),
+neue Menüzeile in `ProfileScreen`, `error_mapper.dart` um `FunctionException` erweitert.
+Alle Dart-Tests grün (168), `flutter analyze` 0 Probleme. Die Webseite
+`account-loeschen.html` aus Task 8.0 erfüllt die Google-Play-Pflicht bereits, ein
+veralteter Navigationspfad darin wurde korrigiert. **Nicht deployt und nicht live
+verifiziert:** `supabase functions deploy` wurde vom Auto-Mode-Classifier blockiert —
+der Nutzer muss den Deploy selbst ausführen, danach steht die Live-Verifikation
+("Login mit denselben Daten scheitert nach dem Löschen") noch aus. Details und die
+bewusst ausgesparte `chat-images`-Bereinigung in DECISIONS.md.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -1867,10 +1877,12 @@ Edge Function mit `service_role`-Key (nur dort, nie im Client, G7):
 2. Storage-Objekte des Nutzers löschen
 3. `auth.admin.deleteUser(user_id)` → Cascade räumt `profiles`, `listings`, `messages` auf
 
-- [ ] Bestätigungsdialog: Nutzer muss seinen Nutzernamen eintippen
-- [ ] Zusätzlich eine öffentliche Webseite `asm-app.de/account-loeschen` (Google-Play-Pflicht)
-- [ ] Test: Nach dem Löschen liefert Login mit denselben Daten einen Fehler
-- [ ] Commit — `feat(profile): add in-app account deletion`
+- [x] Bestätigungsdialog: Nutzer muss seinen Nutzernamen eintippen
+- [x] Zusätzlich eine öffentliche Webseite `asm-app.de/account-loeschen` (Google-Play-Pflicht)
+      — bereits in Task 8.0 gebaut, hier nur geprüft und einen veralteten Pfad korrigiert
+- [ ] Test: Nach dem Löschen liefert Login mit denselben Daten einen Fehler — **offen**,
+      Deploy vom Auto-Mode-Classifier blockiert, siehe DECISIONS.md
+- [x] Commit — `feat(profile): add in-app account deletion`
 
 ## Task 2.7: Splash, Onboarding und Willkommen (F19)
 

@@ -10,6 +10,7 @@ AppException mapError(Object error) {
     PostgrestException() => _mapPostgrestException(error),
     AuthException() => _mapAuthException(error),
     StorageException() => _mapStorageException(error),
+    FunctionException() => _mapFunctionException(error),
     SocketException() => const NetworkException(),
     AppException() => error,
     _ => const UnknownException(),
@@ -36,6 +37,13 @@ AppException _mapStorageException(StorageException error) {
   return switch (error.statusCode) {
     '404' => const NotFoundException(),
     '401' || '403' => const AuthRequiredException(),
+    _ => const UnknownException(),
+  };
+}
+
+AppException _mapFunctionException(FunctionException error) {
+  return switch (error.status) {
+    401 => const AuthRequiredException(),
     _ => const UnknownException(),
   };
 }
