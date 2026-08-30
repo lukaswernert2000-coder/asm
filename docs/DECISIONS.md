@@ -1247,5 +1247,9 @@ in M5/M6, sobald `blocksForAge()` (`guards.dart`, weiterhin ungebunden, Kommenta
 neue Zielaktion aktualisiert) tatsächlich verdrahtet wird. **Migration lokal geschrieben,
 `supabase db push` aber vom Auto-Mode-Classifier blockiert** (Zugriff auf die geteilte
 Remote-Dev-Datenbank) — Push muss der Nutzer selbst ausführen oder explizit freigeben.
+Der Code-Commit selbst ist CI-grün
+([Run](https://github.com/lukaswernert2000-coder/asm/actions/runs/33307529592),
+`conclusion: success`) — das prüft nur `flutter analyze`/`flutter test`, nicht die
+DB-Migration.
 
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

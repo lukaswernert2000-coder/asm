@@ -42,7 +42,7 @@ Firebase Cloud Messaging · Sentry
 | **Als Nächstes** | **M4 — Task 4.1 Bild-Pipeline** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
 | **Offen (Infra)** | `supabase db push` für `0008_listings_visibility_fix.sql` — vom Auto-Mode-Classifier blockiert, Nutzer muss selbst pushen oder freigeben |
-| **Letzter Commit** | `docs: confirm CI green on the task 3.4 push` |
+| **Letzter Commit** | `fix(listings): drop age-based row filtering from public read policy` |
 | **Stand vom** | 2026-08-30 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
