@@ -41,7 +41,7 @@ Firebase Cloud Messaging · Sentry
 | **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** |
 | **Als Nächstes** | **M5 — Task 5.1 Detailseite** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `feat(listings): add listing management and status changes` |
+| **Letzter Commit** | `docs: confirm CI green on the task 4.3 push` |
 | **Stand vom** | 2026-08-30 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -327,7 +327,9 @@ entfernt alle Objekte — bewusst nicht über die `listing_images`-Tabelle, die 
 Erstellen-Flow aus Task 4.2 nie befüllt (nur Storage-Upload, kein Insert in die Tabelle; damit
 ist `cover_path` aus `search_listings` aktuell für jedes Inserat `null` — bekannte, nicht
 Teil dieses Tasks behobene Lücke). 40 neue/erweiterte Tests, 309 insgesamt grün,
-`flutter analyze` 0 Probleme.
+`flutter analyze` 0 Probleme. Task-4.3-Push ist auf Anhieb CI-grün
+([Run #33](https://github.com/lukaswernert2000-coder/asm/actions/runs/33336515631),
+`conclusion: success`).
 
 **Live auf `flutter_api34` verifiziert**, gegen das echte `M4A1`-Testinserat aus Task 4.2
 (Konto `gear_tester_m4`): alle vier Tabs, Leerzustände, Aktionsmenü zeigt je nach Status die
