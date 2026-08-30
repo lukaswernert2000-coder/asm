@@ -1232,4 +1232,20 @@ mit Debug-Overlay. **Lehre:** Layout-Kollisionen mit `AsmShell`-Chrome (Debug-Ov
 System-Insets) sind nur live sichtbar, siehe schon den `ProfileRepository.byId()`-Fund beim
 M2-Komplettflow weiter oben (Eintrag vom 2026-08-29).
 
+## 2026-08-30 · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst — `listings_public_read` filtert nicht mehr nach Alter
+
+Nutzerentscheidung explizit bestätigt: Inserate und Kategorien bleiben für **alle** sichtbar
+(Gast, Minderjährig, Erwachsen), das Altersgate greift ausschließlich an der künftigen
+Kauf-/Kontaktieren-Aktion (Task 5.1 "Nachricht schreiben"), nicht an der Zeilen-Sichtbarkeit.
+Neue Migration `0008_listings_visibility_fix.sql` löscht und ersetzt `listings_public_read`
+ohne den `is_adult()`/`requires_age_18`-Teil (ursprüngliche Policy aus `0003_listings.sql`
+blieb als historischer Eintrag unverändert — Migrationen werden nicht rückwirkend editiert,
+da `supabase db push` eine bereits angewandte Datei sonst stillschweigend ignoriert und der
+Fix nie ankäme). `public.is_adult()` bleibt bestehen, wird aber aktuell von keiner Policy
+mehr benutzt — vorgesehen für eine künftige serverseitige Absicherung der Kontaktieren-Aktion
+in M5/M6, sobald `blocksForAge()` (`guards.dart`, weiterhin ungebunden, Kommentar auf die
+neue Zielaktion aktualisiert) tatsächlich verdrahtet wird. **Migration lokal geschrieben,
+`supabase db push` aber vom Auto-Mode-Classifier blockiert** (Zugriff auf die geteilte
+Remote-Dev-Datenbank) — Push muss der Nutzer selbst ausführen oder explizit freigeben.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

@@ -33,9 +33,10 @@ String? redirect({
   return null;
 }
 
-/// Reine Entscheidungslogik fuers Altersgate auf Kategorien mit
-/// `requires_age_18`. Noch an keine Route angebunden: `/category/:slug`
-/// existiert erst ab M3 (siehe DECISIONS.md).
+/// Reine Entscheidungslogik fuers Altersgate auf der Kauf-/Kontaktieren-Aktion
+/// (Task 5.1 "Nachricht schreiben"). Inserate und Kategorien selbst sind fuer
+/// alle sichtbar -- das Gate sperrt nur diese Aktion. Noch an keinen Button
+/// angebunden: Task 5.1 existiert erst ab M5 (siehe DECISIONS.md).
 bool blocksForAge({required bool requiresAge18, required bool isAdult}) {
   return requiresAge18 && !isAdult;
 }
