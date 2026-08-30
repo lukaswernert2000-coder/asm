@@ -38,7 +38,7 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M3 abgeschlossen → M4 · Inserat erstellen |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) |
+| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** |
 | **Als Nächstes** | **M4 — Task 4.2 Erstellen-Flow, 4 Schritte** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
 | **Offen (Infra)** | `supabase db push` für `0008_listings_visibility_fix.sql` — vom Auto-Mode-Classifier blockiert, Nutzer muss selbst pushen oder freigeben |
@@ -391,13 +391,13 @@ nicht installiert. Nur Git und Java sind vorhanden.**
 
 ### Was installiert werden muss (Windows)
 
-- [ ] **Flutter SDK** (stable) → <https://docs.flutter.dev/get-started/install/windows>
+- [x] **Flutter SDK** (stable) → <https://docs.flutter.dev/get-started/install/windows>
       Nach `C:\src\flutter` entpacken, `C:\src\flutter\bin` in die PATH-Variable.
       **Nicht** in einen Ordner mit Leerzeichen oder Umlauten legen.
-- [ ] **Android Studio** (inkl. Android SDK, Platform-Tools, ein Emulator-Image API 34)
-- [ ] **Git** – bereits vorhanden ✅
-- [ ] **VS Code** + Extensions "Flutter" und "Dart" (oder Android Studio direkt)
-- [ ] Prüfen mit:
+- [x] **Android Studio** (inkl. Android SDK, Platform-Tools, ein Emulator-Image API 34)
+- [x] **Git** – bereits vorhanden ✅
+- [x] **VS Code** + Extensions "Flutter" und "Dart" (oder Android Studio direkt)
+- [x] Prüfen mit:
 
 ```bash
 flutter doctor -v
@@ -431,7 +431,7 @@ erster iOS-Build in **M8**. Bis dahin regelmäßig `flutter build ios --no-codes
 
 **Dateien:** gesamtes Projektgerüst
 
-- [ ] **Schritt 1: Projekt erzeugen — im vorhandenen Ordner, nicht in einem Unterordner**
+- [x] **Schritt 1: Projekt erzeugen — im vorhandenen Ordner, nicht in einem Unterordner**
 
 Der Ordner `ASM-Airsoft-Marketplace/` mit `docs/` existiert bereits. Das Flutter-Projekt
 wird **direkt darin** erzeugt, damit `docs/` Teil des Repos ist und die relativen Pfade
@@ -454,28 +454,28 @@ ASM-Airsoft-Marketplace/     <- Repo-Wurzel
 └── pubspec.yaml
 ```
 
-- [ ] **Schritt 2: Toolchain dokumentieren**
+- [x] **Schritt 2: Toolchain dokumentieren**
 
 `flutter --version` ausführen und die Ausgabe in `docs/TOOLCHAIN.md` festhalten
 (Flutter-Version, Dart-Version, Datum). Alle späteren Tasks gehen von genau dieser Version aus.
 
-- [ ] **Schritt 3: Git initialisieren**
+- [x] **Schritt 3: Git initialisieren**
 
 ```bash
 git init && git add -A && git commit -m "chore: flutter project scaffold"
 ```
 
-- [ ] **Schritt 4: `.gitignore` erweitern**
+- [x] **Schritt 4: `.gitignore` erweitern**
 
 Ergänze: `env/*.json`, `!env/example.json`, `*.jks`, `key.properties`,
 `ios/Runner/GoogleService-Info.plist`, `android/app/google-services.json`,
 `.env`, `coverage/`
 
-- [ ] **Schritt 5: `minSdkVersion` auf 26 setzen**
+- [x] **Schritt 5: `minSdkVersion` auf 26 setzen**
 
 In `android/app/build.gradle.kts`: `minSdk = 26`.
 
-- [ ] **Schritt 6: App auf einem echten Gerät starten**
+- [x] **Schritt 6: App auf einem echten Gerät starten**
 
 ```bash
 flutter devices
@@ -484,7 +484,7 @@ flutter run
 
 **Akzeptanz:** Die Counter-Demo-App läuft auf einem echten Android-Gerät oder Emulator.
 
-- [ ] **Schritt 7: Commit** — `chore: configure android min sdk and gitignore`
+- [x] **Schritt 7: Commit** — `chore: configure android min sdk and gitignore`
 
 ---
 
@@ -492,7 +492,7 @@ flutter run
 
 **Dateien:** `pubspec.yaml`
 
-- [ ] **Schritt 1: Pakete hinzufügen**
+- [x] **Schritt 1: Pakete hinzufügen**
 
 ```bash
 flutter pub add flutter_riverpod riverpod_annotation go_router supabase_flutter \
@@ -512,13 +512,13 @@ flutter pub add flutter_localizations --sdk=flutter
 > kommen erst in **M6**. Vorher nicht hinzufügen – sie machen den Build langsamer und
 > erzwingen Plattform-Konfiguration, die noch nicht gebraucht wird.
 
-- [ ] **Schritt 2: Codegen-Skript anlegen**
+- [x] **Schritt 2: Codegen-Skript anlegen**
 
 In `Makefile` bzw. `tool/gen.sh`:
 `dart run build_runner build --delete-conflicting-outputs`
 
-- [ ] **Schritt 3: `flutter analyze`** → 0 Issues
-- [ ] **Schritt 4: Commit** — `chore: add core dependencies`
+- [x] **Schritt 3: `flutter analyze`** → 0 Issues
+- [x] **Schritt 4: Commit** — `chore: add core dependencies`
 
 ---
 
@@ -526,7 +526,7 @@ In `Makefile` bzw. `tool/gen.sh`:
 
 **Dateien:** `analysis_options.yaml`
 
-- [ ] **Schritt 1: Konfiguration schreiben**
+- [x] **Schritt 1: Konfiguration schreiben**
 
 ```yaml
 include: package:very_good_analysis/analysis_options.yaml
@@ -550,8 +550,8 @@ linter:
     avoid_print: true
 ```
 
-- [ ] **Schritt 2: `flutter analyze`** → 0 Issues (Demo-Code aus `main.dart` ggf. aufräumen)
-- [ ] **Schritt 3: Commit** — `chore: configure very_good_analysis linting`
+- [x] **Schritt 2: `flutter analyze`** → 0 Issues (Demo-Code aus `main.dart` ggf. aufräumen)
+- [x] **Schritt 3: Commit** — `chore: configure very_good_analysis linting`
 
 ---
 
@@ -566,7 +566,7 @@ linter:
 **Produziert:** `AsmColors`, `AsmSpacing`, `AsmRadius`, `AsmDuration`, `AsmTextStyles`, `AsmTheme.dark`
 — wird von **allen** späteren Tasks verwendet.
 
-- [ ] **Schritt 1: Schriften besorgen und einbinden**
+- [x] **Schritt 1: Schriften besorgen und einbinden**
 
 Inter und Barlow Condensed von <https://fonts.google.com> als ZIP herunterladen
 (**nicht** über das `google_fonts`-Paket, siehe G12), die benötigten Schnitte nach
@@ -599,7 +599,7 @@ flutter:
           weight: 700
 ```
 
-- [ ] **Schritt 2: Failing Test schreiben**
+- [x] **Schritt 2: Failing Test schreiben**
 
 ```dart
 // test/core/theme/asm_theme_test.dart
@@ -638,16 +638,16 @@ void main() {
 }
 ```
 
-- [ ] **Schritt 3: Test laufen lassen** — `flutter test test/core/theme/` → **FAIL** (Dateien fehlen)
+- [x] **Schritt 3: Test laufen lassen** — `flutter test test/core/theme/` → **FAIL** (Dateien fehlen)
 
-- [ ] **Schritt 4: Die vier Theme-Dateien anlegen**
+- [x] **Schritt 4: Die vier Theme-Dateien anlegen**
 
 Vollständiger Code steht in [`01-DESIGN-SYSTEM.md`, Abschnitt 8](01-DESIGN-SYSTEM.md#8-fertiger-themedart).
 **Übernimm ihn wörtlich.**
 
-- [ ] **Schritt 5: Test laufen lassen** → **PASS**
+- [x] **Schritt 5: Test laufen lassen** → **PASS**
 
-- [ ] **Schritt 6: `main.dart` und `app.dart` auf das Theme umstellen**
+- [x] **Schritt 6: `main.dart` und `app.dart` auf das Theme umstellen**
 
 ```dart
 // lib/app.dart
@@ -671,8 +671,8 @@ class AsmApp extends StatelessWidget {
 }
 ```
 
-- [ ] **Schritt 7: Optisch prüfen** — App starten, Hintergrund ist `#171A18`, Text ist `#E8EAE5`
-- [ ] **Schritt 8: Commit** — `feat(theme): add tactical olive design tokens and theme`
+- [x] **Schritt 7: Optisch prüfen** — App starten, Hintergrund ist `#171A18`, Text ist `#E8EAE5`
+- [x] **Schritt 8: Commit** — `feat(theme): add tactical olive design tokens and theme`
 
 ---
 
@@ -692,7 +692,7 @@ class AsmApp extends StatelessWidget {
 
 Spezifikationen: [`01-DESIGN-SYSTEM.md` Abschnitt 5](01-DESIGN-SYSTEM.md#5-komponenten-spezifikationen).
 
-- [ ] **Schritt 1: Failing Tests für `AsmButton`**
+- [x] **Schritt 1: Failing Tests für `AsmButton`**
 
 ```dart
 // test/core/widgets/asm_button_test.dart
@@ -751,15 +751,15 @@ void main() {
 }
 ```
 
-- [ ] **Schritt 2: Tests laufen lassen** → **FAIL**
-- [ ] **Schritt 3: `AsmButton` implementieren** (4 Varianten laut Design-System 5.1)
-- [ ] **Schritt 4: Tests laufen lassen** → **PASS**
-- [ ] **Schritt 5: Restliche sechs Widgets implementieren**, jeweils mit mindestens einem
+- [x] **Schritt 2: Tests laufen lassen** → **FAIL**
+- [x] **Schritt 3: `AsmButton` implementieren** (4 Varianten laut Design-System 5.1)
+- [x] **Schritt 4: Tests laufen lassen** → **PASS**
+- [x] **Schritt 5: Restliche sechs Widgets implementieren**, jeweils mit mindestens einem
       Widget-Test, der Rendering und Interaktion prüft
-- [ ] **Schritt 6: Widget-Katalog-Screen anlegen** — `lib/core/widgets/_gallery_screen.dart`
+- [x] **Schritt 6: Widget-Katalog-Screen anlegen** — `lib/core/widgets/_gallery_screen.dart`
       zeigt alle Komponenten in allen Zuständen untereinander. Nur im Debug-Build erreichbar
       (`if (kDebugMode)`), aber unbezahlbar zum Prüfen.
-- [ ] **Schritt 7: Commit** — `feat(ui): add core widget library`
+- [x] **Schritt 7: Commit** — `feat(ui): add core widget library`
 
 ---
 
@@ -774,7 +774,7 @@ void main() {
 **Produziert:** `appRouterProvider`, Routen-Konstanten `AsmRoutes.home`, `.search`, `.create`,
 `.chats`, `.profile`, `.listing(id)`, `.category(slug)`, `.chat(id)`, `.login`, `.register`
 
-- [ ] **Schritt 1: Routen-Konstanten definieren**
+- [x] **Schritt 1: Routen-Konstanten definieren**
 
 ```dart
 // lib/core/router/routes.dart
@@ -802,7 +802,7 @@ abstract final class AsmRoutes {
 }
 ```
 
-- [ ] **Schritt 2: Failing Test**
+- [x] **Schritt 2: Failing Test**
 
 ```dart
 // test/core/router/app_router_test.dart
@@ -820,25 +820,25 @@ void main() {
 }
 ```
 
-- [ ] **Schritt 3: Test laufen lassen** → **FAIL**, dann Datei anlegen → **PASS**
+- [x] **Schritt 3: Test laufen lassen** → **FAIL**, dann Datei anlegen → **PASS**
 
-- [ ] **Schritt 4: `StatefulShellRoute` mit BottomNav aufbauen**
+- [x] **Schritt 4: `StatefulShellRoute` mit BottomNav aufbauen**
 
 Fünf Branches (Start, Suchen, Erstellen, Chats, Profil) laut Design-System 5.9.
 Der mittlere Eintrag ist ein erhöhter Kreis und pusht `/create` als Vollbild-Route
 **außerhalb** der Shell (die BottomNav ist beim Erstellen nicht sichtbar).
 Jeder Branch bekommt zunächst einen Platzhalter-Screen mit `AsmEmptyState`.
 
-- [ ] **Schritt 5: Deep Links konfigurieren**
+- [x] **Schritt 5: Deep Links konfigurieren**
 
 `android/app/src/main/AndroidManifest.xml`: `<intent-filter>` für Scheme `asm` und
 für `https://asm-app.de/listing/*`.
 `ios/Runner/Info.plist`: `CFBundleURLSchemes` mit `asm`, dazu Associated Domains
 (kann in M8 nachgezogen werden).
 
-- [ ] **Schritt 6: Manuell prüfen** — Alle fünf Tabs sind erreichbar, der aktive Tab ist
+- [x] **Schritt 6: Manuell prüfen** — Alle fünf Tabs sind erreichbar, der aktive Tab ist
       `brandBright`, der Zurück-Button verhält sich pro Branch korrekt
-- [ ] **Schritt 7: Commit** — `feat(router): add go_router shell with bottom navigation`
+- [x] **Schritt 7: Commit** — `feat(router): add go_router shell with bottom navigation`
 
 ---
 
@@ -851,7 +851,7 @@ für `https://asm-app.de/listing/*`.
 
 **Produziert:** `AppConfig.supabaseUrl`, `.supabaseAnonKey`, `.sentryDsn`, `.isProd`
 
-- [ ] **Schritt 1: `env/example.json`**
+- [x] **Schritt 1: `env/example.json`**
 
 ```json
 {
@@ -862,7 +862,7 @@ für `https://asm-app.de/listing/*`.
 }
 ```
 
-- [ ] **Schritt 2: `AppConfig`**
+- [x] **Schritt 2: `AppConfig`**
 
 ```dart
 abstract final class AppConfig {
@@ -886,18 +886,18 @@ abstract final class AppConfig {
 }
 ```
 
-- [ ] **Schritt 3: `main.dart` mit Sentry-Wrapper**
+- [x] **Schritt 3: `main.dart` mit Sentry-Wrapper**
 
 Sentry mit `options.sendDefaultPii = false` (DSGVO, G-Regel) und
 `tracesSampleRate = AppConfig.isProd ? 0.2 : 1.0`.
 
-- [ ] **Schritt 4: Start-Kommando dokumentieren** in `README.md`:
+- [x] **Schritt 4: Start-Kommando dokumentieren** in `README.md`:
 
 ```bash
 flutter run --dart-define-from-file=env/dev.json
 ```
 
-- [ ] **Schritt 5: GitHub Actions CI**
+- [x] **Schritt 5: GitHub Actions CI**
 
 ```yaml
 # .github/workflows/ci.yml
@@ -919,7 +919,7 @@ jobs:
       - run: flutter test --coverage
 ```
 
-- [ ] **Schritt 6: Commit** — `chore: add app config, sentry and CI pipeline`
+- [x] **Schritt 6: Commit** — `chore: add app config, sentry and CI pipeline`
 
 ---
 
@@ -939,7 +939,7 @@ jobs:
 Ohne diesen Task verstößt jeder spätere Task gegen **G3** (keine hartcodierten Strings)
 und **ADR-5** (PLZ statt GPS) lässt sich nicht umsetzen.
 
-- [ ] **Schritt 1: `l10n.yaml`**
+- [x] **Schritt 1: `l10n.yaml`**
 
 ```yaml
 arb-dir: lib/l10n
@@ -953,7 +953,7 @@ In `pubspec.yaml` unter `flutter:` ergänzen: `generate: true`.
 In `app.dart`: `localizationsDelegates: AppLocalizations.localizationsDelegates`,
 `supportedLocales: const [Locale('de')]`, `locale: const Locale('de')`.
 
-- [ ] **Schritt 2: Extension für kurzen Zugriff**
+- [x] **Schritt 2: Extension für kurzen Zugriff**
 
 ```dart
 // lib/core/utils/l10n_extension.dart
@@ -962,7 +962,7 @@ extension L10nX on BuildContext {
 }
 ```
 
-- [ ] **Schritt 3: PLZ-Datensatz besorgen**
+- [x] **Schritt 3: PLZ-Datensatz besorgen**
 
 Freier Datensatz mit deutschen Postleitzahlen inklusive Koordinaten (z. B. der
 OpenGeoDB-/Zeitverschiebung-Datensatz oder ein CSV-Export von OpenStreetMap-Daten,
@@ -974,7 +974,7 @@ beides frei nutzbar). Auf die vier Felder reduzieren und als JSON-Map ablegen:
 
 Ziel: unter 1,5 MB. Beim ersten Zugriff einmal laden und im Speicher halten.
 
-- [ ] **Schritt 4: Failing Tests**
+- [x] **Schritt 4: Failing Tests**
 
 ```dart
 // test/core/utils/formatters_test.dart
@@ -1015,8 +1015,8 @@ void main() {
 }
 ```
 
-- [ ] **Schritt 5: Tests laufen lassen** → **FAIL**, implementieren → **PASS**
-- [ ] **Schritt 6: Commit** — `feat(core): add localization, formatters and postal code lookup`
+- [x] **Schritt 5: Tests laufen lassen** → **FAIL**, implementieren → **PASS**
+- [x] **Schritt 6: Commit** — `feat(core): add localization, formatters and postal code lookup`
 
 ### ✅ M0 abgeschlossen, wenn
 
@@ -1044,13 +1044,13 @@ Kategorien sind eingespielt. Dart-Modelle und Repositories existieren und sind g
 
 ## Task 1.1: Supabase-Projekt und CLI
 
-- [ ] Projekt auf supabase.com anlegen, **Region `eu-central-1` (Frankfurt)** (G6)
-- [ ] Supabase CLI installieren (`npm i -g supabase` oder Scoop) – benötigt Node
-- [ ] `supabase init` im Projektordner, `supabase link --project-ref <ref>`
-- [ ] `env/dev.json` mit URL und **anon**-Key füllen (nicht `service_role`, G7)
-- [ ] Auth-Einstellungen im Dashboard: E-Mail-Bestätigung **an**, Site-URL `asm://`,
+- [x] Projekt auf supabase.com anlegen, **Region `eu-central-1` (Frankfurt)** (G6)
+- [x] Supabase CLI installieren (`npm i -g supabase` oder Scoop) – benötigt Node
+- [x] `supabase init` im Projektordner, `supabase link --project-ref <ref>`
+- [x] `env/dev.json` mit URL und **anon**-Key füllen (nicht `service_role`, G7)
+- [x] Auth-Einstellungen im Dashboard: E-Mail-Bestätigung **an**, Site-URL `asm://`,
       Redirect-URL `asm://auth-callback` hinzufügen
-- [ ] Commit — `chore(db): init supabase project`
+- [x] Commit — `chore(db): init supabase project`
 
 ---
 

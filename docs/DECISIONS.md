@@ -1296,4 +1296,31 @@ Orchestrierung über mehrere Dateien (parallel max. 3, Fortschritt pro Bild) geh
 4.2s Screen/Controller, der die Bildauswahl überhaupt erst hat. Die beiden Checkboxen bleiben
 in Task 4.1 bewusst offen, nicht vergessen — nachzuholen in Task 4.2.
 
+## 2026-08-30 · M0–M3 auf Lücken geprüft, bevor M4 fortgesetzt wird — zwei Funde, beide entschieden
+
+Nutzerfrage vor Fortsetzung von M4: "sind wir mit M0-M3 komplett durch ohne offene Lücken und
+Fehler?" Nicht aus dem Gedächtnis beantwortet, sondern geprüft: alle `- [ ]`/`- [x]` in M0–M3
+gezählt, Git-Log gegen die M0/Task-1.1-Checkboxen abgeglichen, relevante DECISIONS.md-Einträge
+zu M2s Emulator-Verifikationen erneut gelesen.
+
+**Fund 1 — reines Dokuversäumnis:** M0s 53 Schritt-Checkboxen und Task 1.1s 6 Checkboxen waren
+trotz nachweislich abgeschlossener Arbeit nie angehakt (Git-Log bestätigt jeden Schritt, u. a.
+über den expliziten Commit `docs: mark M0 complete, point Stand at M1 task 1.1` und
+`chore(db): init supabase project`). Vermutlich ein Konventions-Bruch aus einer frühen Session,
+bevor das konsequente Abhaken ab M1s späteren Tasks etabliert war. **Auf Nutzerwunsch
+nachgezogen** (alle 59 Boxen), kein Codeschaden, reine Nachpflege.
+
+**Fund 2 — ein echter, aber schmaler offener Punkt:** Task 2.4s Guard-Regel "eingeloggt,
+E-Mail aber unbestätigt → Hinweis auf `/create`" wurde nie live durchgespielt (siehe
+Task-2.4-Eintrag oben) — automatisiert nur über die reine Logik (`blocksForAge`-Analog)
+getestet. Offene Frage dabei: Supabase könnte `signInWithPassword` für unbestätigte Konten
+grundsätzlich verweigern, dann wäre der Zustand in der Praxis nie erreichbar (Guard bliebe
+trotzdem korrekt als Absicherung). **Nutzerentscheidung: bewusst als bekannter,
+niedrigpriorer Punkt stehen lassen, kein Blocker für M4** — M4 (Bild-Pipeline,
+Erstellen-Flow) berührt diesen Code-Pfad ohnehin nicht.
+
+**Ergebnis:** M0–M3 sind funktional vollständig und ausreichend verifiziert für den Start von
+M4. Separat, nicht Teil dieser Prüfung: `supabase db push` für die heutige RLS-Änderung
+steht beim Nutzer noch aus (siehe Eintrag oben).
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->
