@@ -12,6 +12,7 @@ import 'package:asm/features/auth/presentation/reset_password_screen.dart';
 import 'package:asm/features/categories/presentation/category_overview_screen.dart';
 import 'package:asm/features/categories/presentation/category_screen.dart';
 import 'package:asm/features/listings/presentation/create_listing_screen.dart';
+import 'package:asm/features/listings/presentation/edit_listing_screen.dart';
 import 'package:asm/features/listings/presentation/my_listings_screen.dart';
 import 'package:asm/features/onboarding/presentation/onboarding_providers.dart';
 import 'package:asm/features/onboarding/presentation/onboarding_screen.dart';
@@ -139,6 +140,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           icon: LucideIcons.tag,
           title: 'Inserat',
         ),
+      ),
+      GoRoute(
+        path: '/listing/:id/edit',
+        builder: (context, state) =>
+            EditListingScreen(listingId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AsmRoutes.favorites,

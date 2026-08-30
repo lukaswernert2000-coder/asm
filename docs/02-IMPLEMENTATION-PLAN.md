@@ -37,11 +37,11 @@ Firebase Cloud Messaging · Sentry
 
 | | |
 |---|---|
-| **Meilenstein** | M3 abgeschlossen → M4 · Inserat erstellen |
-| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) |
-| **Als Nächstes** | **M4 — Task 4.3 Bearbeiten und Statuswechsel** |
+| **Meilenstein** | M4 abgeschlossen → M5 · Detailseite und Favoriten |
+| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** |
+| **Als Nächstes** | **M5 — Task 5.1 Detailseite** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `docs: confirm CI green on the task 4.2 push` |
+| **Letzter Commit** | `feat(listings): add listing management and status changes` |
 | **Stand vom** | 2026-08-30 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -307,6 +307,50 @@ alles gültig ist — behoben, samt totem Code danach entfernt (Details in DECIS
 auf echtem Gerät bleibt weiterhin bewusst Nutzer-Aufgabe. Task-4.2-Push ist auf Anhieb
 CI-grün ([Run](https://github.com/lukaswernert2000-coder/asm/actions/runs/33325607225),
 `conclusion: success`).
+
+**2026-08-30, Task 4.3:** `MyListingsScreen` (bisher nur eine Aktiv-Vorschau aus Task 2.5)
+umgebaut auf vier Tabs (Aktiv/Reserviert/Verkauft/Entwürfe, neuer
+`listingsBySellerStatusProvider`-Family), pro Zeile ein Aktionsmenü (Bottom-Sheet, gleiches
+Muster wie `_askSource` aus Task 4.2) mit Bearbeiten, Hochschieben, Statuswechseln und
+Löschen — welche Aktionen erscheinen, hängt vom Status ab (z. B. kein Hochschieben/Statuswechsel
+bei einem Entwurf). **Bearbeiten** ist bewusst ein eigener, einzelner Screen
+(`EditListingScreen`) statt des 4-Schritte-Flows aus Task 4.2 — so listet 01-DESIGN-SYSTEM.md
+Abschnitt "Inserat" die beiden auch getrennt auf. Kategorie und Fotos sind dort nicht
+editierbar: `ListingRepository.update()` kannte Fotos nie (die laufen separat über
+`ImageService`), und ein Kategoriewechsel könnte bestehende F-Kennzeichen-/Joule-Anforderungen
+unterlaufen. Neue `ListingRepository.bump()` (setzt `bumped_at`) und eine
+`Listing`-Extension `canBump()`/`lastBumpReference`, die exakt die
+`coalesce(bumped_at, published_at, created_at)`-Logik aus `search_listings` spiegelt, damit
+Client und Serverseite dieselbe 14-Tage-Referenz verwenden. **Löschen:** neue
+`ImageService.deleteAll()` listet den Storage-Ordner `<user_id>/<listing_id>/` direkt und
+entfernt alle Objekte — bewusst nicht über die `listing_images`-Tabelle, die der
+Erstellen-Flow aus Task 4.2 nie befüllt (nur Storage-Upload, kein Insert in die Tabelle; damit
+ist `cover_path` aus `search_listings` aktuell für jedes Inserat `null` — bekannte, nicht
+Teil dieses Tasks behobene Lücke). 40 neue/erweiterte Tests, 309 insgesamt grün,
+`flutter analyze` 0 Probleme.
+
+**Live auf `flutter_api34` verifiziert**, gegen das echte `M4A1`-Testinserat aus Task 4.2
+(Konto `gear_tester_m4`): alle vier Tabs, Leerzustände, Aktionsmenü zeigt je nach Status die
+richtige Teilmenge (aktiv → alle fünf, verkauft → nur Bearbeiten/Löschen), Hochschieben korrekt
+gesperrt ("Noch 14 Tage", da heute veröffentlicht), Bearbeiten mit echter Vorbefüllung
+(inkl. PLZ-Auflösung) und echtem Speichern (Titel- und Preisänderung landete in der
+Dev-Datenbank), Als reserviert/verkauft/aktiv markieren verschiebt das Inserat live zwischen
+den Tabs. **Dabei zwei echte, vorher unbemerkte Bugs gefunden und behoben:**
+(1) `EditListingScreen` invalidierte nach dem Speichern nur `listingByIdProvider`, nicht die
+"Meine Inserate"-Tabs — nach dem Zurück-Navigieren zeigte die Liste kurzzeitig den alten Titel/
+Preis. Fix: `refreshSellerListings()` (vorher `MyListingsScreen`-privat als `_refreshTabs`) nach
+`listing_providers.dart` verschoben und öffentlich gemacht, jetzt auch aus
+`EditListingScreen._save()` aufgerufen. (2) Kein Weg zurück von "reserviert" zu "aktiv" — im
+echten Test versehentlich reserviert und festgestellt, dass Reservierungen in der Praxis oft
+durchfallen. Fix: neue Aktion "Als aktiv markieren", nur fürs `reserved`-Aktionsmenü. Beide mit
+TDD nachgezogen (Test zuerst rot, dann Fix), danach erneut live bestätigt. **Löschen bewusst
+nicht live getestet** — das würde das einzige (in DECISIONS.md dokumentierte) Test-Inserat aus
+Task 4.2 zerstören; verifiziert stattdessen über Widget-Tests mit gemocktem Repository/
+ImageService (Bestätigungsdialog, Abbrechen tut nichts, Bestätigen ruft `deleteAll()` vor
+`delete()` auf). Die echten Supabase-Storage-Aufrufe (`list()`/`remove()`) in `deleteAll()`
+bleiben dadurch ungetestetes Restrisiko — gleiches Client-/Bucket-Muster wie das bereits live
+verifizierte `upload()`, daher eingeschätzt als gering. Test auf echtem Gerät bleibt weiterhin
+bewusst Nutzer-Aufgabe. **Damit ist M4 komplett.**
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -2226,11 +2270,11 @@ bei Bedarf Joule + Antriebsart + Kaliber + "umgebaut", Preis, VB, Tausch, Versch
 - [x] Commit — `feat(listings): add 4-step listing creation flow`
 
 ## Task 4.3: Bearbeiten und Statuswechsel
-- [ ] "Meine Inserate" mit Tabs Aktiv / Reserviert / Verkauft / Entwürfe
-- [ ] Aktionen pro Inserat: Bearbeiten, Hochschieben (alle 14 Tage, ASVZ-Regel §7),
+- [x] "Meine Inserate" mit Tabs Aktiv / Reserviert / Verkauft / Entwürfe
+- [x] Aktionen pro Inserat: Bearbeiten, Hochschieben (alle 14 Tage, ASVZ-Regel §7),
       Als reserviert markieren, Als verkauft markieren, Löschen
-- [ ] Beim Löschen: Bestätigung + Storage-Objekte mit entfernen
-- [ ] Commit — `feat(listings): add listing management and status changes`
+- [x] Beim Löschen: Bestätigung + Storage-Objekte mit entfernen
+- [x] Commit — `feat(listings): add listing management and status changes`
 
 ---
 

@@ -37,4 +37,15 @@ void main() {
       );
     });
   });
+
+  group('deleteAll', () {
+    test('wirft AuthRequiredException ohne angemeldeten Nutzer', () async {
+      when(() => auth.currentUser).thenReturn(null);
+
+      expect(
+        () => service.deleteAll(listingId: 'l1'),
+        throwsA(isA<AuthRequiredException>()),
+      );
+    });
+  });
 }

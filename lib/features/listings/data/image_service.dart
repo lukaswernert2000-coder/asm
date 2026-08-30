@@ -93,6 +93,32 @@ class ImageService {
     }
   }
 
+  /// Entfernt alle Storage-Objekte des Inserats (`<user_id>/<listing_id>/`).
+  ///
+  /// Listet den Ordner direkt statt ueber `listing_images` zu gehen: die
+  /// Tabelle wird vom Erstellen-Flow (Task 4.2) nicht befuellt (siehe
+  /// DECISIONS.md), waere hier also immer leer. Direktes Storage-Listing
+  /// faengt zudem verwaiste Uploads aus einem zuvor fehlgeschlagenen
+  /// Veroeffentlichen-Versuch mit ein.
+  Future<void> deleteAll({required String listingId}) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) {
+      throw const AuthRequiredException();
+    }
+    final folder = '$userId/$listingId';
+    try {
+      final objects = await _client.storage
+          .from('listing-images')
+          .list(path: folder);
+      if (objects.isEmpty) return;
+      await _client.storage
+          .from('listing-images')
+          .remove(objects.map((o) => '$folder/${o.name}').toList());
+    } catch (error) {
+      throw mapError(error);
+    }
+  }
+
   String _uniqueToken() {
     final bytes = List<int>.generate(8, (_) => Random.secure().nextInt(256));
     return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();

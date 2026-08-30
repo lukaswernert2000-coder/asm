@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:asm/core/errors/app_exception.dart';
 import 'package:asm/core/router/app_router.dart';
 import 'package:asm/core/router/routes.dart';
 import 'package:asm/core/storage/shared_preferences_provider.dart';
@@ -14,6 +15,7 @@ import 'package:asm/features/categories/presentation/category_screen.dart';
 import 'package:asm/features/listings/data/listing_repository.dart';
 import 'package:asm/features/listings/domain/listing_filter.dart';
 import 'package:asm/features/listings/domain/listing_summary.dart';
+import 'package:asm/features/listings/presentation/edit_listing_screen.dart';
 import 'package:asm/features/listings/presentation/listing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -177,6 +179,34 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.widgetWithText(AppBar, 'Inserat'), findsOneWidget);
+    });
+
+    testWidgets('/listing/:id/edit rendert EditListingScreen mit der ID', (
+      tester,
+    ) async {
+      when(
+        () => listingRepository.byId('l1'),
+      ).thenAnswer((_) async => throw const NotFoundException());
+      final container = ProviderContainer(
+        overrides: baseOverrides(await fakeSharedPreferences()),
+      );
+      addTearDown(container.dispose);
+      final router = container.read(appRouterProvider);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      unawaited(router.push('/listing/l1/edit'));
+      await tester.pumpAndSettle();
+
+      final screen = tester.widget<EditListingScreen>(
+        find.byType(EditListingScreen),
+      );
+      expect(screen.listingId, 'l1');
     });
   });
 

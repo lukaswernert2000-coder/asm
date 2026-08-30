@@ -79,4 +79,69 @@ void main() {
     expect(result.items, [summary]);
     expect(result.total, 1);
   });
+
+  test('listingByIdProvider ruft byId() mit der ID auf', () async {
+    final repository = MockListingRepository();
+    final listing = Listing(
+      id: 'l1',
+      sellerId: 's1',
+      categoryId: 'c1',
+      title: 'G36 S-AEG mit Tuning-Gearbox',
+      description: 'x' * 40,
+      priceCents: 35000,
+      negotiable: false,
+      isGiveaway: false,
+      acceptsSwap: false,
+      condition: ListingCondition.gebraucht,
+      status: ListingStatus.active,
+      hasFMarking: false,
+      isModified: false,
+      ships: true,
+      pickupOnly: false,
+      postalCode: '76133',
+      city: 'Karlsruhe',
+      lat: 49.01,
+      lng: 8.4,
+      viewCount: 0,
+      createdAt: DateTime(2026, 8),
+      updatedAt: DateTime(2026, 8),
+    );
+    when(() => repository.byId('l1')).thenAnswer((_) async => listing);
+
+    final container = ProviderContainer(
+      overrides: [listingRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+
+    final result = await container.read(listingByIdProvider('l1').future);
+
+    expect(result, listing);
+  });
+
+  test(
+    'listingsBySellerStatusProvider ruft bySeller() mit Verkaeufer und Status auf',
+    () async {
+      final repository = MockListingRepository();
+      when(
+        () => repository.bySeller('u1', status: ListingStatus.draft),
+      ).thenAnswer((_) async => []);
+
+      final container = ProviderContainer(
+        overrides: [listingRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container.read(
+        listingsBySellerStatusProvider((
+          sellerId: 'u1',
+          status: ListingStatus.draft,
+        )).future,
+      );
+
+      expect(result, isEmpty);
+      verify(
+        () => repository.bySeller('u1', status: ListingStatus.draft),
+      ).called(1);
+    },
+  );
 }

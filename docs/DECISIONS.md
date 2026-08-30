@@ -1398,4 +1398,70 @@ Fotos aus der Emulator-Galerie, echte PLZ-Auflösung, echtes `create()` + drei B
 bleibt bewusst in der Dev-Datenbank stehen (gleiche Linie wie der Task-2.2-Test-Account).
 **Nachholen, falls es stört:** Inserat manuell aus der Dev-DB löschen.
 
+## 2026-08-30 · Task 4.3 · Bearbeiten als eigener Screen statt des 4-Schritte-Flows, Kategorie und Fotos nicht editierbar
+
+Der Plan nennt fuer Task 4.3 nur "Bearbeiten" als eine von fuenf Aktionen, ohne Detailspezifikation
+-- anders als Task 4.2s ausfuehrliche Schritt-fuer-Schritt-Vorgabe. `01-DESIGN-SYSTEM.md` Abschnitt
+"Inserat" listet aber "Erstellen (4 Schritte) · Bearbeiten" als zwei getrennte Eintraege im
+Screen-Inventar, nicht als eine kombinierte Wizard-Variante. **Entscheidung:** `EditListingScreen`
+als eigener, einzelner Screen (Muster wie `EditProfileScreen` aus Task 2.5: leere Controller,
+`_prefill()` einmalig beim ersten erfolgreichen Laden, `_validate()`/`_save()`), keine Wiederverwendung
+der Task-4.2-Schritt-Widgets. Kategorie und Fotos sind bewusst aussen vor: `ListingRepository.update()`
+kannte Fotos noch nie (die laufen ueber `ImageService`, komplett getrennt von `ListingDraft`), und ein
+Kategoriewechsel koennte die bestehenden F-Kennzeichen-/Joule-Anforderungen des Inserats unterlaufen.
+Editierbar sind Titel, Beschreibung, Zustand, Hersteller, Modell, bei Bedarf Joule/Antriebsart/Kaliber/
+umgebaut, Preis/VB/Tausch/Verschenken, Versand/Abholung und PLZ -- exakt die Felder, die auch
+Schritt 3 und 4 des Erstellen-Flows abdecken.
+
+## 2026-08-30 · Task 4.3 · Storage-Loeschen listet den Bucket-Ordner direkt statt ueber `listing_images`
+
+Beim Bauen der Loeschen-Aktion aufgefallen: `listing_images` (Migration `0003_listings.sql`, gedacht
+fuer Bild-Metadaten inkl. `storage_path`/`kind`/`sort_order`) wird vom kompletten Erstellen-Flow aus
+Task 4.2 nie befuellt -- `ShippingStep._publish()` ruft nur `ImageService.upload()` auf (reiner
+Storage-Upload), nirgends ein Insert in die Tabelle. Ueber die Tabelle nach loeschbaren Storage-Pfaden
+zu fragen haette also fuer jedes bisher angelegte Inserat nichts gefunden. **Entscheidung:**
+`ImageService.deleteAll({required listingId})` listet stattdessen den Storage-Ordner
+`<user_id>/<listing_id>/` direkt (`storage.from('listing-images').list(path: ...)`) und entfernt alle
+gefundenen Objekte -- funktioniert unabhaengig von der Tabelle und faengt nebenbei auch verwaiste
+Uploads aus einem zuvor fehlgeschlagenen Veroeffentlichen-Versuch mit ein. **Nicht behobene
+Nebenwirkung, bewusst ausserhalb dieses Tasks:** `search_listings`s `cover_path` (liest aus
+`listing_images`) ist dadurch fuer jedes Inserat weiterhin `null` -- Feed-Karten zeigen nie ein
+echtes Titelbild. Nachzuholen, wenn Task 5.1 (Detailseite mit echter Bildergalerie) ohnehin an die
+Bild-Anzeige ran muss.
+
+## 2026-08-30 · Task 4.3 · Zwei echte Bugs beim Live-Test auf dem Emulator gefunden und gefixt
+
+Live-Verifikation auf `flutter_api34` gegen das echte `M4A1`-Testinserat aus Task 4.2 (wie vom Nutzer
+gefordert bei allen Interface-Aenderungen) deckte zwei Luecken auf, die keiner der Widget-Tests fangen
+konnte, weil beide erst beim Zusammenspiel mehrerer Screens auftreten:
+
+**Bug 1 -- "Meine Inserate" aktualisierte sich nach dem Bearbeiten nicht sofort.**
+`EditListingScreen._save()` invalidierte nach `update()` nur `listingByIdProvider` (fuer eine
+kuenftige Detailseite gedacht), nicht die vier `listingsBySellerStatusProvider`-Eintraege, die
+`MyListingsScreen`s Tabs tatsaechlich anzeigen. Nach dem Speichern und Zurueck-Navigieren zeigte die
+Liste kurzzeitig noch Titel/Preis von vor der Aenderung (der Provider-Cache wurde erst beim naechsten
+Tab-Wechsel neu geladen). Live beobachtet: Preis auf 79,90 € geaendert, "Meine Inserate" zeigte
+weiterhin 89,90 € direkt nach der Navigation. **Fix:** die bis dahin `MyListingsScreen`-private
+`_refreshTabs()` nach `listing_providers.dart` verschoben und als `refreshSellerListings(ref,
+sellerId)` exportiert -- invalidiert alle vier Status-Eintraege eines Verkaeufers unabhaengig davon,
+von wo die Aenderung ausgeloest wurde. Jetzt auch aus `EditListingScreen._save()` aufgerufen, damit
+Bearbeiten dieselbe Aktualisierung bekommt wie Hochschieben/Statuswechsel/Loeschen. Mit TDD
+nachgezogen (Test mit `container.listen()` auf den Provider, um die Invalidierung beobachtbar zu
+machen, erst rot mit `.called(1)` statt der erwarteten 2 Aufrufe), danach live erneut bestaetigt.
+
+**Bug 2 -- keine Moeglichkeit, eine Reservierung rueckgaengig zu machen.** Beim Live-Testen von
+"Als reserviert markieren" faellt auf: das Aktionsmenue eines reservierten Inserats bietet danach nur
+noch Bearbeiten, Hochschieben, Als verkauft markieren und Loeschen -- keinen Weg zurueck zu "aktiv".
+Der Plan nennt nur die fuenf Kern-Aktionen ohne "reaktivieren", aber Reservierungen fallen in der
+Praxis haeufig durch (Kaeufer springt ab), und ohne Ruecksetzung waere das Inserat dauerhaft aus dem
+Aktiv-Tab verschwunden, ausser man verkauft oder loescht es. **Nutzerentscheidung durch Live-Test
+motiviert, nicht vorab gefragt** (kein neues Paket, keine Datenmodell-Aenderung -- reine
+UI-Ergaenzung mit vorhandenem `setStatus()`): neue Aktion "Als aktiv markieren", ausschliesslich im
+Aktionsmenue eines `reserved`-Inserats sichtbar. Mit TDD nachgezogen, danach live bestaetigt (Inserat
+wandert zurueck in den Aktiv-Tab).
+
+Nach beiden Fixes: 309 Tests gruen, `flutter analyze` 0 Probleme, Test-Inserat manuell wieder auf den
+sauberen Titel/urspruenglichen Zustand zurueckgesetzt (der Preis blieb bei 79,90 € stehen -- reiner
+Test-Artefakt ohne Bedeutung, gleiche Linie wie andere in der Dev-DB verbliebene Test-Aenderungen).
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

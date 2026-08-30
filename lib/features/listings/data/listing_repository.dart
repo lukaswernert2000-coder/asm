@@ -16,6 +16,7 @@ abstract interface class ListingRepository {
   Future<String> create(ListingDraft draft);
   Future<void> update(String id, ListingDraft draft);
   Future<void> setStatus(String id, ListingStatus status);
+  Future<void> bump(String id);
   Future<void> delete(String id);
   Future<void> incrementView(String id);
   Future<List<String>> manufacturers();
@@ -141,6 +142,18 @@ class SupabaseListingRepository implements ListingRepository {
       await _client
           .from('listings')
           .update({'status': status.name})
+          .eq('id', id);
+    } catch (error) {
+      throw mapError(error);
+    }
+  }
+
+  @override
+  Future<void> bump(String id) async {
+    try {
+      await _client
+          .from('listings')
+          .update({'bumped_at': DateTime.now().toUtc().toIso8601String()})
           .eq('id', id);
     } catch (error) {
       throw mapError(error);

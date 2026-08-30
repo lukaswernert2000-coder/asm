@@ -17,6 +17,7 @@ abstract final class AsmRoutes {
 
   static String category(String slug) => '/category/$slug';
   static String listing(String id) => '/listing/$id';
+  static String editListing(String id) => '/listing/$id/edit';
   static String chat(String id) => '/chat/$id';
   static String publicProfile(String id) => '/user/$id';
 

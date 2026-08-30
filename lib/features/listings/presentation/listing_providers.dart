@@ -67,3 +67,41 @@ activeListingsBySellerProvider = FutureProvider.family<List<Listing>, String>(
       .watch(listingRepositoryProvider)
       .bySeller(sellerId, status: ListingStatus.active),
 );
+
+final FutureProviderFamily<Listing, String> listingByIdProvider =
+    FutureProvider.family<Listing, String>(
+      (ref, id) => ref.watch(listingRepositoryProvider).byId(id),
+    );
+
+/// Fuer die vier Tabs in "Meine Inserate" (Task 4.3) — anders als
+/// [activeListingsBySellerProvider] parametrisiert ueber den Status, den der
+/// jeweilige Tab braucht.
+final FutureProviderFamily<
+  List<Listing>,
+  ({String sellerId, ListingStatus status})
+>
+listingsBySellerStatusProvider =
+    FutureProvider.family<
+      List<Listing>,
+      ({String sellerId, ListingStatus status})
+    >(
+      (ref, args) => ref
+          .watch(listingRepositoryProvider)
+          .bySeller(args.sellerId, status: args.status),
+    );
+
+/// Nach Bearbeiten/Hochschieben/Statuswechsel/Loeschen (Task 4.3) alle vier
+/// "Meine Inserate"-Tabs invalidieren, egal von wo die Aenderung ausgeloest
+/// wurde -- z. B. verschiebt "Als verkauft markieren" ein Inserat vom
+/// Aktiv- in den Verkauft-Tab, und `EditListingScreen` kennt die Tabs gar
+/// nicht selbst.
+void refreshSellerListings(WidgetRef ref, String sellerId) {
+  for (final status in ListingStatus.values) {
+    if (status == ListingStatus.archived || status == ListingStatus.blocked) {
+      continue;
+    }
+    ref.invalidate(
+      listingsBySellerStatusProvider((sellerId: sellerId, status: status)),
+    );
+  }
+}

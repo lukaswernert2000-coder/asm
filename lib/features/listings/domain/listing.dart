@@ -82,6 +82,18 @@ abstract class Listing with _$Listing {
       _$ListingFromJson(json);
 }
 
+const bumpCooldown = Duration(days: 14);
+
+/// Spiegelt die `coalesce(bumped_at, published_at, created_at)`-Logik aus
+/// `search_listings` (0007_search.sql), damit Client und Sortierung im
+/// Feed dieselbe Referenzzeit verwenden.
+extension ListingBump on Listing {
+  DateTime get lastBumpReference => bumpedAt ?? publishedAt ?? createdAt;
+
+  bool canBump({DateTime? now}) =>
+      (now ?? DateTime.now()).difference(lastBumpReference) >= bumpCooldown;
+}
+
 @freezed
 abstract class ListingDraft with _$ListingDraft {
   const factory ListingDraft({
