@@ -188,7 +188,9 @@ Debounce-statt-Submit fürs Verlauf-Befüllen, feature-lokale Widgets statt gete
 Core-Komponenten) in DECISIONS.md. 13 neue Tests, 219 insgesamt grün, `flutter analyze`
 0 Probleme. `dart format lib test` vor dem Push gelaufen. **Nicht live auf Emulator/Gerät
 verifiziert**, gleicher Grund wie Task 3.1/3.2 (keine Web-Plattform, kein Gerät in dieser
-Session verfügbar).
+Session verfügbar). Task-3.3-Push ist auf Anhieb CI-grün
+([Run #20](https://github.com/lukaswernert2000-coder/asm/actions/runs/33301161589),
+`conclusion: success`).
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
