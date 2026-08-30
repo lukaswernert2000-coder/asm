@@ -218,8 +218,8 @@ return $default(_that.query,_that.categorySlug,_that.minPrice,_that.maxPrice,_th
 /// @nodoc
 
 
-class _ListingFilter implements ListingFilter {
-  const _ListingFilter({this.query, this.categorySlug, this.minPrice, this.maxPrice,  List<ListingCondition>? conditions,  List<PropulsionType>? propulsions, this.minJoule, this.maxJoule, this.ships, this.lat, this.lng, this.radiusKm, this.sort = SortOption.newest}): _conditions = conditions,_propulsions = propulsions;
+class _ListingFilter extends ListingFilter {
+  const _ListingFilter({this.query, this.categorySlug, this.minPrice, this.maxPrice,  List<ListingCondition>? conditions,  List<PropulsionType>? propulsions, this.minJoule, this.maxJoule, this.ships, this.lat, this.lng, this.radiusKm, this.sort = SortOption.newest}): _conditions = conditions,_propulsions = propulsions,super._();
   
 
 @override final  String? query;

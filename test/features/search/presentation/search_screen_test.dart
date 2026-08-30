@@ -16,6 +16,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../helpers/fake_shared_preferences.dart';
+import '../../../helpers/filter_sheet_interaction.dart';
 
 class MockCategoryRepository extends Mock implements CategoryRepository {}
 
@@ -63,6 +64,12 @@ void main() {
     categoryRepository = MockCategoryRepository();
     listingRepository = MockListingRepository();
     when(() => categoryRepository.roots()).thenAnswer((_) async => roots);
+    when(
+      () => categoryRepository.bySlug('langwaffen'),
+    ).thenAnswer((_) async => roots.single);
+    when(
+      () => categoryRepository.children('langwaffen'),
+    ).thenAnswer((_) async => []);
   });
 
   Future<ProviderContainer> pumpScreen(
@@ -263,6 +270,71 @@ void main() {
           offset: 20,
         ),
       ).called(1);
+    });
+  });
+
+  // Suchscreen und Filter-Sheet ueberlappen sich im Baum (das Sheet legt
+  // sich nur optisch ueber die Seite) -- "Gewehre & MPs" existiert dann
+  // zweimal (Vorschlag im Hintergrund + Kategorie-Chip im Sheet). Auf den
+  // Sheet-Inhalt eingrenzen, sonst meldet ensureVisible "Too many elements".
+  Finder inFilterSheet(String text) => find.descendant(
+    of: find.byKey(const Key('filterSheetList')),
+    matching: find.text(text),
+  );
+
+  group('Filter-Sheet', () {
+    testWidgets('zeigt kein Badge ohne aktive Filter', (tester) async {
+      await pumpScreen(tester);
+      await tester.pumpAndSettle();
+
+      expect(find.text('0'), findsNothing);
+    });
+
+    testWidgets(
+      'Filter anwenden zeigt Badge und aktiven Chip, filtert die Ergebnisse',
+      (tester) async {
+        when(
+          () => listingRepository.search(
+            const ListingFilter(categorySlug: 'langwaffen'),
+          ),
+        ).thenAnswer((_) async => (items: [summary('l1')], total: 1));
+
+        await pumpScreen(tester);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip('Filter'));
+        await tester.pumpAndSettle();
+        await tapInFilterSheet(tester, inFilterSheet('Gewehre & MPs'));
+        await tapInFilterSheet(tester, find.text('Anwenden'));
+
+        expect(find.text('1'), findsOneWidget);
+        expect(find.text('Kategorie: Gewehre & MPs'), findsOneWidget);
+        expect(find.text('Inserat l1'), findsOneWidget);
+      },
+    );
+
+    testWidgets('Entfernen eines aktiven Filters setzt ihn zurueck', (
+      tester,
+    ) async {
+      when(
+        () => listingRepository.search(
+          const ListingFilter(categorySlug: 'langwaffen'),
+        ),
+      ).thenAnswer((_) async => (items: [summary('l1')], total: 1));
+
+      await pumpScreen(tester);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Filter'));
+      await tester.pumpAndSettle();
+      await tapInFilterSheet(tester, inFilterSheet('Gewehre & MPs'));
+      await tapInFilterSheet(tester, find.text('Anwenden'));
+      expect(find.text('Kategorie: Gewehre & MPs'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('„Kategorie: Gewehre & MPs“ entfernen'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kategorie: Gewehre & MPs'), findsNothing);
+      expect(find.text('Beliebte Kategorien'), findsOneWidget);
     });
   });
 }

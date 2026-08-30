@@ -10,10 +10,13 @@ import 'package:asm/core/widgets/asm_error_view.dart';
 import 'package:asm/core/widgets/asm_skeleton.dart';
 import 'package:asm/core/widgets/asm_text_field.dart';
 import 'package:asm/features/categories/presentation/category_providers.dart';
+import 'package:asm/features/listings/domain/listing.dart';
 import 'package:asm/features/listings/domain/listing_filter.dart';
 import 'package:asm/features/listings/presentation/listing_feed_controller.dart';
 import 'package:asm/features/listings/presentation/widgets/listing_card.dart';
 import 'package:asm/features/search/presentation/search_history_providers.dart';
+import 'package:asm/features/search/presentation/widgets/filter_sheet.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -21,10 +24,11 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 const _debounceDuration = Duration(milliseconds: 350);
 
-/// Suche mit Verlauf und Debounce. Siehe 02-IMPLEMENTATION-PLAN.md Task 3.3.
-/// Suchergebnisse laufen ueber `listingFeedProvider` (Task 3.2) mit
-/// `ListingFilter(query: ...)` -- Pagination/Lade-/Fehlerzustand sind dort
-/// schon fertig getestet, hier nicht dupliziert.
+/// Suche mit Verlauf, Debounce und Filter-Sheet. Siehe
+/// 02-IMPLEMENTATION-PLAN.md Task 3.3/3.4. Suchergebnisse laufen ueber
+/// `listingFeedProvider` (Task 3.2) mit dem vollen `ListingFilter` --
+/// Pagination/Lade-/Fehlerzustand sind dort schon fertig getestet, hier
+/// nicht dupliziert.
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
@@ -35,7 +39,7 @@ class SearchScreen extends ConsumerStatefulWidget {
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   final _controller = TextEditingController();
   Timer? _debounce;
-  String _query = '';
+  ListingFilter _filter = const ListingFilter();
 
   @override
   void initState() {
@@ -59,7 +63,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   void _commitQuery(String value) {
     final trimmed = value.trim();
-    setState(() => _query = trimmed);
+    setState(
+      () => _filter = _filter.copyWith(
+        query: trimmed.isEmpty ? null : trimmed,
+      ),
+    );
     if (trimmed.isNotEmpty) {
       unawaited(addSearchHistoryEntry(ref, trimmed));
     }
@@ -74,8 +82,36 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _commitQuery(query);
   }
 
+  Future<void> _openFilterSheet() async {
+    final result = await showFilterSheet(context, filter: _filter);
+    if (result != null) setState(() => _filter = result);
+  }
+
+  void _removeCategory() =>
+      setState(() => _filter = _filter.copyWith(categorySlug: null));
+  void _removePrice() => setState(
+    () => _filter = _filter.copyWith(minPrice: null, maxPrice: null),
+  );
+  void _removeConditions() =>
+      setState(() => _filter = _filter.copyWith(conditions: null));
+  void _removePropulsions() =>
+      setState(() => _filter = _filter.copyWith(propulsions: null));
+  void _removeJoule() => setState(
+    () => _filter = _filter.copyWith(minJoule: null, maxJoule: null),
+  );
+  void _removeShips() =>
+      setState(() => _filter = _filter.copyWith(ships: null));
+  void _removeLocation() => setState(
+    () => _filter = _filter.copyWith(lat: null, lng: null, radiusKm: null),
+  );
+  void _removeSort() =>
+      setState(() => _filter = _filter.copyWith(sort: SortOption.newest));
+
   @override
   Widget build(BuildContext context) {
+    final hasQuery = _filter.query?.isNotEmpty ?? false;
+    final isIdle = !hasQuery && _filter.activeCount == 0;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -83,12 +119,51 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AsmTextField(controller: _controller, label: 'Suche'),
+              // AsmShell legt im Debug-Build einen Katalog-Button genau in
+              // diese Ecke (siehe asm_shell.dart) -- ohne Abstand ueberlappt
+              // er das Filter-Icon und faengt dessen Taps ab. Nur eine
+              // Debug-Eigenheit, im Release-Build existiert der Button nicht.
+              if (kDebugMode) const SizedBox(height: 44),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: AsmTextField(
+                      controller: _controller,
+                      label: 'Suche',
+                    ),
+                  ),
+                  const SizedBox(width: AsmSpacing.xs),
+                  Badge(
+                    label: Text('${_filter.activeCount}'),
+                    isLabelVisible: _filter.activeCount > 0,
+                    child: IconButton(
+                      icon: const Icon(LucideIcons.slidersHorizontal),
+                      tooltip: 'Filter',
+                      onPressed: _openFilterSheet,
+                    ),
+                  ),
+                ],
+              ),
+              if (!isIdle && _filter.activeCount > 0) ...[
+                const SizedBox(height: AsmSpacing.sm),
+                _ActiveFilterChips(
+                  filter: _filter,
+                  onRemoveCategory: _removeCategory,
+                  onRemovePrice: _removePrice,
+                  onRemoveConditions: _removeConditions,
+                  onRemovePropulsions: _removePropulsions,
+                  onRemoveJoule: _removeJoule,
+                  onRemoveShips: _removeShips,
+                  onRemoveLocation: _removeLocation,
+                  onRemoveSort: _removeSort,
+                ),
+              ],
               const SizedBox(height: AsmSpacing.md),
               Expanded(
-                child: _query.isEmpty
+                child: isIdle
                     ? _IdleSuggestions(onSelectHistory: _selectHistoryEntry)
-                    : _SearchResults(query: _query),
+                    : _SearchResults(filter: _filter),
               ),
             ],
           ),
@@ -96,6 +171,112 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       ),
     );
   }
+}
+
+class _ActiveFilterChips extends ConsumerWidget {
+  const _ActiveFilterChips({
+    required this.filter,
+    required this.onRemoveCategory,
+    required this.onRemovePrice,
+    required this.onRemoveConditions,
+    required this.onRemovePropulsions,
+    required this.onRemoveJoule,
+    required this.onRemoveShips,
+    required this.onRemoveLocation,
+    required this.onRemoveSort,
+  });
+
+  final ListingFilter filter;
+  final VoidCallback onRemoveCategory;
+  final VoidCallback onRemovePrice;
+  final VoidCallback onRemoveConditions;
+  final VoidCallback onRemovePropulsions;
+  final VoidCallback onRemoveJoule;
+  final VoidCallback onRemoveShips;
+  final VoidCallback onRemoveLocation;
+  final VoidCallback onRemoveSort;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final categorySlug = filter.categorySlug;
+    final categoryName = categorySlug == null
+        ? null
+        : ref.watch(categoryBySlugProvider(categorySlug)).valueOrNull?.name;
+
+    return Wrap(
+      spacing: AsmSpacing.xs,
+      runSpacing: AsmSpacing.xs,
+      children: [
+        if (categorySlug != null)
+          _RemovableChip(
+            label: 'Kategorie: ${categoryName ?? categorySlug}',
+            onDelete: onRemoveCategory,
+          ),
+        if (filter.minPrice != null || filter.maxPrice != null)
+          _RemovableChip(
+            label:
+                'Preis: ${_rangeLabel(
+                  filter.minPrice == null ? null : filter.minPrice! / 100,
+                  filter.maxPrice == null ? null : filter.maxPrice! / 100,
+                  suffix: ' €',
+                )}',
+            onDelete: onRemovePrice,
+          ),
+        if (filter.conditions != null && filter.conditions!.isNotEmpty)
+          _RemovableChip(
+            label: filter.conditions!.length == 1
+                ? filter.conditions!.single.label
+                : 'Zustand (${filter.conditions!.length})',
+            onDelete: onRemoveConditions,
+          ),
+        if (filter.propulsions != null && filter.propulsions!.isNotEmpty)
+          _RemovableChip(
+            label: filter.propulsions!.length == 1
+                ? filter.propulsions!.single.label
+                : 'Antriebsart (${filter.propulsions!.length})',
+            onDelete: onRemovePropulsions,
+          ),
+        if (filter.minJoule != null || filter.maxJoule != null)
+          _RemovableChip(
+            label: _rangeLabel(filter.minJoule, filter.maxJoule, suffix: ' J'),
+            onDelete: onRemoveJoule,
+          ),
+        if (filter.ships ?? false)
+          _RemovableChip(label: 'Versand möglich', onDelete: onRemoveShips),
+        if (filter.lat != null || filter.lng != null || filter.radiusKm != null)
+          _RemovableChip(
+            label: filter.radiusKm != null
+                ? 'Umkreis: ${filter.radiusKm} km'
+                : 'Umkreis: ganz DE',
+            onDelete: onRemoveLocation,
+          ),
+        if (filter.sort != SortOption.newest)
+          _RemovableChip(
+            label: _sortLabel(filter.sort),
+            onDelete: onRemoveSort,
+          ),
+      ],
+    );
+  }
+
+  String _rangeLabel(double? min, double? max, {required String suffix}) {
+    if (min != null && max != null) {
+      return '${_trimZero(min)}–${_trimZero(max)}$suffix';
+    }
+    if (min != null) return 'ab ${_trimZero(min)}$suffix';
+    return 'bis ${_trimZero(max!)}$suffix';
+  }
+
+  String _trimZero(double value) => value == value.roundToDouble()
+      ? value.round().toString()
+      : value.toString();
+
+  String _sortLabel(SortOption sort) => switch (sort) {
+    SortOption.newest => 'Neueste',
+    SortOption.priceAsc => 'Sortierung: Preis aufsteigend',
+    SortOption.priceDesc => 'Sortierung: Preis absteigend',
+    SortOption.distance => 'Sortierung: Entfernung',
+  };
 }
 
 class _IdleSuggestions extends ConsumerWidget {
@@ -118,11 +299,12 @@ class _IdleSuggestions extends ConsumerWidget {
             runSpacing: AsmSpacing.xs,
             children: [
               for (final entry in history)
-                _HistoryChip(
-                  query: entry,
+                _RemovableChip(
+                  label: entry,
                   onTap: () => onSelectHistory(entry),
                   onDelete: () =>
                       unawaited(removeSearchHistoryEntry(ref, entry)),
+                  deleteTooltip: '„$entry“ aus Verlauf entfernen',
                 ),
             ],
           ),
@@ -151,16 +333,21 @@ class _IdleSuggestions extends ConsumerWidget {
   }
 }
 
-class _HistoryChip extends StatelessWidget {
-  const _HistoryChip({
-    required this.query,
-    required this.onTap,
+/// Kompakter Chip mit Loeschen-Icon -- fuer Suchverlauf (Task 3.3) und
+/// aktive Filter (Task 3.4). [onTap] ist optional: Verlaufseintraege
+/// uebernehmen die Suche bei Tap, aktive Filter-Chips sind nur informativ.
+class _RemovableChip extends StatelessWidget {
+  const _RemovableChip({
+    required this.label,
     required this.onDelete,
+    this.onTap,
+    this.deleteTooltip,
   });
 
-  final String query;
-  final VoidCallback onTap;
+  final String label;
   final VoidCallback onDelete;
+  final VoidCallback? onTap;
+  final String? deleteTooltip;
 
   @override
   Widget build(BuildContext context) {
@@ -179,14 +366,14 @@ class _HistoryChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                query,
+                label,
                 style: AsmTextStyles.label.copyWith(
                   color: AsmColors.textSecondary,
                 ),
               ),
               IconButton(
                 icon: const Icon(LucideIcons.x, size: 14),
-                tooltip: '„$query“ aus Verlauf entfernen',
+                tooltip: deleteTooltip ?? '„$label“ entfernen',
                 color: AsmColors.textTertiary,
                 onPressed: onDelete,
               ),
@@ -199,9 +386,9 @@ class _HistoryChip extends StatelessWidget {
 }
 
 class _SearchResults extends ConsumerStatefulWidget {
-  const _SearchResults({required this.query});
+  const _SearchResults({required this.filter});
 
-  final String query;
+  final ListingFilter filter;
 
   @override
   ConsumerState<_SearchResults> createState() => _SearchResultsState();
@@ -209,20 +396,11 @@ class _SearchResults extends ConsumerStatefulWidget {
 
 class _SearchResultsState extends ConsumerState<_SearchResults> {
   final _scrollController = ScrollController();
-  late ListingFilter _filter = ListingFilter(query: widget.query);
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void didUpdateWidget(covariant _SearchResults oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.query != widget.query) {
-      _filter = ListingFilter(query: widget.query);
-    }
   }
 
   @override
@@ -238,19 +416,21 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
     final position = _scrollController.position;
     if (position.maxScrollExtent > 0 &&
         position.pixels >= position.maxScrollExtent * 0.8) {
-      unawaited(ref.read(listingFeedProvider(_filter).notifier).loadMore());
+      unawaited(
+        ref.read(listingFeedProvider(widget.filter).notifier).loadMore(),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final feedAsync = ref.watch(listingFeedProvider(_filter));
+    final feedAsync = ref.watch(listingFeedProvider(widget.filter));
 
     return feedAsync.when(
       loading: () => const AsmSkeleton.listingGrid(),
       error: (error, stackTrace) => AsmErrorView(
         message: 'Inserate konnten nicht geladen werden',
-        onRetry: () => ref.invalidate(listingFeedProvider(_filter)),
+        onRetry: () => ref.invalidate(listingFeedProvider(widget.filter)),
       ),
       data: (result) => result.items.isEmpty
           ? const AsmEmptyState(
@@ -258,8 +438,9 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
               title: 'Keine Inserate gefunden',
             )
           : RefreshIndicator(
-              onRefresh: () =>
-                  ref.read(listingFeedProvider(_filter).notifier).refresh(),
+              onRefresh: () => ref
+                  .read(listingFeedProvider(widget.filter).notifier)
+                  .refresh(),
               child: _grid(result),
             ),
     );

@@ -17,6 +17,30 @@ enum ListingStatus { draft, active, reserved, sold, archived, blocked }
 
 enum PropulsionType { saeg, aep, gbb, co2, hpa, federdruck, sonstige }
 
+/// Deutsche Anzeigetexte. Siehe `00-SPEC.md` Abschnitt 6.1/6.2.
+extension ListingConditionLabel on ListingCondition {
+  String get label => switch (this) {
+    ListingCondition.neu => 'Neu',
+    ListingCondition.neuwertig => 'Neuwertig',
+    ListingCondition.gebraucht => 'Gebraucht',
+    ListingCondition.leichteDefekte => 'Leichte Defekte',
+    ListingCondition.defekt => 'Defekt',
+    ListingCondition.bastelobjekt => 'Bastelobjekt',
+  };
+}
+
+extension PropulsionTypeLabel on PropulsionType {
+  String get label => switch (this) {
+    PropulsionType.saeg => 'S-AEG',
+    PropulsionType.aep => 'AEP',
+    PropulsionType.gbb => 'GBB / Gas',
+    PropulsionType.co2 => 'CO2',
+    PropulsionType.hpa => 'HPA',
+    PropulsionType.federdruck => 'Federdruck',
+    PropulsionType.sonstige => 'Sonstige',
+  };
+}
+
 @freezed
 abstract class Listing with _$Listing {
   const factory Listing({

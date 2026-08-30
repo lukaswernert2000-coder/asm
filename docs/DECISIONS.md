@@ -1200,4 +1200,36 @@ Abschluss von M3 zu passieren** — kein technischer Blocker, nur eine Priorisie
 den ganzen Meilenstein (inkl. Task 3.4 Filter-Sheet) auf dem Emulator absichern, dann einmal
 gebündelt auf echter Hardware.
 
+## 2026-08-30 · Task 3.4 · `AsmButton`-Taps am Ende eines Bottom-Sheets registrierten auf dem Emulator nicht — Fix: fester Footer statt letztes Listenelement
+
+Alle 32 Widget-Tests grün, aber auf `flutter_api34` reagierten "Alle zurücksetzen" und
+"Anwenden" im `FilterSheet` auf keinen Tap (mit `print()` in `onPressed` verifiziert: null
+Aufrufe), während ein testweise eingesetzter `ElevatedButton` an derselben Stelle
+zuverlässig auslöste. Einzeln durchprobiert und **je allein wirkungslos**:
+`useRootNavigator`, `enableDrag: false`, `DraggableScrollableSheet` → `FractionallySizedBox`,
+Opacity nur wenn disabled, `Container` → `Material`-Shape, `width: double.infinity` entfernt.
+`asm_button.dart` am Ende unverändert zurückgesetzt (`git checkout --`). **Fix:** Beide
+Buttons aus dem scrollbaren `ListView` herausgezogen in einen fixen Footer
+(`Column[Expanded(ListView), Padding(Buttons)]`) — seitdem registrieren Taps zuverlässig,
+mit `uiautomator dump` (exakte Bounds + `clickable=true`) gegengeprüft statt per
+Koordinaten-Schätzung aus Screenshots. Wahrscheinlichste Erklärung: Hit-Test-Fenster eines
+interaktiven Widgets als letztes Element einer scrollbaren Sheet-Liste lief auf diesem
+Emulator/Impeller-Stand aus dem Ruder, sobald sich die Listenhöhe durch bedingte Sektionen
+(Antriebsart/Joule) änderte — **nicht abschließend isoliert**, nur der Footer-Fix ist
+bestätigt. **Für künftige Sessions:** Bei "Tap tut nichts, Widget-Test ist aber grün" zuerst
+`adb shell uiautomator dump` statt Screenshot-Koordinaten raten — liefert exakte Bounds und
+`clickable`-Status in einem Schritt.
+
+## 2026-08-30 · Task 3.4 · Zwei weitere Bugs nur live gefunden, nicht von Widget-Tests erkannt
+
+`AsmButton`-Reihe ("Alle zurücksetzen" neben "Anwenden") lief bei normaler Breite in einen
+1,3-px-`RenderFlex`-Overflow, weil `AsmButton`s interne `Row` nicht umbricht — behoben durch
+vertikales Stapeln statt nebeneinander. Der `kDebugMode`-Schraubenschlüssel-Button in
+`AsmShell` überlappte visuell/im Hit-Test mit dem neuen Filter-Icon in `SearchScreen` —
+behoben mit `SizedBox(height: 44)` als Abstandshalter. Beide Bugs blieben den 249 Widget-Tests
+verborgen, weil Tests `SearchScreen`/`FilterSheet` isoliert rendern, nie im echten `AsmShell`
+mit Debug-Overlay. **Lehre:** Layout-Kollisionen mit `AsmShell`-Chrome (Debug-Overlay,
+System-Insets) sind nur live sichtbar, siehe schon den `ProfileRepository.byId()`-Fund beim
+M2-Komplettflow weiter oben (Eintrag vom 2026-08-29).
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

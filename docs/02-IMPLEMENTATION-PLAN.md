@@ -37,11 +37,11 @@ Firebase Cloud Messaging · Sentry
 
 | | |
 |---|---|
-| **Meilenstein** | M3 · Kategorien, Feed und Suche |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.3 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) |
-| **Als Nächstes** | **Task 3.4 — Filter-Sheet** |
+| **Meilenstein** | M3 abgeschlossen → M4 · Inserat erstellen |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** |
+| **Als Nächstes** | **M4 — Inserat erstellen (Task 4.1), aber erst das Altersgate/RLS-Konflikt-Gespräch aus der Warnung am Anfang von M4 klären** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `feat(search): add search with history and debounce` |
+| **Letzter Commit** | `feat(search): add filter sheet` |
 | **Stand vom** | 2026-08-30 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -204,6 +204,31 @@ entfernt genau den Eintrag → Tap auf Vorschlag "Pistolen" navigiert zu `/categ
 Emulator-Renderer-Warnungen). Anders als beim M2-Komplettflow (siehe Eintrag oben) diesmal
 **kein neuer Bug gefunden**. Test auf echtem Gerät bleibt wie geplant offen — Nutzer macht
 das bewusst erst nach Abschluss von M3, siehe DECISIONS.md.
+
+**2026-08-30, Task 3.4:** `FilterSheet` (`lib/features/search/presentation/widgets/`) als
+`showModalBottomSheet` (`useRootNavigator: true`, sonst falscher Z-Order relativ zu
+Bottom-Nav/FAB, da `SearchScreen` in einer `StatefulShellRoute`-Branch hängt) mit Kategorie
+(kaskadierend zu Unterkategorien), Preis (`RangeSlider` + zwei Eingabefeldern in Cent),
+Zustand (Mehrfachauswahl-Chips), bedingt Antriebsart + Joule-Bereich (nur wenn
+`category.requiresPropulsion`/`requiresJoule`), Versand-Toggle, PLZ + Umkreis-Chips (5–200 km
+/ "ganz DE", deaktiviert bis `PlzLookup.resolve()` einen Ort liefert) und Sortierung
+(inkl. "Entfernung", das erst nach aufgelöster PLZ auswählbar ist). `ListingFilter.activeCount`
+(neuer Getter, private `._()`-Konstruktor für die Erweiterung) zählt aktive Filterdimensionen
+für den Badge am Filter-Icon in `SearchScreen`; aktive Filter erscheinen dort zusätzlich als
+entfernbare Chips mit deutschen Labels. Ein auf dem Emulator gefundener, hartnäckiger Bug
+(`AsmButton`-Taps am Sheet-Ende registrierten nicht) verzögerte den Abschluss — Root Cause,
+Fix (fixer Footer statt letztes Listenelement) und die zwei kleineren Layout-Bugs, die dabei
+mitgefunden wurden, stehen in DECISIONS.md. 27 neue Tests (11 für `activeCount`, 16 für
+`FilterSheet`), 249 insgesamt grün, `flutter analyze` 0 Probleme. **Live auf
+`flutter_api34` verifiziert** (nicht nur beim ersten Rendern, sondern nach dem Footer-Fix
+erneut, mit `adb shell uiautomator dump` statt Screenshot-Koordinaten): Kategorie
+"Pistolen" gewählt → Unterkategorien + Antriebsart + Joule-Bereich erscheinen korrekt;
+PLZ `10115` aufgelöst zu "Berlin", Umkreis-Chips und "Entfernung"-Sortierung schalten von
+deaktiviert auf aktiv; Kombination aus Umkreis 25 km + Sortierung Entfernung liefert einen
+echten Treffer mit korrekt berechneter Distanz ("2 km"); Badge und Chips zählen/entfernen
+korrekt; "Alle zurücksetzen" bei aktivem Mehrfach-Filter leert Sheet und Suchbildschirm
+vollständig. **Damit ist M3 komplett.** Test auf echtem Gerät bleibt weiterhin bewusst
+Nutzer-Aufgabe nach M3-Abschluss.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -2066,13 +2091,13 @@ Bottom-Sheet mit: Kategorie, Preis (RangeSlider + zwei Eingabefelder), Zustand
 (Mehrfachauswahl-Chips), Antriebsart, Joule-Bereich, Versand/Abholung, PLZ + Umkreis
 (5/10/25/50/100/200 km / ganz DE), Sortierung.
 
-- [ ] Aktive Filter als entfernbare Chips über dem Feed
-- [ ] "Alle zurücksetzen"
-- [ ] Anzahl aktiver Filter als Badge am Filter-Icon
-- [ ] Joule- und Antriebsart-Filter nur sichtbar, wenn die gewählte Kategorie
+- [x] Aktive Filter als entfernbare Chips über dem Feed
+- [x] "Alle zurücksetzen"
+- [x] Anzahl aktiver Filter als Badge am Filter-Icon
+- [x] Joule- und Antriebsart-Filter nur sichtbar, wenn die gewählte Kategorie
       `requires_joule` bzw. `requires_propulsion` hat
-- [ ] Test: `ListingFilter.activeCount` zählt korrekt; `copyWith` + Reset funktionieren
-- [ ] Commit — `feat(search): add filter sheet`
+- [x] Test: `ListingFilter.activeCount` zählt korrekt; `copyWith` + Reset funktionieren
+- [x] Commit — `feat(search): add filter sheet`
 
 ---
 

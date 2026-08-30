@@ -153,7 +153,7 @@ class ListingCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AsmRadius.sm),
       ),
       child: Text(
-        _conditionLabel(summary.condition),
+        summary.condition.label,
         style: AsmTextStyles.label.copyWith(
           color: _conditionTextColor(summary.condition),
         ),
@@ -232,15 +232,6 @@ Color _conditionTextColor(ListingCondition condition) =>
     condition == ListingCondition.gebraucht
     ? AsmColors.textSecondary
     : AsmColors.onBrand;
-
-String _conditionLabel(ListingCondition condition) => switch (condition) {
-  ListingCondition.neu => 'Neu',
-  ListingCondition.neuwertig => 'Neuwertig',
-  ListingCondition.gebraucht => 'Gebraucht',
-  ListingCondition.leichteDefekte => 'Leichte Defekte',
-  ListingCondition.defekt => 'Defekt',
-  ListingCondition.bastelobjekt => 'Bastelobjekt',
-};
 
 /// F-im-Fuenfeck-Marker, siehe 01-DESIGN-SYSTEM.md Abschnitt 6.
 class _FMarkingBadge extends StatelessWidget {
