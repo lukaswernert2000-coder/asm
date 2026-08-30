@@ -1153,4 +1153,39 @@ wird er beim Schreiben still verworfen — sowohl in `main.dart` als auch in
 `test/helpers/fake_shared_preferences.dart` ergänzt (Letzteres jetzt mit optionalem
 `listingViewMode`-Parameter, Default `null`).
 
+## 2026-08-30 · Task 3.3 · Suchergebnisse nutzen `listingFeedProvider` wieder, kein neues Kernwidget fürs Suchfeld
+
+Der Plan-Wortlaut für Task 3.3 nennt nur Suchfeld, Verlauf und Leerzustand — die eigentlichen
+Suchergebnisse sind nicht als eigener Punkt aufgeführt, aber laut Screen-Inventar
+(`01-DESIGN-SYSTEM.md` Abschnitt 9: "Suche mit Verlauf · Suchergebnisse · Filter-Sheet") und
+M3s eigenem Ziel ("Der Feed lädt seitenweise nach") Teil des Tasks. Umgesetzt über
+`listingFeedProvider(ListingFilter(query: ...))` — exakt der Task-3.2-Provider, nur mit
+`query` statt `categorySlug` gefüllt. Keine neue Pagination-/Lade-/Fehlerlogik, `_SearchResults`
+in `search_screen.dart` ist eine schlanke Kopie von `CategoryScreen`s `_Feed` ohne den
+Grid-/Listen-Umschalter (nicht Teil der Task-Checkliste, hätte die ohnehin schon mit dem
+Suchfeld gefüllte AppBar-Zeile überladen). `AsmTextField` hat kein `onChanged`/`onSubmitted` —
+statt die geteilte Komponente dafür zu erweitern, hört `SearchScreen` direkt auf
+`TextEditingController.addListener()` für den Debounce. Aus demselben Grund (kein Lösch-Slot
+in `AsmChip`) ist der Verlaufs-Chip ein neues, lokales `_HistoryChip`-Widget statt einer
+Erweiterung von `AsmChip` — beides bewusst klein und feature-lokal gehalten statt geteilte
+Core-Widgets für einen einzigen Aufrufer anzufassen.
+
+## 2026-08-30 · Task 3.3 · "Beliebte Kategorien" = Root-Kategorien, Verlauf füllt sich beim Debounce-Settle
+
+Es gibt keine Popularitäts-Metrik (keine Zähl-/Klick-Statistik pro Kategorie) — dieselbe
+Einschränkung wie schon bei der in Task 3.1 ausgelassenen Inserate-Zählung pro
+`CategoryTile`. "Beliebte Kategorien" im Leerzustand zeigt deshalb schlicht
+`rootCategoriesProvider` (die 8 Hauptkategorien), ein Tap navigiert zu `/category/:slug` und
+nutzt damit den bestehenden, getesteten `CategoryScreen`-Flow statt einer eigenen
+Kategorie-Filterung innerhalb der Suche. Der Suchverlauf hat keinen separaten
+Absende-Schritt (kein Such-Button, `AsmTextField` bietet kein `onSubmitted`) — ein Eintrag
+landet im Verlauf, sobald die 350-ms-Debounce-Pause eine nicht-leere Eingabe auslöst.
+Einziger bekannter Nebeneffekt: ein Nutzer, der mitten im Tippen länger als 350 ms pausiert,
+bekommt diesen Zwischenstand im Verlauf — akzeptiert, da der Plan keinen zweiten
+Eingabemechanismus vorsieht. `addSearchHistoryEntry`/`removeSearchHistoryEntry` sind wie
+`setListingViewMode` nicht isoliert mit einem konstruierten `Ref` getestet, sondern über die
+echte `SearchScreen`-UI (13 neue Tests, 219 insgesamt grün, `flutter analyze` 0 Probleme).
+**Nicht live auf Emulator/Gerät verifiziert** — gleicher Grund wie Task 3.1/3.2 (keine
+Web-Plattform, kein Gerät in dieser Session verfügbar).
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

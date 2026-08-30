@@ -38,10 +38,10 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M3 · Kategorien, Feed und Suche |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1 komplett (Code-seitig, siehe unten — nicht live verifiziert) · Task 3.2 komplett (Code-seitig, siehe unten — nicht live verifiziert) |
-| **Als Nächstes** | **Task 3.3 — Suche** |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1 komplett (Code-seitig, siehe unten — nicht live verifiziert) · Task 3.2 komplett (Code-seitig, siehe unten — nicht live verifiziert) · Task 3.3 komplett (Code-seitig, siehe unten — nicht live verifiziert) |
+| **Als Nächstes** | **Task 3.4 — Filter-Sheet** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `feat(listings): add paginated feed with pull to refresh` |
+| **Letzter Commit** | `feat(search): add search with history and debounce` |
 | **Stand vom** | 2026-08-30 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -170,6 +170,25 @@ durch. **Nicht live auf Emulator/Gerät verifiziert**, gleicher Grund wie Task 3
 Web-Plattform). 206 Tests grün, `flutter analyze` 0 Probleme. Task-3.2-Push ist auf Anhieb
 CI-grün ([Run #18](https://github.com/lukaswernert2000-coder/asm/actions/runs/33279486113),
 `conclusion: success`).
+
+**2026-08-30, Task 3.3:** `SearchScreen` (`lib/features/search/presentation/`) ersetzt den
+`_BranchPlaceholder` auf der Such-Route. Suchfeld (`AsmTextField`) mit 350-ms-Debounce über
+`TextEditingController.addListener()` (die Komponente selbst hat kein `onChanged`). Treffer
+laufen über den bestehenden `listingFeedProvider(ListingFilter(query: ...))` aus Task 3.2 —
+keine neue Pagination-Logik, siehe DECISIONS.md. Suchverlauf neu in
+`search_history_providers.dart` (`searchHistoryProvider` + `addSearchHistoryEntry()`/
+`removeSearchHistoryEntry()`, gleiches Muster wie `listingViewModeProvider`): letzte 10,
+dedupliziert, einzeln löschbar, persistiert in `shared_preferences` (neuer Key
+`search_history` in der `SharedPreferencesWithCache`-Allowlist in `main.dart` und
+`fake_shared_preferences.dart` ergänzt). Leerer Zustand zeigt den Verlauf (falls vorhanden)
+und "Beliebte Kategorien" (= `rootCategoriesProvider`, da keine echte Popularitäts-Metrik
+existiert) als Chips; Tap auf eine Kategorie navigiert zu `/category/:slug`, Tap auf einen
+Verlaufseintrag übernimmt ihn als Suche. Details und Abwägungen (Reuse-Entscheidung,
+Debounce-statt-Submit fürs Verlauf-Befüllen, feature-lokale Widgets statt geteilter
+Core-Komponenten) in DECISIONS.md. 13 neue Tests, 219 insgesamt grün, `flutter analyze`
+0 Probleme. `dart format lib test` vor dem Push gelaufen. **Nicht live auf Emulator/Gerät
+verifiziert**, gleicher Grund wie Task 3.1/3.2 (keine Web-Plattform, kein Gerät in dieser
+Session verfügbar).
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -2022,10 +2041,10 @@ Session landet im Login und danach wieder auf `/create`.
 - [x] Commit — `feat(listings): add paginated feed with pull to refresh`
 
 ## Task 3.3: Suche
-- [ ] Suchfeld mit 350 ms Debounce
-- [ ] Suchverlauf (letzte 10, lokal in `shared_preferences`, einzeln löschbar)
-- [ ] Leerer Zustand mit Vorschlägen (beliebte Kategorien)
-- [ ] Commit — `feat(search): add search with history and debounce`
+- [x] Suchfeld mit 350 ms Debounce
+- [x] Suchverlauf (letzte 10, lokal in `shared_preferences`, einzeln löschbar)
+- [x] Leerer Zustand mit Vorschlägen (beliebte Kategorien)
+- [x] Commit — `feat(search): add search with history and debounce`
 
 ## Task 3.4: Filter-Sheet
 Bottom-Sheet mit: Kategorie, Preis (RangeSlider + zwei Eingabefelder), Zustand

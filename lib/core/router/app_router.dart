@@ -19,6 +19,7 @@ import 'package:asm/features/profile/presentation/delete_account_screen.dart';
 import 'package:asm/features/profile/presentation/edit_profile_screen.dart';
 import 'package:asm/features/profile/presentation/profile_screen.dart';
 import 'package:asm/features/profile/presentation/public_profile_screen.dart';
+import 'package:asm/features/search/presentation/search_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -60,10 +61,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: AsmRoutes.search,
-                builder: (context, state) => const _BranchPlaceholder(
-                  icon: LucideIcons.search,
-                  title: 'Suchen',
-                ),
+                builder: (context, state) => const SearchScreen(),
               ),
             ],
           ),
