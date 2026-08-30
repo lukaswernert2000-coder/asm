@@ -12,10 +12,15 @@ Flutter · Supabase · Riverpod · Dark-First "Tactical Olive"
 | **[00-SPEC.md](00-SPEC.md)** | **Was** gebaut wird: Produktvision, Scope, Kategorie-Taxonomie, Feature-Specs, Recht & Compliance | Dich + Sonnet (Referenz) |
 | **[01-DESIGN-SYSTEM.md](01-DESIGN-SYSTEM.md)** | **Wie es aussieht**: Farbtokens, Typografie, Komponenten, fertiger `theme.dart`, Logo-Konzept | Sonnet (Umsetzung) |
 | **[02-IMPLEMENTATION-PLAN.md](02-IMPLEMENTATION-PLAN.md)** | **Wie es gebaut wird**: Meilensteine M0–M8, Tasks, SQL-Migrationen, Tests, Commits | Sonnet (Ausführung) ← **Hauptdatei** |
-| **[03-ARBEITEN-MIT-SONNET.md](03-ARBEITEN-MIT-SONNET.md)** | Copy-Paste-Prompts, Workflow, typische Fallen | Dich |
+| **[03-ARBEITEN-MIT-SONNET.md](03-ARBEITEN-MIT-SONNET.md)** | Copy-Paste-Prompts, Kontextverwaltung, typische Fallen | Dich |
+| **[04-GESCHAEFTSMODELL.md](04-GESCHAEFTSMODELL.md)** | **Womit später Geld verdient wird**: Marktgröße, Kostendeckung, Händler-Accounts, Store-Cut, Rechtsfolgen | Dich — **nicht** Teil des MVP |
+| **[DECISIONS.md](DECISIONS.md)** | Entscheidungslog: Abweichungen, Workarounds, Stolpersteine aus allen Sessions | Dich + Sonnet (bei jeder Aufgabe) |
 
-**Startpunkt für die Umsetzung:** `02-IMPLEMENTATION-PLAN.md`, Meilenstein M0.
+**Startpunkt für die Umsetzung:** `02-IMPLEMENTATION-PLAN.md`, Abschnitt „Stand".
 **Startpunkt für dich:** `03-ARBEITEN-MIT-SONNET.md`.
+
+> `04-GESCHAEFTSMODELL.md` steht bewusst **nicht** in `CLAUDE.md` — es wird beim Bauen
+> nicht gebraucht und würde nur in jeder Session Kontext kosten.
 
 ---
 
