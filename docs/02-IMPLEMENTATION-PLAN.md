@@ -41,8 +41,7 @@ Firebase Cloud Messaging · Sentry
 | **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** |
 | **Als Nächstes** | **M4 — Task 4.2 Erstellen-Flow, 4 Schritte** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Offen (Infra)** | `supabase db push` für `0008_listings_visibility_fix.sql` — vom Auto-Mode-Classifier blockiert, Nutzer muss selbst pushen oder freigeben |
-| **Letzter Commit** | `docs: confirm CI green on the task 4.1 push` |
+| **Letzter Commit** | `docs: close M0-M3 gap check, tick M0/Task-1.1 checkboxes` |
 | **Stand vom** | 2026-08-30 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -2138,16 +2137,13 @@ Bottom-Sheet mit: Kategorie, Preis (RangeSlider + zwei Eingabefelder), Zustand
 **Ergebnis:** Ein vollständiges Inserat inklusive Fotos, F-Kennzeichen und Besitznachweis
 lässt sich anlegen und veröffentlichen. **Der aufwendigste Meilenstein.**
 
-> ✅ **Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst (2026-08-30).** Migration
+> ✅ **Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (2026-08-30).** Migration
 > `0008_listings_visibility_fix.sql` ersetzt `listings_public_read` ohne den
 > `is_adult()`/`requires_age_18`-Teil — Inserate bleiben für alle sichtbar, das Gate greift
-> erst am "Nachricht schreiben"-Button (Task 5.1). Voller Kontext in
-> [`DECISIONS.md`](DECISIONS.md), Eintrag "Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst".
-> **Offen:** Die Migration ist lokal geschrieben, aber noch nicht per `supabase db push`
-> angewendet — das hat der Auto-Mode-Classifier blockiert (Zugriff auf die geteilte
-> Remote-Dev-Datenbank). Nutzer muss `supabase db push` selbst ausführen oder Sonnet dafür
-> freischalten, bevor die Policy live ist. `blocksForAge()` in `guards.dart` bleibt fertig
-> und getestet, wartet weiter auf Task 5.1.
+> erst am "Nachricht schreiben"-Button (Task 5.1). Per `supabase db push` angewendet, kein
+> offener Punkt mehr. Voller Kontext in [`DECISIONS.md`](DECISIONS.md), Eintrag
+> "Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst". `blocksForAge()` in `guards.dart` bleibt
+> fertig und getestet, wartet weiter auf Task 5.1.
 
 ## Task 4.1: Bild-Pipeline
 **Dateien:** `lib/features/listings/data/image_service.dart`, Test dazu
