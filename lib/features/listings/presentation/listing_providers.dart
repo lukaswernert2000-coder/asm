@@ -1,5 +1,6 @@
 import 'package:asm/core/storage/shared_preferences_provider.dart';
 import 'package:asm/core/supabase/supabase_provider.dart';
+import 'package:asm/features/listings/data/image_service.dart';
 import 'package:asm/features/listings/data/listing_repository.dart';
 import 'package:asm/features/listings/domain/listing.dart';
 import 'package:asm/features/listings/domain/listing_filter.dart';
@@ -8,6 +9,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final listingRepositoryProvider = Provider<ListingRepository>(
   (ref) => SupabaseListingRepository(ref.watch(supabaseProvider)),
+);
+
+final imageServiceProvider = Provider<ImageService>(
+  (ref) => ImageService(ref.watch(supabaseProvider)),
+);
+
+final manufacturersProvider = FutureProvider<List<String>>(
+  (ref) => ref.watch(listingRepositoryProvider).manufacturers(),
 );
 
 enum ListingViewMode { grid, list }

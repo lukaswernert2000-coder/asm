@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:asm/features/listings/domain/create_listing_draft.dart';
+import 'package:asm/features/listings/presentation/create_listing_providers.dart';
 import 'package:asm/features/listings/presentation/listing_providers.dart';
 import 'package:asm/features/onboarding/presentation/onboarding_providers.dart';
 import 'package:asm/features/search/presentation/search_history_providers.dart';
@@ -18,12 +22,15 @@ Future<SharedPreferencesWithCache> fakeSharedPreferences({
   bool hasSeenOnboarding = true,
   ListingViewMode? listingViewMode,
   List<String>? searchHistory,
+  CreateListingDraft? createListingDraft,
 }) {
   SharedPreferencesAsyncPlatform
       .instance = InMemorySharedPreferencesAsync.withData({
     if (hasSeenOnboarding) hasSeenOnboardingPrefsKey: true,
     if (listingViewMode != null) listingViewModePrefsKey: listingViewMode.name,
     searchHistoryPrefsKey: ?searchHistory,
+    if (createListingDraft != null)
+      createListingDraftPrefsKey: jsonEncode(createListingDraft.toJson()),
   });
   return SharedPreferencesWithCache.create(
     cacheOptions: const SharedPreferencesWithCacheOptions(
@@ -31,6 +38,7 @@ Future<SharedPreferencesWithCache> fakeSharedPreferences({
         hasSeenOnboardingPrefsKey,
         listingViewModePrefsKey,
         searchHistoryPrefsKey,
+        createListingDraftPrefsKey,
       },
     ),
   );

@@ -9,3 +9,4 @@ targets:
           - lib/features/**/domain/*.dart
         options:
           field_rename: snake
+          explicit_to_json: true

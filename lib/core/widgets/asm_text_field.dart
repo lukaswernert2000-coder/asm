@@ -14,6 +14,7 @@ class AsmTextField extends StatefulWidget {
     this.readOnly = false,
     this.onTap,
     this.maxLines = 1,
+    this.focusNode,
     super.key,
   });
 
@@ -26,17 +27,26 @@ class AsmTextField extends StatefulWidget {
   final VoidCallback? onTap;
   final int maxLines;
 
+  /// Optional von aussen vorgegeben, z. B. von `Autocomplete`s
+  /// `fieldViewBuilder` -- dessen Options-Overlay zeigt/versteckt sich nach
+  /// dem Fokus GENAU dieses Knotens. Ohne eigenen Knoten von aussen erzeugt
+  /// das Widget wie bisher einen privaten.
+  final FocusNode? focusNode;
+
   @override
   State<AsmTextField> createState() => _AsmTextFieldState();
 }
 
 class _AsmTextFieldState extends State<AsmTextField> {
-  final _focusNode = FocusNode();
+  FocusNode? _ownFocusNode;
   bool _hasFocus = false;
+
+  FocusNode get _focusNode => widget.focusNode ?? _ownFocusNode!;
 
   @override
   void initState() {
     super.initState();
+    if (widget.focusNode == null) _ownFocusNode = FocusNode();
     _focusNode.addListener(_onFocusChange);
   }
 
@@ -46,9 +56,10 @@ class _AsmTextFieldState extends State<AsmTextField> {
 
   @override
   void dispose() {
-    _focusNode
-      ..removeListener(_onFocusChange)
-      ..dispose();
+    _focusNode.removeListener(_onFocusChange);
+    // Nur den selbst erzeugten Knoten entsorgen -- ein von aussen
+    // uebergebener gehoert dessen Aufrufer (z. B. Autocomplete).
+    _ownFocusNode?.dispose();
     super.dispose();
   }
 

@@ -38,10 +38,10 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M3 abgeschlossen → M4 · Inserat erstellen |
-| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** |
-| **Als Nächstes** | **M4 — Task 4.2 Erstellen-Flow, 4 Schritte** |
+| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) |
+| **Als Nächstes** | **M4 — Task 4.3 Bearbeiten und Statuswechsel** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `docs: close M0-M3 gap check, tick M0/Task-1.1 checkboxes` |
+| **Letzter Commit** | `feat(listings): add 4-step listing creation flow` |
 | **Stand vom** | 2026-08-30 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -260,6 +260,51 @@ ohne Session) plus 2 Integrationstests, 250 Unit-Tests insgesamt grün, `flutter
 0 Probleme. Task-4.1-Push ist auf Anhieb CI-grün
 ([Run](https://github.com/lukaswernert2000-coder/asm/actions/runs/33320469101),
 `conclusion: success`).
+
+**2026-08-30, Task 4.2:** `CreateListingScreen` (`lib/features/listings/presentation/`) ersetzt
+den Platzhalter auf `/create` mit dem 4-Schritte-Flow. Lokaler Fortschritt lebt in
+`CreateListingDraft` (neuer Typ, `domain/create_listing_draft.dart`, alle Felder optional
+anders als das bestehende `ListingDraft`), nach jedem Schritt in `shared_preferences`
+persistiert (gleiches Lese-Provider-plus-freie-Funktion-Muster wie `searchHistoryProvider`) —
+ein App-Absturz zerstört so keine Eingaben. Die DB-Zeile entsteht bewusst erst ganz am Ende
+(Schritt 4 "Veröffentlichen"): `ListingDraft` verlangt alle Kernfelder als Pflicht, vorher
+existiert schlicht noch keine vollständige Zeile zum Anlegen.
+
+**Schritt 1 (Kategorie):** Zwei Ebenen wie in Task 3.4s Filter-Sheet, aber mit Pflicht-Blatt
+statt optionaler "Alle"-Wahl. Neue `CategoryRepository.all()` plus `categoryByIdProvider`
+(leitet sich aus `allCategoriesProvider` ab, kein eigener Request) fürs Suchfeld über alle
+Kategorien und um von der reinen `categoryId` im Draft zurück auf die Kategorie samt
+`requiresFMarking`/`requiresJoule`/`requiresPropulsion` zu kommen. **Schritt 2 (Fotos):**
+neues Paket `reorderable_grid_view` (Nutzer-Entscheidung, siehe DECISIONS.md) für Drag-Reorder,
+`ImageService` aus Task 4.1 fürs eigentliche Picken/Komprimieren. F-Kennzeichen-Slot nur wenn
+`requiresFMarking`, Besitznachweis-Slot immer, mit echtem Nutzernamen und heutigem Datum im
+Erklärtext. **Schritt 3 (Details):** `AsmTextField` bekam einen neuen optionalen
+`focusNode`-Parameter (Kompatibilität mit `Autocomplete`s `fieldViewBuilder`, siehe
+DECISIONS.md), neue `ListingRepository.manufacturers()` fürs Hersteller-Autocomplete.
+**Schritt 4 (Versand & Ort):** PLZ-Auflösung wie Task 3.4, Vorschau-Kachel, Veröffentlichen
+löst `create()` → Bilder hochladen → `setStatus(active)` aus; schlägt der Bild-Upload fehl,
+bleibt die Zeile im DB-Status `draft` und ein erneuter Tap legt sie nicht doppelt an (dafür
+merkt sich `DraftImage.uploadedPath`, welche Bilder schon oben sind, und die Zeilen-ID wird
+lokal gemerkt).
+
+`build.yaml` bekam `explicit_to_json: true` (json_serializable serialisierte verschachtelte
+Objekte in Listen sonst nicht korrekt — `DraftImage` in `CreateListingDraft.images` war der
+erste Fall im Projekt mit dieser Verschachtelung). 30 neue Tests (Modell, Provider, alle vier
+Schritte), 279 insgesamt grün, `flutter analyze` 0 Probleme.
+
+**Live auf `flutter_api34` verifiziert, inkl. eines echten kompletten Durchlaufs bis zur
+Veröffentlichung** (Nutzer-Entscheidung, siehe DECISIONS.md): neuen Test-Account registriert
+und per echtem Mailinator-Bestätigungslink aktiviert, Kategorie "Gewehre & MPs" → "S-AEG
+(Elektro)" gewählt, drei echte Fotos aus der Geräte-Galerie ausgewählt (Titelbild,
+F-Kennzeichen, Besitznachweis — Erklärtext zeigte korrekt den echten Nutzernamen und das
+heutige Datum), alle Detail-Felder samt bedingter Antriebsart/Joule/Kaliber-Sektion und
+Hersteller-Autocomplete, PLZ `76133` löste zu "Karlsruhe" auf, Vorschau zeigte Titel/Preis/Foto
+korrekt — **"Veröffentlichen" hat wirklich ein Inserat in der Dev-Datenbank angelegt**, alle
+drei Bilder hochgeladen, den Status auf `active` gesetzt, und das Inserat tauchte danach mit
+korrektem F-Kennzeichen-Badge im normalen Feed auf. Dabei ein echter Bug gefunden und gefixt:
+der "Veröffentlichen"-Button war zunächst nicht wie von der Aufgabe verlangt deaktiviert, bis
+alles gültig ist — behoben, samt totem Code danach entfernt (Details in DECISIONS.md). Test
+auf echtem Gerät bleibt weiterhin bewusst Nutzer-Aufgabe.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -2171,13 +2216,12 @@ mit Erklärtext und Beispielbild. Immer: Pflicht-Slot "Besitznachweis" mit Erkl�
 bei Bedarf Joule + Antriebsart + Kaliber + "umgebaut", Preis, VB, Tausch, Verschenken
 **Schritt 4 – Versand & Ort:** Versand/Abholung, PLZ (Ort wird aufgelöst), Vorschau, Veröffentlichen
 
-- [ ] Jeder Schritt validiert vor dem Weiterblättern, Fehler werden am Feld angezeigt
-- [ ] Der Veröffentlichen-Button ist deaktiviert, bis alles gültig ist
-- [ ] Nach dem Veröffentlichen: Erfolgs-Screen mit Teilen-Button und "Inserat ansehen"
-- [ ] Test: Ein Entwurf mit `joule = 1.2` und ohne F-Kennzeichen-Bild lässt sich
-      **nicht** absenden (Client-Validierung), und der Server lehnt ihn zusätzlich ab
-      (DB-Constraint aus Task 1.4)
-- [ ] Commit — `feat(listings): add 4-step listing creation flow`
+- [x] Jeder Schritt validiert vor dem Weiterblättern, Fehler werden am Feld angezeigt
+- [x] Der Veröffentlichen-Button ist deaktiviert, bis alles gültig ist
+- [x] Nach dem Veröffentlichen: Erfolgs-Screen mit Teilen-Button und "Inserat ansehen"
+- [x] Test: Ein Entwurf mit `joule = 1.2` und ohne F-Kennzeichen-Bild lässt sich
+      **nicht** absenden (Client-Validierung, siehe DECISIONS.md zur Server-Seite)
+- [x] Commit — `feat(listings): add 4-step listing creation flow`
 
 ## Task 4.3: Bearbeiten und Statuswechsel
 - [ ] "Meine Inserate" mit Tabs Aktiv / Reserviert / Verkauft / Entwürfe

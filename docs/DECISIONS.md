@@ -1326,4 +1326,76 @@ Erstellen-Flow) berührt diesen Code-Pfad ohnehin nicht.
 M4. Separat, nicht Teil dieser Prüfung: `supabase db push` für die heutige RLS-Änderung
 steht beim Nutzer noch aus (siehe Eintrag oben).
 
+## 2026-08-30 · Task 4.2 · Neues Paket `reorderable_grid_view` für Drag-Reorder im Foto-Grid
+
+Flutter hat `ReorderableListView` eingebaut, aber kein Grid-Äquivalent. Selbst bauen (eigenes
+`Draggable`/`DragTarget`-Gerüst mit Drop-Zonen-Berechnung, Scroll-waehrend-Drag etc.) hätte
+deutlich mehr Code und Testfläche für subtile Bugs bedeutet als ein etabliertes, kleines
+Paket. **Nutzerentscheidung (gefragt, da neues Paket per CLAUDE.md):** `reorderable_grid_view`
+hinzufügen statt selbst bauen. `ReorderableSliverGridView.count` mit `footer:` fürs
+"+"-Hinzufügen-Feld, das selbst nicht Teil der umsortierbaren Menge ist.
+
+## 2026-08-30 · Task 4.2 · `CreateListingDraft` bewusst getrennt von `ListingDraft`, Zeile entsteht erst bei "Veröffentlichen"
+
+`ListingDraft` (Task-1.4-Schema) verlangt alle Kernfelder als Pflicht -- fürs schrittweise
+Ausfüllen ungeeignet. Neuer Typ `CreateListingDraft` mit ausschließlich optionalen Feldern
+plus `step`-Index und lokalen Bildern (`DraftImage`, mit `uploadedPath` für den
+Retry-nach-Fehler-Fall), persistiert nach jedem Schritt in `shared_preferences`. Erst beim
+Veröffentlichen-Tap wird daraus (`toListingDraft()`, wirft `StateError` wenn unvollständig)
+ein echtes `ListingDraft` und `create()` aufgerufen -- vorher existiert in der DB gar keine
+Zeile. Direkte Folge: PLZ/Ort/Versandart (Schritt 4) fließen erst zu diesem Zeitpunkt in den
+Draft ein, siehe nächster Eintrag.
+
+## 2026-08-30 · Task 4.2 · Echter Bug: "Veröffentlichen" war nicht deaktiviert, bis alles gültig ist
+
+Die Aufgabe verlangt explizit "Der Veröffentlichen-Button ist deaktiviert, bis alles gültig
+ist" -- erste Fassung validierte stattdessen nur beim Tippen (wie die "Weiter"-Buttons der
+anderen Schritte, wo das laut Formulierung "validiert vor dem Weiterblättern" auch richtig
+ist). Beim Abhaken der Kriterien aufgefallen, nicht beim Live-Test. Fix: `_canPublish(draft)`
+gated jetzt `onPressed`. **Zweiter, subtilerer Bug beim Fixen selbst:** die erste Fassung von
+`_canPublish` prüfte `draft.isCompleteEnoughToPublish` auf dem **Provider**-Draft -- der hat
+`postalCode`/`city`/`lat`/`lng` aber nie gesetzt, weil die (siehe Eintrag oben) erst beim
+tatsächlichen Publish-Tap gemergt werden. Der Button wäre dadurch nie aktivierbar gewesen. Ein
+extra dafür geschriebener Widget-Test (Button-Zustand vor/nach PLZ-Eingabe) fing genau das ab,
+bevor es committet wurde. Fix: `_canPublish` baut sich den Draft mit den lokalen
+PLZ/Ort-Feldern selbst zusammen, bevor es `isCompleteEnoughToPublish` prüft -- exakt das
+Merge-Muster, das `_publish()` ohnehin schon macht. **Nebenwirkung:** Sobald der Button diese
+Bedingungen selbst prüft, wird die alte "zeig eine Fehlermeldung beim Tippen auf einen
+ungültigen Button"-Logik (`_validate()`, `_deliveryError`) unerreichbar -- ersatzlos entfernt
+statt als toten Code stehen zu lassen.
+
+## 2026-08-30 · Task 4.2 · `AsmTextField` bekam einen optionalen `focusNode`-Parameter
+
+Flutters `Autocomplete`-Widget (Hersteller-Feld in Schritt 3) übergibt seinem
+`fieldViewBuilder` einen `focusNode`, an dem es Fokus-Änderungen für die
+Vorschlagsliste/Overlay abliest -- `AsmTextField` verwaltete bisher ausschließlich einen
+eigenen, privaten `FocusNode`, wodurch das Overlay nie merkte, dass das Feld fokussiert war
+(Vorschläge blieben unsichtbar, per Test entdeckt, nicht durch Live-Testen). Fix: optionaler
+`focusNode`-Parameter, fällt auf einen selbst erzeugten zurück, wenn keiner übergeben wird;
+nur der selbst erzeugte wird in `dispose()` entsorgt. Abwärtskompatibel, alle bisherigen
+Aufrufstellen unverändert.
+
+## 2026-08-30 · Task 4.2 · `build.yaml`: `explicit_to_json: true` ergänzt
+
+`CreateListingDraft.images` ist die erste verschachtelte Liste eines eigenen Freezed-Typs
+(`List<DraftImage>`) im Projekt -- `json_serializable` serialisiert solche Felder ohne
+`explicit_to_json` nur flach (rohe Objekte statt `.toJson()`-Maps), was beim
+JSON-Round-Trip-Test auffiel (`type '_DraftImage' is not a subtype of type
+'Map<String, dynamic>'`). Global in `build.yaml` gesetzt statt per-Klasse, da die Option für
+alle bisherigen (unverschachtelten) Modelle wirkungslos ist und künftige verschachtelte Typen
+automatisch mit abdeckt.
+
+## 2026-08-30 · Task 4.2 · Live-Verifikation inkl. echtem Veröffentlichen-Durchlauf (Nutzer-Entscheidung)
+
+Auf Nachfrage explizit gewünscht: nicht nur bis vor den Veröffentlichen-Button testen, sondern
+wirklich ein Test-Inserat in der Dev-Datenbank anlegen (wie schon beim M2-Komplettflow).
+Kompletter Weg: `flutter_api34`, neuer Test-Account `gear_tester_m4` registriert und per
+echtem Mailinator-Link (`asm-task42-verify@mailinator.com`, Link über Mailinators
+`api/v2/domains/public/inboxes/.../messages/...`-Endpunkt geholt statt durch die
+mobil-unzuverlässige Web-UI zu klicken) bestätigt, kompletter 4-Schritte-Flow mit echten
+Fotos aus der Emulator-Galerie, echte PLZ-Auflösung, echtes `create()` + drei Bild-Uploads +
+`setStatus(active)`. Das Test-Inserat ("M4A1 S-AEG voll funktionsfaehig", 89,90 €, Karlsruhe)
+bleibt bewusst in der Dev-Datenbank stehen (gleiche Linie wie der Task-2.2-Test-Account).
+**Nachholen, falls es stört:** Inserat manuell aus der Dev-DB löschen.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

@@ -6,6 +6,7 @@ abstract interface class CategoryRepository {
   Future<List<Category>> roots();
   Future<List<Category>> children(String parentSlug);
   Future<Category> bySlug(String slug);
+  Future<List<Category>> all();
 }
 
 class SupabaseCategoryRepository implements CategoryRepository {
@@ -36,6 +37,20 @@ class SupabaseCategoryRepository implements CategoryRepository {
           .from('categories')
           .select()
           .eq('parent_id', parent.id)
+          .eq('is_active', true)
+          .order('sort_order');
+      return rows.map(Category.fromJson).toList();
+    } catch (error) {
+      throw mapError(error);
+    }
+  }
+
+  @override
+  Future<List<Category>> all() async {
+    try {
+      final rows = await _client
+          .from('categories')
+          .select()
           .eq('is_active', true)
           .order('sort_order');
       return rows.map(Category.fromJson).toList();

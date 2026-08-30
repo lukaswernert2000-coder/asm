@@ -11,6 +11,7 @@ import 'package:asm/features/auth/presentation/register_screen.dart';
 import 'package:asm/features/auth/presentation/reset_password_screen.dart';
 import 'package:asm/features/categories/presentation/category_overview_screen.dart';
 import 'package:asm/features/categories/presentation/category_screen.dart';
+import 'package:asm/features/listings/presentation/create_listing_screen.dart';
 import 'package:asm/features/listings/presentation/my_listings_screen.dart';
 import 'package:asm/features/onboarding/presentation/onboarding_providers.dart';
 import 'package:asm/features/onboarding/presentation/onboarding_screen.dart';
@@ -88,10 +89,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AsmRoutes.create,
-        builder: (context, state) => const _TitledPlaceholder(
-          icon: LucideIcons.plus,
-          title: 'Inserat erstellen',
-        ),
+        builder: (context, state) => const CreateListingScreen(),
       ),
       GoRoute(
         path: AsmRoutes.register,

@@ -18,6 +18,7 @@ abstract interface class ListingRepository {
   Future<void> setStatus(String id, ListingStatus status);
   Future<void> delete(String id);
   Future<void> incrementView(String id);
+  Future<List<String>> manufacturers();
 }
 
 /// Ruft eine Postgres-RPC auf und liefert die Zeilen als rohe Maps.
@@ -170,6 +171,22 @@ class SupabaseListingRepository implements ListingRepository {
           .from('listings')
           .update({'view_count': current + 1})
           .eq('id', id);
+    } catch (error) {
+      throw mapError(error);
+    }
+  }
+
+  @override
+  Future<List<String>> manufacturers() async {
+    try {
+      final rows = await _client
+          .from('listings')
+          .select('manufacturer')
+          .not('manufacturer', 'is', null)
+          .limit(500);
+      final values =
+          rows.map((r) => r['manufacturer'] as String).toSet().toList()..sort();
+      return values;
     } catch (error) {
       throw mapError(error);
     }

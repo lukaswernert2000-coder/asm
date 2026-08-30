@@ -1,6 +1,7 @@
 import 'package:asm/app.dart';
 import 'package:asm/core/config/app_config.dart';
 import 'package:asm/core/storage/shared_preferences_provider.dart';
+import 'package:asm/features/listings/presentation/create_listing_providers.dart';
 import 'package:asm/features/listings/presentation/listing_providers.dart';
 import 'package:asm/features/onboarding/presentation/onboarding_providers.dart';
 import 'package:asm/features/search/presentation/search_history_providers.dart';
@@ -32,6 +33,7 @@ Future<void> main() async {
             hasSeenOnboardingPrefsKey,
             listingViewModePrefsKey,
             searchHistoryPrefsKey,
+            createListingDraftPrefsKey,
           },
         ),
       );
