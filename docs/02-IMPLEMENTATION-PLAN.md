@@ -41,7 +41,7 @@ Firebase Cloud Messaging · Sentry
 | **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) |
 | **Als Nächstes** | **M4 — Task 4.3 Bearbeiten und Statuswechsel** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `feat(listings): add 4-step listing creation flow` |
+| **Letzter Commit** | `docs: confirm CI green on the task 4.2 push` |
 | **Stand vom** | 2026-08-30 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -304,7 +304,9 @@ drei Bilder hochgeladen, den Status auf `active` gesetzt, und das Inserat taucht
 korrektem F-Kennzeichen-Badge im normalen Feed auf. Dabei ein echter Bug gefunden und gefixt:
 der "Veröffentlichen"-Button war zunächst nicht wie von der Aufgabe verlangt deaktiviert, bis
 alles gültig ist — behoben, samt totem Code danach entfernt (Details in DECISIONS.md). Test
-auf echtem Gerät bleibt weiterhin bewusst Nutzer-Aufgabe.
+auf echtem Gerät bleibt weiterhin bewusst Nutzer-Aufgabe. Task-4.2-Push ist auf Anhieb
+CI-grün ([Run](https://github.com/lukaswernert2000-coder/asm/actions/runs/33325607225),
+`conclusion: success`).
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
