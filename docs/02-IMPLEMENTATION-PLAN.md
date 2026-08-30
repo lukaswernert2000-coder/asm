@@ -42,7 +42,7 @@ Firebase Cloud Messaging · Sentry
 | **Als Nächstes** | **M4 — Task 4.2 Erstellen-Flow, 4 Schritte** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
 | **Offen (Infra)** | `supabase db push` für `0008_listings_visibility_fix.sql` — vom Auto-Mode-Classifier blockiert, Nutzer muss selbst pushen oder freigeben |
-| **Letzter Commit** | `feat(listings): add image pick, compress and upload service` |
+| **Letzter Commit** | `docs: confirm CI green on the task 4.1 push` |
 | **Stand vom** | 2026-08-30 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -258,7 +258,9 @@ Parameter `minWidth`/`minHeight` des Plugins sind trotz Namens **Unter**- nicht 
 (das Plugin wählt den kleinsten Skalierungsfaktor, der beide Grenzen einhält) — Details und
 die Herleitung in DECISIONS.md. 1 neuer Unit-Test (`upload()` wirft `AuthRequiredException`
 ohne Session) plus 2 Integrationstests, 250 Unit-Tests insgesamt grün, `flutter analyze`
-0 Probleme.
+0 Probleme. Task-4.1-Push ist auf Anhieb CI-grün
+([Run](https://github.com/lukaswernert2000-coder/asm/actions/runs/33320469101),
+`conclusion: success`).
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
