@@ -1188,4 +1188,16 @@ echte `SearchScreen`-UI (13 neue Tests, 219 insgesamt grün, `flutter analyze` 0
 **Nicht live auf Emulator/Gerät verifiziert** — gleicher Grund wie Task 3.1/3.2 (keine
 Web-Plattform, kein Gerät in dieser Session verfügbar).
 
+## 2026-08-30 · Emulator-Verifikation für Task 3.1–3.3 nachgeholt, echtes Gerät bewusst erst nach M3
+
+Nutzer wollte nicht bis Meilenstein-Ende warten, um den seit Task 3.1 wachsenden Stau an
+"nicht live verifiziert" abzubauen: `flutter_api34` gestartet, App gegen das echte
+Dev-Supabase-Projekt gebaut und den kompletten M3-Stand (3.1 Kategorien, 3.2 Pagination/
+Grid-Listen-Umschalter, 3.3 Suche) einmal durchgeklickt — Details im Stand-Abschnitt.
+**Der Test auf einem echten Gerät (laut `03-ARBEITEN-MIT-SONNET.md` Abschnitt 4 ohnehin
+Nutzer-Aufgabe, kein Sonnet-Task) ist eine bewusste Entscheidung des Nutzers, erst nach
+Abschluss von M3 zu passieren** — kein technischer Blocker, nur eine Priorisierung: erst
+den ganzen Meilenstein (inkl. Task 3.4 Filter-Sheet) auf dem Emulator absichern, dann einmal
+gebündelt auf echter Hardware.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

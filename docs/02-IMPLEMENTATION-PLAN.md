@@ -38,7 +38,7 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M3 · Kategorien, Feed und Suche |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1 komplett (Code-seitig, siehe unten — nicht live verifiziert) · Task 3.2 komplett (Code-seitig, siehe unten — nicht live verifiziert) · Task 3.3 komplett (Code-seitig, siehe unten — nicht live verifiziert) |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.3 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) |
 | **Als Nächstes** | **Task 3.4 — Filter-Sheet** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
 | **Letzter Commit** | `feat(search): add search with history and debounce` |
@@ -191,6 +191,19 @@ verifiziert**, gleicher Grund wie Task 3.1/3.2 (keine Web-Plattform, kein Gerät
 Session verfügbar). Task-3.3-Push ist auf Anhieb CI-grün
 ([Run #20](https://github.com/lukaswernert2000-coder/asm/actions/runs/33301161589),
 `conclusion: success`).
+
+**2026-08-30, Task 3.1–3.3 live auf dem Emulator bestätigt:** Auf Nutzerwunsch
+`flutter_api34` gestartet und die App gegen das echte Dev-Supabase-Projekt gebaut
+(`flutter run --dart-define-from-file=env/dev.json`). Durchgeklickt: Start (Kategorie-Grid +
+"Neu eingestellt") → Kategorie "Gewehre & MPs" (leer → korrekter Leerzustand) → Kategorie
+"ASGs bis 0,5 J" (zwei echte Inserate, Grid- **und** Listen-Ansicht) → Suchen-Tab (leer →
+"Beliebte Kategorien") → Suche "AEG" → echter RPC-Treffer ("Mini AEG bis 0,5 Joule
+Einsteiger") nach der 350-ms-Debounce → Feld geleert → Verlauf zeigt "AEG" → Löschen-Icon
+entfernt genau den Eintrag → Tap auf Vorschlag "Pistolen" navigiert zu `/category/pistolen`.
+**Keine Abstürze, keine Exceptions im `flutter run`-Log** (nur harmlose Kotlin-Plugin- und
+Emulator-Renderer-Warnungen). Anders als beim M2-Komplettflow (siehe Eintrag oben) diesmal
+**kein neuer Bug gefunden**. Test auf echtem Gerät bleibt wie geplant offen — Nutzer macht
+das bewusst erst nach Abschluss von M3, siehe DECISIONS.md.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
