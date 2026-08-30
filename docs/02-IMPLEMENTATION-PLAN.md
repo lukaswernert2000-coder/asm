@@ -228,7 +228,9 @@ deaktiviert auf aktiv; Kombination aus Umkreis 25 km + Sortierung Entfernung lie
 echten Treffer mit korrekt berechneter Distanz ("2 km"); Badge und Chips zählen/entfernen
 korrekt; "Alle zurücksetzen" bei aktivem Mehrfach-Filter leert Sheet und Suchbildschirm
 vollständig. **Damit ist M3 komplett.** Test auf echtem Gerät bleibt weiterhin bewusst
-Nutzer-Aufgabe nach M3-Abschluss.
+Nutzer-Aufgabe nach M3-Abschluss. Task-3.4-Push ist auf Anhieb CI-grün
+([Run #23](https://github.com/lukaswernert2000-coder/asm/actions/runs/33307012979),
+`conclusion: success`).
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
