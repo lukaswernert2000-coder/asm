@@ -38,11 +38,11 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M3 abgeschlossen → M4 · Inserat erstellen |
-| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst (siehe unten) |
-| **Als Nächstes** | **M4 — Task 4.1 Bild-Pipeline** |
+| **Fertig** | M0 komplett (Task 0.1–0.8) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, Code-seitig — offene Verifikationen siehe unten) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) |
+| **Als Nächstes** | **M4 — Task 4.2 Erstellen-Flow, 4 Schritte** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
 | **Offen (Infra)** | `supabase db push` für `0008_listings_visibility_fix.sql` — vom Auto-Mode-Classifier blockiert, Nutzer muss selbst pushen oder freigeben |
-| **Letzter Commit** | `fix(listings): drop age-based row filtering from public read policy` |
+| **Letzter Commit** | `feat(listings): add image pick, compress and upload service` |
 | **Stand vom** | 2026-08-30 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -232,6 +232,33 @@ vollständig. **Damit ist M3 komplett.** Test auf echtem Gerät bleibt weiterhin
 Nutzer-Aufgabe nach M3-Abschluss. Task-3.4-Push ist auf Anhieb CI-grün
 ([Run #23](https://github.com/lukaswernert2000-coder/asm/actions/runs/33307012979),
 `conclusion: success`).
+
+**2026-08-30, Task 4.1:** `ImageService` (`lib/features/listings/data/image_service.dart`) mit
+`pickFromGallery({max})` (delegiert an `image_picker`s eigene `limit`-Behandlung),
+`pickFromCamera()`, `compress(File)` und `upload(File, {listingId, kind})`. `ImageKind`-Enum
+(photo/fMarking/ownershipProof) neu in `listing.dart`, passend zum Postgres-Enum
+`image_kind`. `upload()` liest die `userId` selbst aus `_client.auth.currentUser` (nicht als
+Parameter, wie im Plan spezifiziert) und wirft `AuthRequiredException` ohne Session;
+Pfadkonvention `listing-images/<user_id>/<listing_id>/<kind>_<token>.jpg`, passend zur RLS aus
+`0006_storage.sql`. **Reine Einzelbild-Primitive** — die Kriterien "Uploads parallel, max. 3
+gleichzeitig" und "Fortschrittsanzeige pro Bild" sind bewusst nicht Teil dieses Tasks, siehe
+Checkliste oben und DECISIONS.md.
+
+Ein Pflicht-Test aus dem Plan ("4000×3000-Testbild wird auf max. 1600 px verkleinert")
+entpuppte sich als grundlegend anders als angenommen: `flutter_image_compress` komprimiert
+nativ und hat auf dem Host (Windows) **keine Plattform-Implementierung** — ein normaler
+`flutter test` bricht mit `UnimplementedError` ab, nicht nur ohne Mock, sondern kategorisch.
+Der Test liegt deshalb neu in `integration_test/image_compress_test.dart` und läuft nur
+manuell auf einem echten Gerät/Emulator (`flutter test integration_test/image_compress_test.dart
+-d <device-id>`), analog zu `integration_test/category_repository_test.dart`s
+Netzwerk-Sonderfall — beides nicht Teil von CI. Auf `flutter_api34` **tatsächlich ausgeführt und
+bestanden**, zwei Fälle: 4000×3000 → 1600×1200 (kleinere Datei als Original), 800×600 bleibt
+unverändert (kein Hochskalieren). Dabei ein zweiter Stolperstein gefunden und gelöst: die
+Parameter `minWidth`/`minHeight` des Plugins sind trotz Namens **Unter**- nicht Obergrenzen
+(das Plugin wählt den kleinsten Skalierungsfaktor, der beide Grenzen einhält) — Details und
+die Herleitung in DECISIONS.md. 1 neuer Unit-Test (`upload()` wirft `AuthRequiredException`
+ohne Session) plus 2 Integrationstests, 250 Unit-Tests insgesamt grün, `flutter analyze`
+0 Probleme.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -2127,11 +2154,11 @@ lässt sich anlegen und veröffentlichen. **Der aufwendigste Meilenstein.**
 `.compress(File)` → JPEG max. 1600 px lange Kante bei Qualität 80,
 `.upload(File, {required String listingId, required ImageKind kind})` → `storage_path`
 
-- [ ] Komprimierung **vor** dem Upload, auf dem Gerät (spart Datenvolumen und Zeit)
-- [ ] Uploads laufen parallel, max. 3 gleichzeitig
-- [ ] Fortschrittsanzeige pro Bild
-- [ ] Test: Ein 4000×3000-Testbild wird auf max. 1600 px verkleinert und ist kleiner als das Original
-- [ ] Commit — `feat(listings): add image pick, compress and upload service`
+- [x] Komprimierung **vor** dem Upload, auf dem Gerät (spart Datenvolumen und Zeit)
+- [ ] Uploads laufen parallel, max. 3 gleichzeitig — **bewusst auf Task 4.2 verschoben**, siehe DECISIONS.md: `ImageService` liefert nur die Einzelbild-Primitive (`compress`/`upload`), die Orchestrierung ueber mehrere Fotos gehoert zum Schritt-2-Flow in Task 4.2, nicht in den Service selbst
+- [ ] Fortschrittsanzeige pro Bild — selbe Begruendung, lebt in Task 4.2s UI
+- [x] Test: Ein 4000×3000-Testbild wird auf max. 1600 px verkleinert und ist kleiner als das Original
+- [x] Commit — `feat(listings): add image pick, compress and upload service`
 
 ## Task 4.2: Erstellen-Flow, 4 Schritte
 Schrittanzeige oben, Entwurf wird nach jedem Schritt lokal gespeichert

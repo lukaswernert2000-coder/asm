@@ -1252,4 +1252,48 @@ Der Code-Commit selbst ist CI-grün
 `conclusion: success`) — das prüft nur `flutter analyze`/`flutter test`, nicht die
 DB-Migration.
 
+## 2026-08-30 · Task 4.1 · `flutter_image_compress`-Tests müssen als Integrationstest auf echtem Gerät laufen, nicht als normaler `flutter test`
+
+`flutter_image_compress` komprimiert nativ (Kotlin/Swift), Windows (der Host dieser Session)
+hat dafür keine Plugin-Implementierung — ein normaler `flutter test` bricht mit
+`UnimplementedError: ... Windows is not supported` ab, unabhängig vom Mocking. Empirisch
+bestätigt, nicht nur vermutet. **Lösung:** `integration_test/image_compress_test.dart` mit
+echtem `IntegrationTestWidgetsFlutterBinding`, ausgeführt via
+`flutter test integration_test/image_compress_test.dart -d <device-id>` gegen den laufenden
+Emulator — das baut und installiert die App wirklich, Plugin-Calls laufen also echt. Nicht
+Teil von `flutter test`/CI (kein Gerät dort), analog zu
+`integration_test/category_repository_test.dart`s Netzwerk-Sonderfall, nur diesmal wegen
+fehlender Plattform statt fehlender Credentials. **Für künftige Sessions:** Jeder Task, der
+einen Plugin mit nativer (nicht reiner Dart-)Implementierung testen will (Bild-/Video-Verarbeitung,
+Sensoren, Kompression), gehört hierher, nicht in `test/`.
+
+## 2026-08-30 · Task 4.1 · `flutter_image_compress`s `minWidth`/`minHeight` sind Unter-, nicht Obergrenzen
+
+Naheliegende Annahme beim Implementieren von `ImageService.compress()`: `minWidth: 1600,
+minHeight: 1600` würde das Bild in eine 1600×1600-Box einpassen (übliche Bedeutung bei
+anderen Bildbibliotheken). Empirisch widerlegt: ein 4000×3000-Testbild kam mit diesen
+Parametern als 2133×1600 zurück, nicht 1600×1200. Das Plugin wählt tatsächlich den
+**kleinsten** Skalierungsfaktor `s`, der beide Grenzen noch als Untergrenze einhält
+(`s = max(minWidth/originalWidth, minHeight/originalHeight)`) — es verkleinert also nur so
+weit, dass keine der beiden Kanten unter ihren `min*`-Wert fällt, nicht bis beide Kanten
+darunter liegen. **Fix:** Vor dem Komprimieren mit `dart:ui` decodieren, die lange Kante
+bestimmen, und nur deren Grenze auf 1600 setzen, die kurze auf 1 (damit sie nie bindend
+wird) — landscape: `minWidth: min(1600, langeKante), minHeight: 1`, portrait umgekehrt. Bei
+bereits kleineren Bildern ergibt das `s = 1` (kein Hochskalieren), siehe Test in
+`integration_test/image_compress_test.dart`. **Für künftige Sessions:** Bei diesem Plugin nie
+von "min bedeutet max" ausgehen, immer gegen einen echten Test verifizieren.
+
+## 2026-08-30 · Task 4.1 · `ImageService` liefert nur Einzelbild-Primitive, Parallel-Upload und Fortschrittsanzeige verschoben auf Task 4.2
+
+Der Plan listet für Task 4.1 exakt vier Methodensignaturen (`pickFromGallery`,
+`pickFromCamera`, `compress`, `upload` — alle einzelbild-bezogen) unter "Produziert", nennt
+aber als Akzeptanzkriterien auch "Uploads laufen parallel, max. 3 gleichzeitig" und
+"Fortschrittsanzeige pro Bild" — beides ergibt nur für mehrere Bilder gleichzeitig Sinn, was
+erst in Task 4.2 (Schritt 2 "Fotos", Grid mit bis zu 12 Bildern) tatsächlich vorkommt.
+**Entscheidung:** `ImageService` bleibt bei den vier Primitiven aus der Signatur-Liste: keine
+`uploadAll()`/Batch-Methode, keine Concurrency-Begrenzung, kein Progress-Stream. Die
+Orchestrierung über mehrere Dateien (parallel max. 3, Fortschritt pro Bild) gehört in Task
+4.2s Screen/Controller, der die Bildauswahl überhaupt erst hat. Die beiden Checkboxen bleiben
+in Task 4.1 bewusst offen, nicht vergessen — nachzuholen in Task 4.2.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

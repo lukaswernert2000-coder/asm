@@ -17,6 +17,8 @@ enum ListingStatus { draft, active, reserved, sold, archived, blocked }
 
 enum PropulsionType { saeg, aep, gbb, co2, hpa, federdruck, sonstige }
 
+enum ImageKind { photo, fMarking, ownershipProof }
+
 /// Deutsche Anzeigetexte. Siehe `00-SPEC.md` Abschnitt 6.1/6.2.
 extension ListingConditionLabel on ListingCondition {
   String get label => switch (this) {
