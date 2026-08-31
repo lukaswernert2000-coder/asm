@@ -41,7 +41,7 @@ Firebase Cloud Messaging · Sentry
 | **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) |
 | **Als Nächstes** | **M5 — Task 5.2 Favoriten** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `feat(listings): add listing detail screen` |
+| **Letzter Commit** | `chore: run dart format to fix CI formatting check` |
 | **Stand vom** | 2026-08-31 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -416,6 +416,11 @@ besucht, Zähler blieb bei 1** (Session-Gate bestätigt, über "Meine Inserate" 
 Exceptions im `flutter run`-Log während der gesamten Session. Test auf echtem Gerät bleibt weiterhin
 bewusst Nutzer-Aufgabe. Test-Inserat und die Meldung gegen `WE G39` bleiben bewusst in der Dev-DB
 stehen, gleiche Linie wie bisherige Test-Artefakte.
+
+Task-5.1-Push war zunächst rot (`dart format --set-exit-if-changed .` -- fünf Dateien nicht formatiert,
+gleicher Stolperstein wie schon bei Task 3.1), mit `dart format lib test` gefixt und erneut gepusht,
+danach CI-grün ([Run #36](https://github.com/lukaswernert2000-coder/asm/actions/runs/33371137177),
+`conclusion: success`).
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
