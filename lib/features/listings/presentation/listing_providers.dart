@@ -103,8 +103,17 @@ listingsBySellerStatusProvider =
 /// "Meine Inserate"-Tabs invalidieren, egal von wo die Aenderung ausgeloest
 /// wurde -- z. B. verschiebt "Als verkauft markieren" ein Inserat vom
 /// Aktiv- in den Verkauft-Tab, und `EditListingScreen` kennt die Tabs gar
-/// nicht selbst.
-void refreshSellerListings(WidgetRef ref, String sellerId) {
+/// nicht selbst. Invalidiert auch `listingByIdProvider(listingId)` --
+/// Detailseite und Favoriten (Task 5.1/5.2) lesen denselben Cache und
+/// bekamen den Statuswechsel bisher erst nach einem Neustart mit (per
+/// Live-Test in Task 5.2 gefunden: "Als verkauft markieren" liess den
+/// "Verkauft"-Badge auf einem bereits geladenen Favoriten falsch aus).
+void refreshSellerListings(
+  WidgetRef ref, {
+  required String sellerId,
+  required String listingId,
+}) {
+  ref.invalidate(listingByIdProvider(listingId));
   for (final status in ListingStatus.values) {
     if (status == ListingStatus.archived || status == ListingStatus.blocked) {
       continue;

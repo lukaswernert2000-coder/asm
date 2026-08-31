@@ -353,6 +353,36 @@ void main() {
   });
 
   testWidgets(
+    'Als verkauft markieren invalidiert auch listingByIdProvider (fuer '
+    'Detailseite/Favoriten, die denselben Cache lesen)',
+    (tester) async {
+      when(
+        () => listingRepository.bySeller('u1', status: ListingStatus.active),
+      ).thenAnswer((_) async => [_listing()]);
+      when(
+        () => listingRepository.setStatus('l1', ListingStatus.sold),
+      ).thenAnswer((_) async {});
+      when(() => listingRepository.byId('l1')).thenAnswer(
+        (_) async => _listing(),
+      );
+
+      final container = await pumpScreen(tester);
+      // Provider muss "lebendig" (beobachtet) sein, damit invalidate() einen
+      // erneuten Fetch ausloest statt nur den Cache zu verwerfen.
+      container.listen(listingByIdProvider('l1'), (_, _) {});
+      await tester.pump();
+
+      await tester.tap(find.byKey(const Key('listingActions_l1')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Als verkauft markieren'));
+      await tester.pumpAndSettle();
+
+      // 1x durch das listen() oben, 1x erneut nach der Invalidierung.
+      verify(() => listingRepository.byId('l1')).called(2);
+    },
+  );
+
+  testWidgets(
     'Loeschen zeigt eine Bestaetigung; Abbrechen loescht nichts',
     (tester) async {
       when(

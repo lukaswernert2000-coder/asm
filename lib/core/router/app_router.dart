@@ -11,6 +11,7 @@ import 'package:asm/features/auth/presentation/register_screen.dart';
 import 'package:asm/features/auth/presentation/reset_password_screen.dart';
 import 'package:asm/features/categories/presentation/category_overview_screen.dart';
 import 'package:asm/features/categories/presentation/category_screen.dart';
+import 'package:asm/features/favorites/presentation/favorites_screen.dart';
 import 'package:asm/features/listings/presentation/create_listing_screen.dart';
 import 'package:asm/features/listings/presentation/edit_listing_screen.dart';
 import 'package:asm/features/listings/presentation/listing_detail_screen.dart';
@@ -147,10 +148,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AsmRoutes.favorites,
-        builder: (context, state) => const _TitledPlaceholder(
-          icon: LucideIcons.heart,
-          title: 'Favoriten',
-        ),
+        builder: (context, state) => const FavoritesScreen(),
       ),
       GoRoute(
         path: AsmRoutes.settings,

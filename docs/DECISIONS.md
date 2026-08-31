@@ -1510,6 +1510,24 @@ etablierte Praxis (hartcodiert) statt als einziger Screen auf `app_de.arb` umzus
 projektweiter l10n-Umbau ist kein Task-5.1-Umfang. Offener Punkt fuer eine spaetere bewusste
 Entscheidung, ob/wann das Projekt insgesamt umstellt.
 
+## 2026-08-31 · Task 5.2 · Echter Bug: `refreshSellerListings()` invalidierte `listingByIdProvider` nie
+
+Beim Live-Test (favorisiertes Inserat als verkauft markiert) blieb der "Verkauft"-Badge auf
+der Favoriten-Liste in derselben Session falsch, bis die App neu gestartet wurde. Ursache:
+`refreshSellerListings()` (Task 4.3) invalidiert nur die vier "Meine Inserate"-Tabs, nie
+`listingByIdProvider(id)` -- Detailseite (Task 5.1) und Favoriten (Task 5.2) lesen aber genau
+diesen Cache. `EditListingScreen._save()` hatte dafuer zufaellig schon eine eigene, separate
+`invalidate(listingByIdProvider(...))`-Zeile (Task 4.3s eigener Fix betraf dort nur die
+Tabs) -- die fuenf Aktionen in `MyListingsScreen` (Hochschieben, Reserviert, Aktiv, Verkauft,
+Loeschen) hatten diese Zeile nie und blieben bisher unbemerkt, weil vor Task 5.1/5.2 nichts
+sonst denselben Cache in derselben Session gelesen hat. **Fix:** `refreshSellerListings()`
+nimmt jetzt zusaetzlich die betroffene `listingId` (benannte Parameter `sellerId`/`listingId`,
+um Vertauschen zu verhindern) und invalidiert sie selbst mit -- `EditListingScreen`s separate
+Zeile ist damit ueberfluessig und entfernt, alle sechs Aufrufstellen (5x `MyListingsScreen`,
+1x `EditListingScreen`) sind auf die neue Signatur umgestellt. Mit TDD nachgezogen
+(`container.listen()` + `verify(...).called(2)`, gleiches Muster wie Task 4.3s eigener
+Cache-Test), danach live an genau dem Szenario bestaetigt, das den Bug gefunden hat.
+
 ## 2026-08-31 · Task 5.1 · Live-Test: Altersgate blockierte "Nachricht schreiben" real
 
 Beim Live-Test auf `flutter_api34` gegen ein fremdes Bestandsinserat (Kategorie mit `requires_age_18`)

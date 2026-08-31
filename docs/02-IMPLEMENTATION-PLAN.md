@@ -37,11 +37,11 @@ Firebase Cloud Messaging · Sentry
 
 | | |
 |---|---|
-| **Meilenstein** | M5 · Detailseite und Favoriten (Task 5.1 abgeschlossen) → Task 5.2 Favoriten |
-| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) |
-| **Als Nächstes** | **M5 — Task 5.2 Favoriten** |
+| **Meilenstein** | M5 abgeschlossen → M6 · Chat |
+| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) · Task 5.2 komplett, inkl. eines beim Live-Test gefundenen und gefixten Cache-Bugs in `refreshSellerListings` (siehe unten) · **M5 damit komplett** |
+| **Als Nächstes** | **M6 — Task 6.1 (siehe Meilenstein M6 im Plan)** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `chore: run dart format to fix CI formatting check` |
+| **Letzter Commit** | `feat(favorites): add favorites with optimistic toggle` |
 | **Stand vom** | 2026-08-31 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -421,6 +421,44 @@ Task-5.1-Push war zunächst rot (`dart format --set-exit-if-changed .` -- fünf 
 gleicher Stolperstein wie schon bei Task 3.1), mit `dart format lib test` gefixt und erneut gepusht,
 danach CI-grün ([Run #36](https://github.com/lukaswernert2000-coder/asm/actions/runs/33371137177),
 `conclusion: success`).
+
+**2026-08-31, Task 5.2:** `FavoriteRepository.myListingIds()` (neue Methode) +
+`favoriteListingIdsProvider` für die Liste. Das bisherige, einfache `isFavoritedProvider`/
+`toggleFavorite()` aus Task 5.1 ist ersetzt durch `FavoriteNotifier`
+(`AsyncNotifierProvider.family`, gleiches Muster wie `ListingFeedNotifier`): `toggle()` setzt
+den Zustand sofort um (optimistisch), ruft `add()`/`remove()`, setzt bei einem `AppException`
+zurück -- mit eigenem Test dafür. `FavoritesScreen` (neu unter `/favorites`, ersetzt den
+Platzhalter) zeigt eine eigene schlanke Zeile pro Favorit (nicht `ListingCard` -- ein Herz
+darin wäre eine zweite, vom Plan nicht verlangte Lösch-Aktion neben dem Wischen gewesen,
+gleiches Muster wie `MyListingsScreen`s eigene Zeilen), mit echtem Titelbild über die
+Task-5.1-Bild-Infrastruktur, `Dismissible` zum Wischen-Entfernen (`confirmDismiss` ruft direkt
+`remove()` auf), "Verkauft"-Badge und `AsmEmptyState` im Leerzustand.
+
+**Echter Bug beim Live-Test gefunden:** ein favorisiertes, dann als verkauft markiertes
+Inserat zeigte den "Verkauft"-Badge in derselben Session nicht, bis die App neu gestartet
+wurde. Ursache: `refreshSellerListings()` (Task 4.3) invalidierte nur die vier
+"Meine Inserate"-Tabs, nie `listingByIdProvider(id)` selbst -- Detailseite und Favoriten lesen
+aber genau diesen Cache. `EditListingScreen` hatte das Problem zufällig nicht, weil sie schon
+vorher eine eigene, separate `invalidate(listingByIdProvider(...))`-Zeile hatte; die fünf
+Status-/Hochschieben-/Löschen-Aktionen in `MyListingsScreen` hatten das nie. Fix:
+`refreshSellerListings()` nimmt jetzt zusätzlich die betroffene `listingId` (benannte
+Parameter) und invalidiert sie mit, `EditListingScreen`s separate Zeile ist damit überflüssig
+und entfernt. Mit TDD nachgezogen (`container.listen()` + `.called(2)`-Assertion, gleiches
+Muster wie Task 4.3s eigener Cache-Fix), danach live erneut bestätigt: "Als verkauft
+markieren" auf ein favorisiertes Inserat zeigt den Badge in der Favoriten-Liste sofort, ohne
+Neustart.
+
+9 neue/geänderte Tests (Datenschicht/Notifier, Screen, Cache-Fix), 369 insgesamt grün,
+`flutter analyze` 0 Probleme.
+
+**Live auf `flutter_api34` verifiziert:** favorisiertes Inserat entfernt (Wischen), Herz auf
+der Detailseite erneut angetippt -- Label wechselt sofort zu "Von Favoriten entfernen", also
+optimistisch, bevor die Bestätigung vom Server zurück ist. Ein zweites, eigenes Inserat
+(M4A1) favorisiert und über "Meine Inserate" als verkauft markiert: "Verkauft"-Badge
+erscheint korrekt auf der Favoriten-Liste, live und ohne Neustart (siehe Bug-Fix oben). Der
+Fehlerfall (Rollback bei fehlgeschlagenem `add()`/`remove()`) lässt sich am Emulator nicht
+sinnvoll erzwingen und ist stattdessen gezielt im Unit-Test abgedeckt. Keine Exceptions im
+`flutter run`-Log während der gesamten Session. **Damit ist M5 komplett.**
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -2368,11 +2406,11 @@ bei Bedarf Joule + Antriebsart + Kaliber + "umgebaut", Preis, VB, Tausch, Versch
 - [x] Commit — `feat(listings): add listing detail screen`
 
 ## Task 5.2: Favoriten
-- [ ] Optimistisches Umschalten (Herz reagiert sofort, Rollback bei Fehler)
-- [ ] Favoriten-Screen als Liste, Wischen zum Entfernen
-- [ ] Badge auf verkauften Favoriten
-- [ ] Test: Fehlerfall setzt den Zustand zurück
-- [ ] Commit — `feat(favorites): add favorites with optimistic toggle`
+- [x] Optimistisches Umschalten (Herz reagiert sofort, Rollback bei Fehler)
+- [x] Favoriten-Screen als Liste, Wischen zum Entfernen
+- [x] Badge auf verkauften Favoriten
+- [x] Test: Fehlerfall setzt den Zustand zurück
+- [x] Commit — `feat(favorites): add favorites with optimistic toggle`
 
 ---
 

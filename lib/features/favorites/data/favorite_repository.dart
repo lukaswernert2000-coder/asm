@@ -9,6 +9,7 @@ abstract interface class FavoriteRepository {
   Future<bool> isFavorited(String listingId);
   Future<void> add(String listingId);
   Future<void> remove(String listingId);
+  Future<List<String>> myListingIds();
 }
 
 class SupabaseFavoriteRepository implements FavoriteRepository {
@@ -57,6 +58,22 @@ class SupabaseFavoriteRepository implements FavoriteRepository {
           .delete()
           .eq('user_id', userId)
           .eq('listing_id', listingId);
+    } catch (error) {
+      throw mapError(error);
+    }
+  }
+
+  @override
+  Future<List<String>> myListingIds() async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return const [];
+    try {
+      final rows = await _client
+          .from('favorites')
+          .select('listing_id')
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+      return rows.map((r) => r['listing_id'] as String).toList();
     } catch (error) {
       throw mapError(error);
     }

@@ -217,7 +217,11 @@ Future<void> _showActions(
                       await ref
                           .read(listingRepositoryProvider)
                           .bump(listing.id);
-                      refreshSellerListings(ref, listing.sellerId);
+                      refreshSellerListings(
+                        ref,
+                        sellerId: listing.sellerId,
+                        listingId: listing.id,
+                      );
                     }
                   : null,
             ),
@@ -230,7 +234,11 @@ Future<void> _showActions(
                 await ref
                     .read(listingRepositoryProvider)
                     .setStatus(listing.id, ListingStatus.reserved);
-                refreshSellerListings(ref, listing.sellerId);
+                refreshSellerListings(
+                  ref,
+                  sellerId: listing.sellerId,
+                  listingId: listing.id,
+                );
               },
             ),
           if (listing.status == ListingStatus.reserved)
@@ -242,7 +250,11 @@ Future<void> _showActions(
                 await ref
                     .read(listingRepositoryProvider)
                     .setStatus(listing.id, ListingStatus.active);
-                refreshSellerListings(ref, listing.sellerId);
+                refreshSellerListings(
+                  ref,
+                  sellerId: listing.sellerId,
+                  listingId: listing.id,
+                );
               },
             ),
           if (listing.status == ListingStatus.active ||
@@ -255,7 +267,11 @@ Future<void> _showActions(
                 await ref
                     .read(listingRepositoryProvider)
                     .setStatus(listing.id, ListingStatus.sold);
-                refreshSellerListings(ref, listing.sellerId);
+                refreshSellerListings(
+                  ref,
+                  sellerId: listing.sellerId,
+                  listingId: listing.id,
+                );
               },
             ),
           ListTile(
@@ -301,5 +317,9 @@ Future<void> _confirmAndDelete(
 
   await ref.read(imageServiceProvider).deleteAll(listingId: listing.id);
   await ref.read(listingRepositoryProvider).delete(listing.id);
-  refreshSellerListings(ref, listing.sellerId);
+  refreshSellerListings(
+    ref,
+    sellerId: listing.sellerId,
+    listingId: listing.id,
+  );
 }

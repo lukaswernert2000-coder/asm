@@ -128,19 +128,12 @@ class _ListingDetailScaffoldState
     );
   }
 
-  Future<void> _onFavoriteToggle(
-    Listing listing,
-    bool currentlyFavorited,
-  ) async {
+  Future<void> _onFavoriteToggle(Listing listing) async {
     if (!ref.read(isLoggedInProvider)) {
       context.go('${AsmRoutes.login}?from=${AsmRoutes.listing(listing.id)}');
       return;
     }
-    await toggleFavorite(
-      ref,
-      listing.id,
-      currentlyFavorited: currentlyFavorited,
-    );
+    await ref.read(favoriteProvider(listing.id).notifier).toggle();
   }
 
   void _openGallery(List<String> imageUrls, int index) {
@@ -172,7 +165,7 @@ class _ListingDetailScaffoldState
     final activeListingsAsync = ref.watch(
       activeListingsBySellerProvider(listing.sellerId),
     );
-    final isFavoritedAsync = ref.watch(isFavoritedProvider(listing.id));
+    final isFavoritedAsync = ref.watch(favoriteProvider(listing.id));
     final isFavorited = isFavoritedAsync.valueOrNull ?? false;
 
     return Scaffold(
@@ -250,7 +243,7 @@ class _ListingDetailScaffoldState
         primaryLabel: isOwnListing ? 'Bearbeiten' : 'Nachricht schreiben',
         onPrimaryPressed: () => _onPrimaryPressed(listing, isOwnListing),
         isFavorited: isFavorited,
-        onFavoriteToggle: () => _onFavoriteToggle(listing, isFavorited),
+        onFavoriteToggle: () => _onFavoriteToggle(listing),
         onShare: () => SharePlus.instance.share(
           ShareParams(
             text:

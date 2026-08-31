@@ -223,8 +223,11 @@ class _EditListingScreenState extends ConsumerState<EditListingScreen> {
         pickupOnly: _pickupOnly,
       );
       await ref.read(listingRepositoryProvider).update(original.id, draft);
-      ref.invalidate(listingByIdProvider(original.id));
-      refreshSellerListings(ref, original.sellerId);
+      refreshSellerListings(
+        ref,
+        sellerId: original.sellerId,
+        listingId: original.id,
+      );
       if (!mounted) return;
       Navigator.of(context).pop();
     } finally {
