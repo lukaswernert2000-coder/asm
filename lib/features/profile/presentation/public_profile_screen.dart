@@ -48,13 +48,14 @@ class _PublicProfileContent extends ConsumerWidget {
 
   final Profile profile;
 
-  Future<void> _report(BuildContext context, WidgetRef ref) => showReportUserFlow(
-    context,
-    ref,
-    userId: profile.id,
-    username: profile.username,
-    loginRedirectPath: AsmRoutes.publicProfile(profile.id),
-  );
+  Future<void> _report(BuildContext context, WidgetRef ref) =>
+      showReportUserFlow(
+        context,
+        ref,
+        userId: profile.id,
+        username: profile.username,
+        loginRedirectPath: AsmRoutes.publicProfile(profile.id),
+      );
 
   Future<void> _block(BuildContext context, WidgetRef ref) => showBlockUserFlow(
     context,

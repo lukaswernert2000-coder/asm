@@ -4,8 +4,9 @@ import 'package:asm/features/listings/presentation/widgets/listing_detail/listin
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-Widget _wrap(Widget child) =>
-    MaterialApp(home: Scaffold(body: SizedBox(height: 300, child: child)));
+Widget _wrap(Widget child) => MaterialApp(
+  home: Scaffold(body: SizedBox(height: 300, child: child)),
+);
 
 void main() {
   testWidgets('ohne Bilder: zeigt nur den Platzhalter, keinen Indikator', (

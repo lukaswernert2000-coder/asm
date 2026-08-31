@@ -128,7 +128,10 @@ class _ListingDetailScaffoldState
     );
   }
 
-  Future<void> _onFavoriteToggle(Listing listing, bool currentlyFavorited) async {
+  Future<void> _onFavoriteToggle(
+    Listing listing,
+    bool currentlyFavorited,
+  ) async {
     if (!ref.read(isLoggedInProvider)) {
       context.go('${AsmRoutes.login}?from=${AsmRoutes.listing(listing.id)}');
       return;

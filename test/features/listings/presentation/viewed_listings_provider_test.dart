@@ -11,14 +11,17 @@ void main() {
     expect(notifier.markViewed('l1'), isTrue);
   });
 
-  test('markViewed liefert false bei einem zweiten Aufruf fuer dieselbe ID', () {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-    final notifier = container.read(viewedListingsProvider.notifier)
-      ..markViewed('l1');
+  test(
+    'markViewed liefert false bei einem zweiten Aufruf fuer dieselbe ID',
+    () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final notifier = container.read(viewedListingsProvider.notifier)
+        ..markViewed('l1');
 
-    expect(notifier.markViewed('l1'), isFalse);
-  });
+      expect(notifier.markViewed('l1'), isFalse);
+    },
+  );
 
   test('markViewed liefert true fuer eine andere ID', () {
     final container = ProviderContainer();

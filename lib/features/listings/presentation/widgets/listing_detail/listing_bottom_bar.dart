@@ -48,9 +48,7 @@ class ListingBottomBar extends StatelessWidget {
                 onPressed: onFavoriteToggle,
                 icon: Icon(
                   LucideIcons.heart,
-                  color: isFavorited
-                      ? AsmColors.danger
-                      : AsmColors.textPrimary,
+                  color: isFavorited ? AsmColors.danger : AsmColors.textPrimary,
                 ),
               ),
             ),
