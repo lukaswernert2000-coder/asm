@@ -118,6 +118,24 @@ void main() {
     expect(result, listing);
   });
 
+  test('listingImagePathsProvider ruft imagePaths() mit der ID auf', () async {
+    final repository = MockListingRepository();
+    when(
+      () => repository.imagePaths('l1'),
+    ).thenAnswer((_) async => ['u1/l1/photo_a.jpg', 'u1/l1/photo_b.jpg']);
+
+    final container = ProviderContainer(
+      overrides: [listingRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+
+    final result = await container.read(
+      listingImagePathsProvider('l1').future,
+    );
+
+    expect(result, ['u1/l1/photo_a.jpg', 'u1/l1/photo_b.jpg']);
+  });
+
   test(
     'listingsBySellerStatusProvider ruft bySeller() mit Verkaeufer und Status auf',
     () async {

@@ -1,3 +1,5 @@
+import 'package:asm/core/theme/asm_colors.dart';
+import 'package:flutter/widgets.dart' show Color;
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'listing.freezed.dart';
@@ -29,6 +31,22 @@ extension ListingConditionLabel on ListingCondition {
     ListingCondition.defekt => 'Defekt',
     ListingCondition.bastelobjekt => 'Bastelobjekt',
   };
+}
+
+/// Zustands-Badge-Farben, geteilt zwischen `ListingCard` (Feed) und der
+/// Detailseite (Task 5.1) -- siehe 01-DESIGN-SYSTEM.md Abschnitt 5.4.
+extension ListingConditionBadge on ListingCondition {
+  Color get badgeColor => switch (this) {
+    ListingCondition.neu || ListingCondition.neuwertig => AsmColors.success,
+    ListingCondition.gebraucht => AsmColors.surfaceRaised,
+    ListingCondition.leichteDefekte => AsmColors.warning,
+    ListingCondition.defekt ||
+    ListingCondition.bastelobjekt => AsmColors.danger,
+  };
+
+  Color get badgeTextColor => this == ListingCondition.gebraucht
+      ? AsmColors.textSecondary
+      : AsmColors.onBrand;
 }
 
 extension PropulsionTypeLabel on PropulsionType {

@@ -20,6 +20,13 @@ abstract interface class ListingRepository {
   Future<void> delete(String id);
   Future<void> incrementView(String id);
   Future<List<String>> manufacturers();
+  Future<void> insertImage(
+    String listingId, {
+    required String storagePath,
+    required ImageKind kind,
+    required int sortOrder,
+  });
+  Future<List<String>> imagePaths(String listingId);
 }
 
 /// Ruft eine Postgres-RPC auf und liefert die Zeilen als rohe Maps.
@@ -204,10 +211,50 @@ class SupabaseListingRepository implements ListingRepository {
       throw mapError(error);
     }
   }
+
+  @override
+  Future<void> insertImage(
+    String listingId, {
+    required String storagePath,
+    required ImageKind kind,
+    required int sortOrder,
+  }) async {
+    try {
+      await _client.from('listing_images').insert({
+        'listing_id': listingId,
+        'storage_path': storagePath,
+        'kind': _imageKindToDb(kind),
+        'sort_order': sortOrder,
+      });
+    } catch (error) {
+      throw mapError(error);
+    }
+  }
+
+  @override
+  Future<List<String>> imagePaths(String listingId) async {
+    try {
+      final rows = await _client
+          .from('listing_images')
+          .select('storage_path')
+          .eq('listing_id', listingId)
+          .eq('kind', _imageKindToDb(ImageKind.photo))
+          .order('sort_order');
+      return rows.map((r) => r['storage_path'] as String).toList();
+    } catch (error) {
+      throw mapError(error);
+    }
+  }
 }
 
 String _conditionToDb(ListingCondition c) =>
     c == ListingCondition.leichteDefekte ? 'leichte_defekte' : c.name;
+
+String _imageKindToDb(ImageKind k) => switch (k) {
+  ImageKind.photo => 'photo',
+  ImageKind.fMarking => 'f_marking',
+  ImageKind.ownershipProof => 'ownership_proof',
+};
 
 String _sortToDb(SortOption sort) => switch (sort) {
   SortOption.newest => 'newest',

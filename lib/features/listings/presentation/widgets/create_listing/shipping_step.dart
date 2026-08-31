@@ -150,9 +150,11 @@ class _ShippingStepState extends ConsumerState<ShippingStep> {
       _publishedListingId = listingId;
 
       final updatedImages = <DraftImage>[];
+      var sortOrder = 0;
       for (final image in draft.images) {
         if (image.uploadedPath != null) {
           updatedImages.add(image);
+          sortOrder++;
           continue;
         }
         final path = await imageService.upload(
@@ -160,7 +162,18 @@ class _ShippingStepState extends ConsumerState<ShippingStep> {
           listingId: listingId,
           kind: image.kind,
         );
+        // Reihenfolge/Bildart landen direkt in listing_images, sonst gaebe es
+        // keine Moeglichkeit, oeffentliche Fotos von F-Kennzeichen-/
+        // Besitznachweis-Bildern zu trennen oder die vom Nutzer in Schritt 2
+        // gewaehlte Reihenfolge fuer die Galerie zu erhalten (siehe DECISIONS.md).
+        await repository.insertImage(
+          listingId,
+          storagePath: path,
+          kind: image.kind,
+          sortOrder: sortOrder,
+        );
         updatedImages.add(image.copyWith(uploadedPath: path));
+        sortOrder++;
       }
       draft = draft.copyWith(images: updatedImages);
       await updateCreateListingDraft(ref, (_) => draft);

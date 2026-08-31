@@ -1,9 +1,11 @@
+import 'package:asm/core/config/app_config.dart';
 import 'package:asm/core/theme/asm_colors.dart';
 import 'package:asm/core/theme/asm_spacing.dart';
 import 'package:asm/core/theme/asm_text_styles.dart';
 import 'package:asm/core/utils/formatters.dart';
 import 'package:asm/core/widgets/asm_network_image.dart';
 import 'package:asm/features/listings/domain/listing.dart';
+import 'package:asm/features/listings/domain/listing_image_url.dart';
 import 'package:asm/features/listings/domain/listing_summary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -88,7 +90,10 @@ class ListingCard extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           AsmNetworkImage(
-            path: summary.coverPath,
+            path: listingImageUrl(
+              supabaseUrl: AppConfig.supabaseUrl,
+              path: summary.coverPath,
+            ),
             radius: BorderRadius.circular(AsmRadius.md),
           ),
           if (summary.status == ListingStatus.reserved ||
@@ -149,13 +154,13 @@ class ListingCard extends StatelessWidget {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: _conditionColor(summary.condition),
+        color: summary.condition.badgeColor,
         borderRadius: BorderRadius.circular(AsmRadius.sm),
       ),
       child: Text(
         summary.condition.label,
         style: AsmTextStyles.label.copyWith(
-          color: _conditionTextColor(summary.condition),
+          color: summary.condition.badgeTextColor,
         ),
       ),
     );
@@ -220,18 +225,6 @@ class ListingCard extends StatelessWidget {
     return parts.join(' · ');
   }
 }
-
-Color _conditionColor(ListingCondition condition) => switch (condition) {
-  ListingCondition.neu || ListingCondition.neuwertig => AsmColors.success,
-  ListingCondition.gebraucht => AsmColors.surfaceRaised,
-  ListingCondition.leichteDefekte => AsmColors.warning,
-  ListingCondition.defekt || ListingCondition.bastelobjekt => AsmColors.danger,
-};
-
-Color _conditionTextColor(ListingCondition condition) =>
-    condition == ListingCondition.gebraucht
-    ? AsmColors.textSecondary
-    : AsmColors.onBrand;
 
 /// F-im-Fuenfeck-Marker, siehe 01-DESIGN-SYSTEM.md Abschnitt 6.
 class _FMarkingBadge extends StatelessWidget {

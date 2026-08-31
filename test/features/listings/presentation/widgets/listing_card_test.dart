@@ -1,4 +1,7 @@
+import 'package:asm/core/config/app_config.dart';
+import 'package:asm/core/widgets/asm_network_image.dart';
 import 'package:asm/features/listings/domain/listing.dart';
+import 'package:asm/features/listings/domain/listing_image_url.dart';
 import 'package:asm/features/listings/domain/listing_summary.dart';
 import 'package:asm/features/listings/presentation/widgets/listing_card.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +49,32 @@ void main() {
     expect(find.text('G36 S-AEG mit Tuning-Gearbox'), findsOneWidget);
     expect(find.text('349,00 €'), findsOneWidget);
     expect(find.textContaining('76133 Karlsruhe'), findsOneWidget);
+  });
+
+  testWidgets('baut die Bild-URL aus coverPath statt sie roh zu reichen', (
+    tester,
+  ) async {
+    final summary = _summary().copyWith(coverPath: 'u1/l1/photo_a.jpg');
+    await tester.pumpWidget(
+      _wrap(ListingCard.grid(summary: summary, onTap: () {})),
+    );
+    // Kein pumpAndSettle: AsmNetworkImage zeigt bei gesetztem Pfad Shimmer,
+    // waehrend CachedNetworkImage laedt -- eine Dauer-Animation, auf die
+    // pumpAndSettle nie zurueckkehrt (gleiches bekanntes Problem wie bei
+    // AsmSkeleton, siehe public_profile_screen_test.dart). Der Pfad steht
+    // aber schon nach dem ersten Frame fest, ein einzelner pump() reicht.
+    await tester.pump();
+
+    final image = tester.widget<AsmNetworkImage>(
+      find.byType(AsmNetworkImage),
+    );
+    expect(
+      image.path,
+      listingImageUrl(
+        supabaseUrl: AppConfig.supabaseUrl,
+        path: 'u1/l1/photo_a.jpg',
+      ),
+    );
   });
 
   testWidgets('Tap auf die Karte loest onTap aus', (tester) async {

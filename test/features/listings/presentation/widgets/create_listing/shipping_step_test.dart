@@ -186,6 +186,14 @@ void main() {
           kind: any(named: 'kind'),
         ),
       ).thenAnswer((_) async => 'listing-images/u1/l1/x.jpg');
+      when(
+        () => listingRepository.insertImage(
+          any(),
+          storagePath: any(named: 'storagePath'),
+          kind: any(named: 'kind'),
+          sortOrder: any(named: 'sortOrder'),
+        ),
+      ).thenAnswer((_) async {});
 
       final draft = _completeDraft.copyWith(
         ships: true,
@@ -210,6 +218,14 @@ void main() {
           any(),
           listingId: 'l1',
           kind: ImageKind.photo,
+        ),
+      ).called(1);
+      verify(
+        () => listingRepository.insertImage(
+          'l1',
+          storagePath: 'listing-images/u1/l1/x.jpg',
+          kind: ImageKind.photo,
+          sortOrder: 0,
         ),
       ).called(1);
       verify(
@@ -245,6 +261,14 @@ void main() {
         }
         return 'listing-images/u1/l1/x.jpg';
       });
+      when(
+        () => listingRepository.insertImage(
+          any(),
+          storagePath: any(named: 'storagePath'),
+          kind: any(named: 'kind'),
+          sortOrder: any(named: 'sortOrder'),
+        ),
+      ).thenAnswer((_) async {});
 
       final draft = _completeDraft.copyWith(
         ships: true,

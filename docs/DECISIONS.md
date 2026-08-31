@@ -1464,4 +1464,59 @@ Nach beiden Fixes: 309 Tests gruen, `flutter analyze` 0 Probleme, Test-Inserat m
 sauberen Titel/urspruenglichen Zustand zurueckgesetzt (der Preis blieb bei 79,90 € stehen -- reiner
 Test-Artefakt ohne Bedeutung, gleiche Linie wie andere in der Dev-DB verbliebene Test-Aenderungen).
 
+## 2026-08-31 · Task 5.1 · `listing_images` beim Veroeffentlichen befuellen statt Storage-Workaround
+
+Der in Task 4.3 dokumentierte Leerstand (`listing_images` wird nie befuellt, `cover_path` deshalb immer
+`null`) musste fuer eine echte Galerie geloest werden. Zwei Optionen: (a) die Detailseite listet den
+Storage-Ordner direkt (wie `ImageService.deleteAll()`), oder (b) `ShippingStep._publish()` schreibt die
+Zeilen bei jedem Upload mit. **Entscheidung: (b)**, da (a) die vom Nutzer in Task 4.2 per Drag-Reorder
+gewaehlte Bildreihenfolge verloren haette (Storage-`list()` liefert keine garantierte Ordnung) und
+F-Kennzeichen-/Besitznachweis-Bilder nicht sauber von oeffentlichen Fotos zu trennen gewesen waeren
+(Dateinamen-Parsing statt einer DB-Spalte). Nebeneffekt: `ListingCard`s `cover_path`-Bug (roh statt als
+URL durchgereicht) wird dadurch erstmals sichtbar und ist mitgefixt -- siehe Stand-Abschnitt fuer Details.
+
+## 2026-08-31 · Task 5.1 · Melden/Blockieren aus `PublicProfileScreen` extrahiert
+
+`_ReportDialog` und der Blockieren-Bestaetigungsdialog waren privat in `public_profile_screen.dart`.
+Fuer die Detailseite (Task 5.1 verlangt dasselbe Overflow-Menue) nach
+`lib/features/moderation/presentation/widgets/report_dialog.dart` extrahiert statt dupliziert.
+`PublicProfileScreen` ruft jetzt dieselben Funktionen auf. Bestehende Tests dort unveraendert gruen
+geblieben (Regressionsnetz fuer den Umbau).
+
+## 2026-08-31 · Task 5.1 · Echter `AsmButton`-Bug: Label ueberlief bei schmaler Row-Breite
+
+`AsmButton`s internes Row (`mainAxisSize: min`) hatte das Label nie in ein `Flexible`/Ellipsis gepackt.
+Solange jeder `AsmButton` immer volle Breite bekam, unsichtbar. Die neue untere Aktionsleiste
+(Primärbutton in einem `Expanded` neben zwei Icon-Buttons) macht daraus einen echten RenderFlex-
+Overflow bei "Nachricht schreiben" auf schmalen Geraeten. Mit TDD gefixt (Regressionstest mit
+400×800-Viewport in `asm_button_test.dart`), reine Ergaenzung, keine bestehenden Tests betroffen.
+
+## 2026-08-31 · Task 5.1 · "Entfernung" bewusst nicht umgesetzt
+
+Plan verlangt "Ort + Entfernung, Versandhinweis". Anders als im Feed (server-seitig aus einer aktiv
+gewaehlten Such-PLZ berechnet) hat die direkt aufgerufene Detailseite keinen Referenzpunkt fuer die
+eigene Position -- `Profile` speichert nur Text-PLZ/Ort, keine Koordinaten, und die Routing-Konvention
+uebergibt keinen `extra`-Kontext von der aufrufenden Seite. Eine `myLocationProvider`-Infrastruktur
+(eigenes Profil laden → PLZ → `PlzLookup.resolve()`) waere fuer eine einzelne, nur fuer eingeloggte
+Nutzer mit gesetzter PLZ sichtbare Textzeile unverhaeltnismaessig gewesen, zumal `PlzLookup.resolve()`
+direkt (nicht ueber einen injizierbaren Fake) aufgerufen wuerde und damit als einziger Test in diesem
+Bereich echten Asset-Zugriff gebraucht haette. Ort und Versandhinweis sind umgesetzt, Entfernung nicht.
+
+## 2026-08-31 · Task 5.1 · l10n-Inkonsistenz bewusst fortgefuehrt
+
+`app_de.arb` hat seit M0 nur den Key `appTitle`; M0–M4 hartcodieren deutsche Strings durchgaengig
+(Verstoss gegen G3/CLAUDE.md, nie als Abweichung dokumentiert). Die Detailseite haelt sich an die
+etablierte Praxis (hartcodiert) statt als einziger Screen auf `app_de.arb` umzusteigen -- ein
+projektweiter l10n-Umbau ist kein Task-5.1-Umfang. Offener Punkt fuer eine spaetere bewusste
+Entscheidung, ob/wann das Projekt insgesamt umstellt.
+
+## 2026-08-31 · Task 5.1 · Live-Test: Altersgate blockierte "Nachricht schreiben" real
+
+Beim Live-Test auf `flutter_api34` gegen ein fremdes Bestandsinserat (Kategorie mit `requires_age_18`)
+zeigte "Nachricht schreiben" den erwarteten Hinweis "Diese Kategorie ist erst ab 18 Jahren freigegeben."
+-- `gear_tester_m4` gilt laut der echten `is_adult()`-RPC nicht als volljaehrig. Kein Bug, sondern die
+gewuenschte `blocksForAge()`-Verdrahtung, die seit Task 2.4/3.1 vorbereitet, aber nie an eine echte
+Route angebunden war -- hiermit erstmals live bestaetigt. Fuer nicht gesperrte Kategorien zeigt der
+Button stattdessen "Chat kommt mit einem spaeteren Update." (M6 existiert noch nicht).
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

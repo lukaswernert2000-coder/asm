@@ -8,16 +8,13 @@ import 'package:asm/core/widgets/asm_button.dart';
 import 'package:asm/core/widgets/asm_error_view.dart';
 import 'package:asm/core/widgets/asm_network_image.dart';
 import 'package:asm/core/widgets/asm_skeleton.dart';
-import 'package:asm/features/auth/presentation/auth_controller.dart';
 import 'package:asm/features/listings/presentation/listing_providers.dart';
-import 'package:asm/features/moderation/domain/report_reason.dart';
-import 'package:asm/features/moderation/presentation/moderation_providers.dart';
+import 'package:asm/features/moderation/presentation/widgets/report_dialog.dart';
 import 'package:asm/features/profile/domain/avatar_url.dart';
 import 'package:asm/features/profile/domain/profile.dart';
 import 'package:asm/features/profile/presentation/profile_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
 class PublicProfileScreen extends ConsumerWidget {
@@ -51,64 +48,21 @@ class _PublicProfileContent extends ConsumerWidget {
 
   final Profile profile;
 
-  bool _requireLogin(BuildContext context, WidgetRef ref) {
-    if (ref.read(isLoggedInProvider)) return true;
-    context.go(
-      '${AsmRoutes.login}?from=${AsmRoutes.publicProfile(profile.id)}',
-    );
-    return false;
-  }
+  Future<void> _report(BuildContext context, WidgetRef ref) => showReportUserFlow(
+    context,
+    ref,
+    userId: profile.id,
+    username: profile.username,
+    loginRedirectPath: AsmRoutes.publicProfile(profile.id),
+  );
 
-  Future<void> _report(BuildContext context, WidgetRef ref) async {
-    if (!_requireLogin(context, ref)) return;
-    final result = await showDialog<({ReportReason reason, String details})>(
-      context: context,
-      builder: (context) => _ReportDialog(username: profile.username),
-    );
-    if (result == null) return;
-    if (!context.mounted) return;
-    await ref
-        .read(moderationRepositoryProvider)
-        .reportUser(
-          profile.id,
-          result.reason,
-          details: result.details.isEmpty ? null : result.details,
-        );
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Danke. Wir prüfen die Meldung.')),
-    );
-  }
-
-  Future<void> _block(BuildContext context, WidgetRef ref) async {
-    if (!_requireLogin(context, ref)) return;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('${profile.username} blockieren?'),
-        content: const Text(
-          'Ihr könnt euch danach nicht mehr gegenseitig kontaktieren.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Abbrechen'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Blockieren bestätigen'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
-    if (!context.mounted) return;
-    await ref.read(moderationRepositoryProvider).blockUser(profile.id);
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('${profile.username} blockiert')));
-  }
+  Future<void> _block(BuildContext context, WidgetRef ref) => showBlockUserFlow(
+    context,
+    ref,
+    userId: profile.id,
+    username: profile.username,
+    loginRedirectPath: AsmRoutes.publicProfile(profile.id),
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -213,96 +167,6 @@ class _TextLineSkeleton extends StatelessWidget {
           borderRadius: BorderRadius.circular(AsmRadius.sm),
         ),
       ),
-    );
-  }
-}
-
-class _ReportDialog extends StatefulWidget {
-  const _ReportDialog({required this.username});
-
-  final String username;
-
-  @override
-  State<_ReportDialog> createState() => _ReportDialogState();
-}
-
-class _ReportDialogState extends State<_ReportDialog> {
-  ReportReason? _selected;
-  final _detailsController = TextEditingController();
-
-  static const Map<ReportReason, String> _labels = {
-    ReportReason.verbotenerArtikel: 'Verbotener Artikel',
-    ReportReason.keinFKennzeichen: 'Kein F-Kennzeichen',
-    ReportReason.vollautomat: 'Vollautomatik',
-    ReportReason.keinBesitznachweis: 'Kein Besitznachweis',
-    ReportReason.betrugsverdacht: 'Betrugsverdacht',
-    ReportReason.falscheKategorie: 'Falsche Kategorie',
-    ReportReason.beleidigung: 'Beleidigung',
-    ReportReason.spam: 'Spam',
-    ReportReason.sonstiges: 'Sonstiges',
-  };
-
-  @override
-  void dispose() {
-    _detailsController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('${widget.username} melden'),
-      content: SizedBox(
-        width: double.maxFinite,
-        // SingleChildScrollView statt ListView: baut alle neun Grund-Zeilen
-        // sofort (kein Sliver-Cache-Extent, der nicht sichtbare Zeilen erst
-        // nach Scrollen erzeugt) -- bei nur neun kurzen Zeilen unnoetig,
-        // und ein `find.text` in Tests faende sonst weiter unten stehende
-        // Gruende wie "Spam" nicht, ohne vorher zu scrollen.
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RadioGroup<ReportReason>(
-                groupValue: _selected,
-                onChanged: (value) => setState(() => _selected = value),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: _labels.entries
-                      .map(
-                        (entry) => RadioListTile<ReportReason>(
-                          title: Text(entry.value),
-                          value: entry.key,
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
-              TextField(
-                controller: _detailsController,
-                decoration: const InputDecoration(
-                  hintText: 'Details (optional)',
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
-        ),
-        TextButton(
-          onPressed: _selected == null
-              ? null
-              : () => Navigator.of(context).pop((
-                  reason: _selected!,
-                  details: _detailsController.text,
-                )),
-          child: const Text('Melden bestätigen'),
-        ),
-      ],
     );
   }
 }

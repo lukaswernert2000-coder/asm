@@ -68,4 +68,40 @@ void main() {
     final size = tester.getSize(find.byType(AsmButton));
     expect(size.height, greaterThanOrEqualTo(48));
   });
+
+  testWidgets(
+    'langes Label in schmaler Expanded-Breite ueberlaeuft nicht (RenderFlex)',
+    (tester) async {
+      // Regression: in einer Bottom-Bar neben zwei Icon-Buttons (Task 5.1,
+      // ListingBottomBar) bekommt AsmButton nur eine schmale Expanded-Breite
+      // -- das interne Row (mainAxisSize: min) lief bisher ueber, weil das
+      // Label nie in ein Flexible/Ellipsis eingepackt war. Braucht ein
+      // schmales, telefon-typisches Viewport, um das zu reproduzieren.
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Row(
+              children: [
+                Expanded(
+                  child: AsmButton(
+                    label: 'Nachricht schreiben',
+                    onPressed: () {},
+                  ),
+                ),
+                const SizedBox(width: 48),
+                const SizedBox(width: 48),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

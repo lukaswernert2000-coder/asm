@@ -13,6 +13,7 @@ import 'package:asm/features/categories/presentation/category_overview_screen.da
 import 'package:asm/features/categories/presentation/category_screen.dart';
 import 'package:asm/features/listings/presentation/create_listing_screen.dart';
 import 'package:asm/features/listings/presentation/edit_listing_screen.dart';
+import 'package:asm/features/listings/presentation/listing_detail_screen.dart';
 import 'package:asm/features/listings/presentation/my_listings_screen.dart';
 import 'package:asm/features/onboarding/presentation/onboarding_providers.dart';
 import 'package:asm/features/onboarding/presentation/onboarding_screen.dart';
@@ -136,10 +137,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/listing/:id',
-        builder: (context, state) => const _TitledPlaceholder(
-          icon: LucideIcons.tag,
-          title: 'Inserat',
-        ),
+        builder: (context, state) =>
+            ListingDetailScreen(listingId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/listing/:id/edit',

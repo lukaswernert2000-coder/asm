@@ -73,6 +73,15 @@ final FutureProviderFamily<Listing, String> listingByIdProvider =
       (ref, id) => ref.watch(listingRepositoryProvider).byId(id),
     );
 
+/// Rohe Storage-Pfade der oeffentlichen Fotos eines Inserats, sortiert
+/// (`ListingRepository.imagePaths`, nur `kind=photo`). Aufloesung zur echten
+/// URL passiert erst in der Praesentationsschicht via `listingImageUrl()` --
+/// exakt das Muster von `Profile.avatarPath` + `avatarUrl()`.
+final FutureProviderFamily<List<String>, String> listingImagePathsProvider =
+    FutureProvider.family<List<String>, String>(
+      (ref, id) => ref.watch(listingRepositoryProvider).imagePaths(id),
+    );
+
 /// Fuer die vier Tabs in "Meine Inserate" (Task 4.3) — anders als
 /// [activeListingsBySellerProvider] parametrisiert ueber den Status, den der
 /// jeweilige Tab braucht.

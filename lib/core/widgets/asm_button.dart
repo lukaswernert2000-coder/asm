@@ -98,10 +98,13 @@ class AsmButton extends StatelessWidget {
                               Icon(icon, color: labelColor),
                               const SizedBox(width: AsmSpacing.xs),
                             ],
-                            Text(
-                              label,
-                              style: AsmTextStyles.titleS.copyWith(
-                                color: labelColor,
+                            Flexible(
+                              child: Text(
+                                label,
+                                style: AsmTextStyles.titleS.copyWith(
+                                  color: labelColor,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],

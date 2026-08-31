@@ -37,12 +37,12 @@ Firebase Cloud Messaging · Sentry
 
 | | |
 |---|---|
-| **Meilenstein** | M4 abgeschlossen → M5 · Detailseite und Favoriten |
-| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** |
-| **Als Nächstes** | **M5 — Task 5.1 Detailseite** |
+| **Meilenstein** | M5 · Detailseite und Favoriten (Task 5.1 abgeschlossen) → Task 5.2 Favoriten |
+| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) |
+| **Als Nächstes** | **M5 — Task 5.2 Favoriten** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `docs: confirm CI green on the task 4.3 push` |
-| **Stand vom** | 2026-08-30 |
+| **Letzter Commit** | `feat(listings): add listing detail screen` |
+| **Stand vom** | 2026-08-31 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
 (Nutzer hat dem Push zugestimmt, Außer-der-Reihe-Punkt B) — CI lief danach zum ersten Mal
@@ -353,6 +353,69 @@ ImageService (Bestätigungsdialog, Abbrechen tut nichts, Bestätigen ruft `delet
 bleiben dadurch ungetestetes Restrisiko — gleiches Client-/Bucket-Muster wie das bereits live
 verifizierte `upload()`, daher eingeschätzt als gering. Test auf echtem Gerät bleibt weiterhin
 bewusst Nutzer-Aufgabe. **Damit ist M4 komplett.**
+
+**2026-08-31, Task 5.1:** `ListingDetailScreen` (`lib/features/listings/presentation/`) ersetzt den
+Platzhalter unter `/listing/:id`, dazu die Vollbild-Galerie und acht neue Bausteine unter
+`presentation/widgets/listing_detail/` (Bildergalerie mit Punktindikator, Preis-/Zustands-Badges,
+Attributtabelle, WaffG-Warnbox, ausklappbare Beschreibung, Verkäufer-Karte, untere Aktionsleiste).
+
+**Root-Cause-Fix vor der eigentlichen Detailseite:** `listing_images` wurde seit Task 4.2 nie befüllt
+(siehe DECISIONS.md-Eintrag zu Task 4.3) -- ohne Fix hätte die Galerie nie echte Bilder zeigen können.
+`ShippingStep._publish()` legt jetzt pro hochgeladenem Foto eine `listing_images`-Zeile an
+(`ListingRepository.insertImage()`, Dart-Enum→DB-Enum-Mapping `fMarking`→`f_marking` etc., `sort_order`
+nach Bildreihenfolge), `ListingRepository.imagePaths()` liest nur `kind=photo` sortiert zurück. Dabei
+auch `ListingCard` korrigiert: `coverPath` wurde bisher roh statt über einen `listingImageUrl()`-Helper
+(neu, spiegelt `avatarUrl()`) an `AsmNetworkImage` gereicht -- unsichtbar, solange `coverPath` immer
+`null` war, jetzt beim Testen als hängender Timeout in einem Widget-Test entdeckt und gefixt.
+
+**Weitere Bausteine:** minimaler `FavoriteRepository` (isFavorited/add/remove, `favorites`-Tabelle
+existiert seit M1) für einen echten, aber noch nicht optimistischen Herz-Button (optimistisches
+Rollback ist Task 5.2); `ViewedListingsNotifier` für session-lokales `incrementView`-Tracking; Melden-
+und Blockieren-Dialoge aus `PublicProfileScreen` in `lib/features/moderation/presentation/widgets/`
+extrahiert (bestehende Tests dienten als Regressionsnetz) und von der Detailseite mitgenutzt.
+
+**Echter Bug in `AsmButton` gefunden:** in der unteren Leiste (Primärbutton + zwei Icon-Buttons in
+einer Row) lief `AsmButton`s internes Row (`mainAxisSize: min`) bei schmaler `Expanded`-Breite über --
+das Label war nie in ein `Flexible` mit Ellipsis eingepackt. Mit TDD nachgezogen (Regressionstest in
+`asm_button_test.dart` mit schmalem Viewport), Fix ist eine reine Ergänzung, keine bestehenden Tests
+betroffen.
+
+**Bewusst nicht umgesetzt:** "Entfernung" (Teil von "Ort + Entfernung, Versandhinweis") -- anders als
+im Feed (serverseitig aus einer aktiven PLZ-Filterung berechnet) hat die Detailseite keinen
+Referenzpunkt für den eigenen Standort; `Profile` speichert nur Text-PLZ/Ort, keine Koordinaten. Eine
+`myLocationProvider`-Infrastruktur (Profil laden → PLZ → `PlzLookup.resolve()`) wäre nötig gewesen, für
+eine Zeile Text mit unsicherem Nutzen (nur für eingeloggte Nutzer mit gesetzter PLZ) und einem
+Test-Risiko (echter Asset-Zugriff statt der sonst überall injizierten Fake-Resolver). Ort und
+Versandhinweis sind umgesetzt, Entfernung nicht -- kann bei Bedarf nachgezogen werden.
+
+**l10n-Inkonsistenz bewusst fortgeführt, nicht gelöst:** `app_de.arb` enthält seit M0 nur den einen Key
+`appTitle`, jede bisherige Screen-Implementierung hartcodiert deutsche Strings direkt (Verstoß gegen
+G3/CLAUDE.md, nirgends als Abweichung dokumentiert). Die Detailseite folgt der etablierten Praxis
+statt als einziger Screen umzuschwenken -- ein Wechsel jetzt hätte projektweiten Umfang, nicht
+Task-5.1-Umfang. Bleibt ein offener Punkt für eine spätere, bewusste Entscheidung.
+
+**Favoriten-Scope bewusst auf Task 5.1 begrenzt:** der Herz-Button ist echt (persistiert wirklich),
+aber ohne optimistisches Umschalten/Rollback -- das ist laut Plan explizit Task 5.2s Job.
+
+44 neue/geänderte Tests (Bilder-Datenschicht, Favoriten, View-Tracking, acht neue Widgets, Screen-
+Integration, `AsmButton`-Regression), 359 insgesamt grün, `flutter analyze` 0 Probleme.
+
+**Live auf `flutter_api34` verifiziert** (Standing-Instruction für Interface-Änderungen): neues
+Test-Inserat ("AEG Vollmetall Gearbox mit Zubehoerpaket", Kategorie Gewehre & MPs → S-AEG, 1,93 J,
+6mm, Tausch möglich, Versand + Abholung, PLZ 76133) über den kompletten Erstellen-Flow veröffentlicht
+und angesehen: Attributtabelle zeigt genau die gefüllten Zeilen, WaffG-Warnbox erscheint korrekt (>0,5
+J), eigenes Inserat zeigt "Bearbeiten" statt "Nachricht schreiben", Favoriten-Herz färbt sich beim
+Toggle auf `AsmColors.danger` um und das Semantics-Label wechselt zu "Von Favoriten entfernen",
+Vollbild-Galerie öffnet/schließt sauber. Zusätzlich ein fremdes Bestandsinserat ("WE G39 GBBR komplett
+Tuning") angesehen: leere Galerie zeigt den Icon-Fallback statt kaputter Bilder (Regressionsfall für
+den `ListingCard`-Fix), Overflow-Menü zeigt Melden/Blockieren, "Melden" mit Grund "Beleidigung" real
+gegen die Dev-DB bestätigt, **Altersgate griff echt** ("Diese Kategorie ist erst ab 18 Jahren
+freigegeben." -- `gear_tester_m4` ist laut `is_adult()`-RPC kein Erwachsener) statt der "Chat kommt
+mit einem späteren Update"-Meldung für nicht-gesperrte Kategorien. `incrementView` **zweimal real
+besucht, Zähler blieb bei 1** (Session-Gate bestätigt, über "Meine Inserate" nachgeprüft). Keine
+Exceptions im `flutter run`-Log während der gesamten Session. Test auf echtem Gerät bleibt weiterhin
+bewusst Nutzer-Aufgabe. Test-Inserat und die Meldung gegen `WE G39` bleiben bewusst in der Dev-DB
+stehen, gleiche Linie wie bisherige Test-Artefakte.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -2283,21 +2346,21 @@ bei Bedarf Joule + Antriebsart + Kaliber + "umgebaut", Preis, VB, Tausch, Versch
 # Meilenstein M5 · Detailseite und Favoriten
 
 ## Task 5.1: Detailseite
-- [ ] Bildergalerie mit Seitenindikator, Tap öffnet Vollbild mit Pinch-Zoom
-- [ ] Titel, Preis (mit VB/Verschenken/Tausch-Badges), Zustands-Badge
-- [ ] Attributtabelle: Hersteller, Modell, Joule, Antriebsart, Kaliber, F-Kennzeichen,
+- [x] Bildergalerie mit Seitenindikator, Tap öffnet Vollbild mit Pinch-Zoom
+- [x] Titel, Preis (mit VB/Verschenken/Tausch-Badges), Zustands-Badge
+- [x] Attributtabelle: Hersteller, Modell, Joule, Antriebsart, Kaliber, F-Kennzeichen,
       umgebaut — nur die Zeilen anzeigen, die gefüllt sind
-- [ ] Bei über 0,5 J: Hinweisbox "Abgabe nur an Personen ab 18. Transport nur im
+- [x] Bei über 0,5 J: Hinweisbox "Abgabe nur an Personen ab 18. Transport nur im
       verschlossenen Behältnis (§42a WaffG)."
-- [ ] Beschreibung mit "Mehr anzeigen" ab 6 Zeilen
-- [ ] Verkäufer-Karte: Avatar, Name, Mitglied seit, aktive Inserate, Badge "Gewerblich"
-- [ ] Ort + Entfernung, Versandhinweis
-- [ ] Untere Leiste: "Nachricht schreiben" (primary) + Favoriten-Herz + Teilen
-- [ ] Overflow-Menü: Melden, Verkäufer blockieren
-- [ ] Beim eigenen Inserat: statt "Nachricht" → "Bearbeiten"
-- [ ] `incrementView` einmal pro Session pro Inserat
-- [ ] Hero-Animation vom Feed-Bild
-- [ ] Commit — `feat(listings): add listing detail screen`
+- [x] Beschreibung mit "Mehr anzeigen" ab 6 Zeilen
+- [x] Verkäufer-Karte: Avatar, Name, Mitglied seit, aktive Inserate, Badge "Gewerblich"
+- [x] Ort + Versandhinweis (Entfernung bewusst nicht umgesetzt, siehe DECISIONS.md)
+- [x] Untere Leiste: "Nachricht schreiben" (primary) + Favoriten-Herz + Teilen
+- [x] Overflow-Menü: Melden, Verkäufer blockieren
+- [x] Beim eigenen Inserat: statt "Nachricht" → "Bearbeiten"
+- [x] `incrementView` einmal pro Session pro Inserat
+- [x] Hero-Animation vom Feed-Bild
+- [x] Commit — `feat(listings): add listing detail screen`
 
 ## Task 5.2: Favoriten
 - [ ] Optimistisches Umschalten (Herz reagiert sofort, Rollback bei Fehler)
