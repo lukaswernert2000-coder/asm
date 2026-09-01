@@ -12,6 +12,8 @@ abstract class Conversation with _$Conversation {
     required String sellerId,
     required DateTime createdAt,
     DateTime? lastMessageAt,
+    String? lastMessageBody,
+    String? lastMessageSenderId,
   }) = _Conversation;
 
   factory Conversation.fromJson(Map<String, dynamic> json) =>

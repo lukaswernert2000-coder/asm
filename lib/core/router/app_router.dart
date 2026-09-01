@@ -11,6 +11,8 @@ import 'package:asm/features/auth/presentation/register_screen.dart';
 import 'package:asm/features/auth/presentation/reset_password_screen.dart';
 import 'package:asm/features/categories/presentation/category_overview_screen.dart';
 import 'package:asm/features/categories/presentation/category_screen.dart';
+import 'package:asm/features/chat/presentation/chat_detail_screen.dart';
+import 'package:asm/features/chat/presentation/chats_screen.dart';
 import 'package:asm/features/favorites/presentation/favorites_screen.dart';
 import 'package:asm/features/listings/presentation/create_listing_screen.dart';
 import 'package:asm/features/listings/presentation/edit_listing_screen.dart';
@@ -73,10 +75,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: AsmRoutes.chats,
-                builder: (context, state) => const _BranchPlaceholder(
-                  icon: LucideIcons.messageSquare,
-                  title: 'Chats',
-                ),
+                builder: (context, state) => const ChatsScreen(),
               ),
             ],
           ),
@@ -151,6 +150,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const FavoritesScreen(),
       ),
       GoRoute(
+        path: '/chat/:id',
+        builder: (context, state) =>
+            ChatDetailScreen(conversationId: state.pathParameters['id']!),
+      ),
+      GoRoute(
         path: AsmRoutes.settings,
         builder: (context, state) => const _TitledPlaceholder(
           icon: LucideIcons.settings,
@@ -169,22 +173,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-class _BranchPlaceholder extends StatelessWidget {
-  const _BranchPlaceholder({required this.icon, required this.title});
-
-  final IconData icon;
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: AsmEmptyState(icon: icon, title: title),
-    );
-  }
-}
-
-/// Fuer Routen, die per `push` (mit Zurueck-Pfeil) statt als Branch erreicht
-/// werden -- anders als [_BranchPlaceholder] mit eigener `AppBar`.
+/// Fuer Routen, die per `push` (mit Zurueck-Pfeil) erreicht werden und noch
+/// keinen echten Screen haben.
 class _TitledPlaceholder extends StatelessWidget {
   const _TitledPlaceholder({required this.icon, required this.title});
 

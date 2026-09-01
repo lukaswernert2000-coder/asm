@@ -1615,4 +1615,100 @@ bestaetigt). Live auf `flutter_api34` verifiziert: ein echtes Test-Inserat mit e
 17 Zeichen langen Beschreibung ("Kaum benutzt, top") wurde ohne Fehlermeldung angenommen und
 veroeffentlicht -- vor dem Fix waere das zwingend an "Mindestens 30 Zeichen" gescheitert.
 
+## 2026-09-01 · Task 6.2 · Echter Bug: `bump_conversation()` lief als SECURITY INVOKER
+
+Beim ersten echten Live-Test einer gesendeten Nachricht (dem allerersten Mal seit Task 1.6,
+dass `0005_chat.sql`s Schema mit echten Daten durchlaufen wurde) blieb `last_message_at` einer
+Konversation dauerhaft `null`, egal wie viele Nachrichten gesendet wurden -- die Chatliste
+zeigte deshalb nie Konversationen mit tatsaechlicher Aktivitaet an. Root Cause:
+`bump_conversation()` (Trigger `AFTER INSERT ON messages`) lief als `SECURITY INVOKER` (Dart-
+Default). `conversations` hat aus gutem Grund keine Update-Policy fuer Kaeufer/Verkaeufer --
+das UPDATE des Triggers selbst wurde von RLS blockiert, still und ohne Fehler (0 betroffene
+Zeilen statt einer Exception). Verifiziert per `supabase db query` gegen `pg_proc`/`pg_trigger`
+direkt: Trigger korrekt installiert und aktiv, Funktion aber `prosecdef: false`. Fix
+(`0010_bump_conversation_security_definer.sql`): `SECURITY DEFINER SET search_path = public`,
+exakt das schon etablierte Muster von `handle_new_user()` (0001_profiles.sql, dort zum
+Anlegen des allerersten `profiles`-Eintrags noetig, aus demselben Grund: RLS blockiert sonst
+das eigene INSERT/UPDATE eines Systemvorgangs). Andere Trigger im Schema
+(`update_updated_at_column`, `touch_updated_at`) brauchen das nicht, weil sie Zeilen aktualisieren,
+auf die der aufrufende Nutzer ueber eine eigene Policy (z. B. "eigenes Inserat bearbeiten")
+ohnehin schon Zugriff hat -- `bump_conversation()` ist der erste Fall im Projekt, wo ein Trigger
+eine Tabelle ohne jede Update-Policy fuer normale Nutzer anfassen muss.
+
+## 2026-09-01 · Task 6.2 · Echter Bug: `conversationsProvider` als FutureProvider unzuverlaessig bei Hintergrund-Tabs
+
+Nach dem Fix von `bump_conversation()` blieb ein zweites Problem: eine neu angelegte
+Konversation (`getOrCreateConversation()`) blieb in der Chatliste unsichtbar, wenn die Liste
+schon vorher (mit leerem Ergebnis) aufgebaut worden war -- ein `ref.invalidate(conversationsProvider)`
+direkt nach dem Anlegen bzw. nach jedem `send()` half nicht zuverlaessig, wenn die Chatliste
+gerade im Hintergrund der `StatefulShellRoute` lag (z. B. waehrend die per `push()` erreichte
+Chat-Detailseite oben liegt). Reproduzierbar auch nach 20+ Sekunden Wartezeit, nur ein
+kompletter App-Neustart zeigte danach den korrekten Stand -- kein reines Timing-/Verbindungs-
+Problem also. Der exakt gleiche `ref.invalidate()`-Mechanismus liess sich in einem isolierten
+`ProviderContainer`-Unit-Test einwandfrei nachweisen (`c.listen()` + Emissions-Zaehler), das
+Riverpod/go_router-Zusammenspiel in der echten App-Widget-Baum-Struktur (`StatefulShellRoute.indexedStack`
++ eine ausserhalb der Shell als Geschwister-Route registrierte `/chat/:id`) verhielt sich aber
+live nachweislich anders. Statt die genaue Ursache dieser Diskrepanz weiter zu verfolgen (Zeit-
+Kosten je Live-Testrunde ca. 15-20s, mehrere Rückschlüsse blieben spekulativ): `conversations()`
+von einem `Future` auf einen Realtime-`Stream` umgestellt, exakt nach dem Muster von
+`messages()`, das im selben Test durchgaengig zuverlaessig aktualisierte. Migration
+`0011_conversations_realtime.sql` aktiviert Realtime fuer `conversations`. Der manuelle
+`ref.invalidate()`-Aufruf an beiden Stellen (`listing_detail_screen.dart`,
+`PendingMessagesNotifier._attempt()`) ist damit ueberfluessig und entfernt. Da Postgres'
+Realtime-Replikationsfilter (`postgres_changes`) nur einfache Ein-Spalten-Bedingungen kennt,
+kein `.or()`, laeuft der neue Stream bewusst ganz ohne `.eq()`/`.or()`-Filter und verlaesst sich
+allein auf RLS (`conversations_participants`) -- fuer die seltenen, kleinen Realtime-Events kein
+Performance-Nachteil gegenueber dem (weiterhin per `.or()` gefilterten) einmaligen
+`getOrCreateConversation()`-Lookup. Offener Punkt: die genaue Ursache, warum manuelles
+Invalidieren bei einem im Hintergrund liegenden Branch-Tab nicht zuverlaessig ankam, wurde nicht
+abschliessend verstanden -- falls ein aehnliches Symptom in einem kuenftigen Task wieder
+auftaucht, zuerst hier nachlesen statt erneut bei null anzufangen.
+
+## 2026-09-01 · Task 6.2 · Echter Bug: dieselbe Ursache traf auch die "letzte Nachricht"-Vorschau
+
+Nach dem Stream-Fix oben zeigte die Chatliste zwar wieder alle Konversationen mit korrektem
+Zeitstempel, aber die Vorschau der letzten Nachricht blieb bei der allerersten je gesendeten
+Nachricht stehen, obwohl inzwischen laengst weitere Nachrichten gesendet worden waren -- exakt
+dieselbe Symptomatik wie oben, diesmal an `conversationMessagesProvider` (einer zweiten,
+separaten Subscription pro Konversation), das in der Chat-Detailseite mit derselben
+Provider-Instanz zuverlaessig aktualisierte, in der Chatliste-Zeile aber nicht. Statt eine
+zweite Realtime-Subscription pro Zeile am Leben zu erhalten (N Konversationen = N zusaetzliche
+Kanaele, nur um eine einzige Textzeile aktuell zu halten): `last_message_body` und
+`last_message_sender_id` direkt auf `conversations` denormalisiert
+(`0012_conversations_last_message.sql`), befuellt vom selben (jetzt SECURITY-DEFINER-)Trigger.
+Die Chatliste braucht dafuer nur noch den ohnehin schon reparierten `conversations()`-Stream --
+keine zweite Subscription pro Zeile mehr. Bewusst NICHT mitbehoben: der Ungelesen-Punkt haengt
+weiterhin an `conversationMessagesProvider` und kann denselben Hintergrund-Effekt zeigen (zeigt
+im schlimmsten Fall einen veralteten Punkt, bis die Liste neu aufgebaut wird). Ein sauberer Fix
+dafuer braeuchte ein eigenes Lesebestaetigungs-Feld auf Konversationsebene (z. B. je ein
+`buyer_last_read_at`/`seller_last_read_at`-Zeitstempel statt der jetzigen Pro-Nachricht-`read_at`-
+Spalte) -- ein groesseres Redesign, das den Rahmen von Task 6.2 gesprengt haette. Offener Punkt
+fuer eine spaetere Session, falls das in der Praxis stoert.
+
+## 2026-09-01 · Task 6.2 · "Chat löschen" ist ein lokales Ausblenden, kein echtes Löschen
+
+`conversations`/`messages` haben in `0005_chat.sql` bewusst keine Delete-Policy -- ein echtes
+Loeschen wuerde der Gegenseite ihren Chatverlauf mit wegnehmen, was RLS folgerichtig nicht
+erlaubt. "Chat löschen" merkt sich stattdessen lokal (SharedPreferences,
+`hidden_conversation_ids`, neuer Allowlist-Eintrag in `main.dart`) den Loeschzeitpunkt pro
+Konversation. `visibleConversationsProvider` blendet eine Konversation aus, bis eine neuere
+Aktivitaet (`last_message_at` nach dem Loeschzeitpunkt) eintrifft -- dann taucht sie automatisch
+wieder auf, statt fuer immer zu verschwinden. Entspricht dem Verhalten der meisten Chat-Apps
+("Loeschen" raeumt nur die eigene Ansicht auf, eine neue Nachricht bringt den Chat zurueck) und
+ist rein clientseitig, ohne Datenmodell-Aenderung umsetzbar.
+
+## 2026-09-01 · Task 6.2 · Live-Test: Deep-Link-URL mit `&` ueber `adb shell am start` braucht zusaetzliche Anfuehrungszeichen
+
+Der Supabase-Bestaetigungslink beim Registrieren eines neuen Test-Accounts (`chat_tester_m6`)
+enthaelt mehrere `&`-getrennte Query-Parameter (`token=...&type=signup&redirect_to=asm://`).
+`adb shell am start -a android.intent.action.VIEW -d "$URL"` schickt alle Argumente als EINEN
+String an die Shell AUF DEM GERAET, die ihn ein zweites Mal interpretiert -- die lokale
+Bash-Quotierung ueberlebt diesen zweiten Parse-Durchlauf nicht, `&` wird dort als
+Hintergrund-Operator gelesen und der Rest der URL abgeschnitten (sichtbarer Fehler:
+`"Verify requires a verification type"`, weil `type=signup` fehlte). Fix: die URL zusaetzlich in
+LITERALE Single Quotes packen, die als Teil des Strings mitgeschickt werden (`-d "'$URL'"`) --
+diese ueberleben den zweiten Parse-Durchlauf auf dem Geraet. Gleiche Grundursache wie die
+bereits in der persoenlichen Merkregel "Git Bash mangles adb paths" festgehaltene
+Pfad-Verstuemmelung, hier aber bei URL-Query-Parametern statt Dateipfaden.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

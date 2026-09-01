@@ -1,6 +1,7 @@
 import 'package:asm/app.dart';
 import 'package:asm/core/config/app_config.dart';
 import 'package:asm/core/storage/shared_preferences_provider.dart';
+import 'package:asm/features/chat/presentation/chat_providers.dart';
 import 'package:asm/features/listings/presentation/create_listing_providers.dart';
 import 'package:asm/features/listings/presentation/listing_providers.dart';
 import 'package:asm/features/onboarding/presentation/onboarding_providers.dart';
@@ -34,6 +35,7 @@ Future<void> main() async {
             listingViewModePrefsKey,
             searchHistoryPrefsKey,
             createListingDraftPrefsKey,
+            hiddenConversationsPrefsKey,
           },
         ),
       );

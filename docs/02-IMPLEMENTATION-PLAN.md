@@ -37,11 +37,11 @@ Firebase Cloud Messaging · Sentry
 
 | | |
 |---|---|
-| **Meilenstein** | M6 · Chat, in Arbeit |
-| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) · Task 5.2 komplett, inkl. eines beim Live-Test gefundenen und gefixten Cache-Bugs in `refreshSellerListings` (siehe unten) · **M5 damit komplett** · 2026-09-01: Bugfix-Batch außerhalb der Plan-Tasks, fünf vom Nutzer gemeldete Bugs (Galerie-Filter, Geburtsdatum-Tastatur, Kategorie-Toggle, fehlender Zurück-Weg auf der Detailseite, Mindestlänge Beschreibung 30→15), alle mit Root-Cause-Fix, TDD und Live-Verifikation (siehe unten) · Task 6.1 komplett: `ChatRepository`/`SupabaseChatRepository`, reiner Datenschicht-Task ohne Interface-Änderung (siehe unten) |
-| **Als Nächstes** | **M6 — Task 6.2 (Chatliste und Chat-Detail, siehe Meilenstein M6 im Plan)** |
+| **Meilenstein** | M6 · Chat, Task 6.1–6.2 fertig → Task 6.3 |
+| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) · Task 5.2 komplett, inkl. eines beim Live-Test gefundenen und gefixten Cache-Bugs in `refreshSellerListings` (siehe unten) · **M5 damit komplett** · 2026-09-01: Bugfix-Batch außerhalb der Plan-Tasks, fünf vom Nutzer gemeldete Bugs (Galerie-Filter, Geburtsdatum-Tastatur, Kategorie-Toggle, fehlender Zurück-Weg auf der Detailseite, Mindestlänge Beschreibung 30→15), alle mit Root-Cause-Fix, TDD und Live-Verifikation (siehe unten) · Task 6.1 komplett: `ChatRepository`/`SupabaseChatRepository`, reiner Datenschicht-Task ohne Interface-Änderung (siehe unten) · Task 6.2 komplett: Chatliste und Chat-Detail, live drei echte Bugs im bestehenden Chat-Schema gefunden und gefixt (siehe unten) |
+| **Als Nächstes** | **M6 — Task 6.3 (Push-Benachrichtigungen, siehe Meilenstein M6 im Plan)** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `feat(chat): add chat repository with realtime stream` |
+| **Letzter Commit** | `feat(chat): add conversation list and chat screen` |
 | **Stand vom** | 2026-09-01 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -517,17 +517,85 @@ Spalten 1:1 aus `0005_chat.sql`), `ChatRepository`/`SupabaseChatRepository`
 Tests injizieren stattdessen einen `StreamController`. `getOrCreateConversation()` prueft
 zuerst per `(listing_id, buyer_id)` auf eine bestehende Konversation (der Unique-Constraint
 aus `0005_chat.sql` deckt genau das ab) und legt sonst eine neue an, nachdem `seller_id` aus
-dem Inserat nachgeladen wurde. `conversations()` filtert bewusst per `.or(buyer_id.eq...,
-seller_id.eq...)` statt ungefiltert auf RLS zu vertrauen, damit Postgres die beiden
-eigens dafuer angelegten Indizes (`conversations_buyer_idx`/`conversations_seller_idx`)
-nutzen kann. Reiner Datenschicht-Task laut Plan (kein UI, keine Router-Aenderung) — die
-Standing-Instruction fuer Emulator-Tests bei Interface-Aenderungen greift hier nicht, es gibt
-keine. 2 neue Tests (Stream-Verhalten: mehrere Emissionen ueber dieselbe Subscription, keine
-Neuladung noetig), 374 insgesamt grün, `flutter analyze` 0 Probleme, `dart format lib test`
-sauber.
+dem Inserat nachgeladen wurde. `conversations()` filterte anfangs per `.or(buyer_id.eq...,
+seller_id.eq...)` statt ungefiltert auf RLS zu vertrauen, wurde in Task 6.2 aber zu einem
+Realtime-Stream ohne diesen Filter umgebaut (Details dort). Reiner Datenschicht-Task laut Plan
+(kein UI, keine Router-Aenderung) — die Standing-Instruction fuer Emulator-Tests bei
+Interface-Aenderungen griff hier nicht, es gab keine. 2 neue Tests (Stream-Verhalten: mehrere
+Emissionen ueber dieselbe Subscription, keine Neuladung noetig), 374 insgesamt grün,
+`flutter analyze` 0 Probleme, `dart format lib test` sauber.
 
 Push war auf Anhieb CI-grün ([Run #39](https://github.com/lukaswernert2000-coder/asm/actions/runs/33488568454),
 `conclusion: success`).
+
+**2026-09-01, Task 6.2:** `ChatsScreen` (ersetzt den `_BranchPlaceholder` unter `/chats`),
+`ChatDetailScreen` (neue Route `/chat/:id`), `ChatBubble` und `ListingChip` (neue Widgets
+unter `presentation/widgets/`), `chat_providers.dart` deutlich erweitert
+(`conversationsProvider`, `conversationByIdProvider`, `conversationMessagesProvider`,
+`pendingMessagesProvider`/`PendingMessagesNotifier` fuer optimistisches Senden,
+`hiddenConversationIdsProvider` fuer "Chat löschen"). `ListingDetailScreen`s "Nachricht
+schreiben" ruft jetzt echt `getOrCreateConversation()` + `push()` auf, statt der bisherigen
+"Chat kommt mit einem späteren Update"-Platzhalter-SnackBar — ohne diese Verdrahtung wäre
+Task 6.2 unerreichbar geblieben, da es sonst keinen Einstieg in einen neuen Chat gibt.
+
+**"Chat löschen" ist bewusst kein echtes Löschen:** `conversations`/`messages` haben in
+`0005_chat.sql` keine Delete-Policy (ein Löschen würde der Gegenseite ihren Chatverlauf
+mitnehmen). Stattdessen merkt sich `HiddenConversationsNotifier` (SharedPreferences,
+`hidden_conversation_ids`, neuer Allowlist-Eintrag in `main.dart`/`fake_shared_preferences.dart`)
+den Löschzeitpunkt pro Konversation; `visibleConversationsProvider` blendet sie aus, bis eine
+neuere Nachricht als der Löschzeitpunkt eintrifft — dann taucht der Chat automatisch wieder auf,
+wie bei den meisten Chat-Apps.
+
+**Drei echte, zusammenhängende Bugs beim Live-Testen auf `flutter_api34` gefunden**, alle im
+seit Task 1.6 unveränderten `0005_chat.sql`-Schema, nie zuvor mit echten Daten durchlaufen:
+
+1. **`bump_conversation()` lief als `SECURITY INVOKER`.** `conversations` hat aus gutem Grund
+   keine Update-Policy für Käufer/Verkäufer — der Trigger selbst konnte `last_message_at`
+   dadurch nie setzen (RLS blockierte sein eigenes `UPDATE` stillschweigend, 0 betroffene
+   Zeilen, kein Fehler). Jede gesendete Nachricht ließ die Konversation in der Chatliste
+   für immer bei `last_message_at = null` stehen. Fix (`0010_bump_conversation_security_definer.sql`):
+   `SECURITY DEFINER SET search_path = public`, exakt das Muster von `handle_new_user()`
+   (0001_profiles.sql).
+2. **`conversations()` als `FutureProvider` mit manuellem `ref.invalidate()` kam bei einer
+   schon aufgebauten, aber gerade im Hintergrund der `StatefulShellRoute` liegenden Chatliste
+   nicht zuverlässig an** — eine neu angelegte Konversation blieb unsichtbar, bis die App neu
+   gestartet wurde, obwohl derselbe `ref.invalidate()`-Mechanismus in einem isolierten Unit-Test
+   (`chat_providers_test.dart`, seitdem durch direkte `PendingMessagesNotifier`-Tests ersetzt)
+   nachweislich funktionierte. Statt die genaue Riverpod/go_router-Interaktion vollständig zu
+   verstehen, wurde `conversations()` nach demselben, bereits als zuverlässig bestätigten Muster
+   wie `messages()` zu einem Realtime-`StreamProvider` umgebaut (`0011_conversations_realtime.sql`
+   aktiviert Realtime für `conversations`). Der Postgres-Realtime-Replikationsfilter
+   (`postgres_changes`) unterstützt kein `.or()`, deshalb läuft der Stream jetzt ganz ohne
+   `.eq()`/`.or()`-Filter und verlässt sich allein auf RLS — für die seltenen Realtime-Events
+   kein Performance-Problem, anders als beim (weiterhin gefilterten) einmaligen `getOrCreateConversation`-Lookup.
+3. **Dieselbe Ursache traf die Chatliste ein zweites Mal:** die "letzte Nachricht"-Vorschau
+   kam ursprünglich aus `conversationMessagesProvider` (einer zweiten, pro Konversation
+   separaten Subscription) und blieb in derselben Hintergrund-Situation auf der allerersten
+   Nachricht stehen, obwohl die Chat-Detailseite mit exakt derselben Subscription immer korrekt
+   aktualisierte. Fix (`0012_conversations_last_message.sql`): `last_message_body`/
+   `last_message_sender_id` direkt auf `conversations` denormalisiert, vom selben (jetzt
+   `SECURITY DEFINER`) Trigger befüllt. Die Chatliste braucht dafür jetzt nur noch den bereits
+   reparierten `conversations()`-Stream, keine zweite Subscription mehr. Der Ungelesen-Punkt
+   hängt weiterhin an `conversationMessagesProvider` und kann densel­ben Hintergrund-Effekt
+   zeigen (bewusst nicht mit-behoben — hätte ein größeres Redesign des Lesebestätigungs-Modells
+   auf Konversationsebene gebraucht, siehe DECISIONS.md).
+
+18 neue/geänderte Tests (ChatBubble, ListingChip, ChatsScreen, ChatDetailScreen inkl.
+optimistischem Senden/Retry/Löschen, `conversations()`-Stream, BottomNav-Badge), 399 insgesamt
+grün, `flutter analyze` 0 Probleme, `dart format lib test` sauber.
+
+**Live auf `flutter_api34` verifiziert** (neuer Test-Account `chat_tester_m6`, Bestätigungslink
+wieder per Mailinator + `adb shell am start` im emulator-eigenen Browser geöffnet, siehe
+DECISIONS.md zur `&`-Escaping-Falle dabei): kompletter Chat mit einem fremden Verkäufer
+("test patch") über "Nachricht schreiben" gestartet, ListingChip + Leerzustand korrekt gezeigt,
+vier Nachrichten gesendet (Bubble erscheint sofort, Zeitstempel nach Serverbestätigung), Chat
+gelöscht (Bestätigungsdialog, verschwindet aus der Liste, übersteht einen App-Neustart), durch
+eine neue Nachricht automatisch wiederbelebt, Overflow-Menü (Melden/Blockieren/Chat löschen)
+geprüft. Nach dem finalen Fix (3) aktualisierte die Chatliste live und ohne Neustart, sowohl
+beim erstmaligen Anlegen einer Konversation als auch bei jeder weiteren Nachricht. Der
+Altersgate blockierte dabei tatsächlich zwei der drei Bestandsinserate für den neuen,
+noch-nicht-18-jährigen Account — kein Bug, dieselbe echte `is_adult()`-Verdrahtung wie schon
+in Task 5.1 bestätigt.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -2507,16 +2575,16 @@ Stream<List<Message>> messages(String conversationId) {
 - [x] Commit — `feat(chat): add chat repository with realtime stream`
 
 ## Task 6.2: Chatliste und Chat-Detail
-- [ ] Chatliste: Inseratsbild, Titel, Gegenüber, letzte Nachricht, Zeit, Ungelesen-Punkt,
+- [x] Chatliste: Inseratsbild, Titel, Gegenüber, letzte Nachricht, Zeit, Ungelesen-Punkt,
       sortiert nach `last_message_at`
-- [ ] Chat-Detail: `ChatBubble` laut Design-System 5.6, Inserats-Karte oben angeheftet,
+- [x] Chat-Detail: `ChatBubble` laut Design-System 5.6, Inserats-Karte oben angeheftet,
       Eingabefeld mit automatischer Höhe (max. 5 Zeilen)
-- [ ] Optimistisches Senden: Nachricht erscheint sofort als "wird gesendet", bei Fehler
+- [x] Optimistisches Senden: Nachricht erscheint sofort als "wird gesendet", bei Fehler
       Retry-Symbol
-- [ ] Beim Öffnen `markRead`, Ungelesen-Badge in der BottomNav aktualisiert sich
-- [ ] Overflow: Melden, Blockieren, Chat löschen
-- [ ] Leerer Zustand: "Noch keine Nachrichten. Frag den Verkäufer, ob der Artikel noch da ist."
-- [ ] Commit — `feat(chat): add conversation list and chat screen`
+- [x] Beim Öffnen `markRead`, Ungelesen-Badge in der BottomNav aktualisiert sich
+- [x] Overflow: Melden, Blockieren, Chat löschen
+- [x] Leerer Zustand: "Noch keine Nachrichten. Frag den Verkäufer, ob der Artikel noch da ist."
+- [x] Commit — `feat(chat): add conversation list and chat screen`
 
 ## Task 6.3: Push-Benachrichtigungen
 **Dateien:** `supabase/migrations/0008_device_tokens.sql`,

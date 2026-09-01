@@ -2,8 +2,10 @@ import 'package:asm/core/router/routes.dart';
 import 'package:asm/core/theme/asm_colors.dart';
 import 'package:asm/core/theme/asm_spacing.dart';
 import 'package:asm/core/theme/asm_text_styles.dart';
+import 'package:asm/features/chat/presentation/chat_providers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -55,14 +57,16 @@ class AsmShell extends StatelessWidget {
   }
 }
 
-class _BottomNav extends StatelessWidget {
+class _BottomNav extends ConsumerWidget {
   const _BottomNav({required this.currentIndex, required this.onBranchTap});
 
   final int currentIndex;
   final ValueChanged<int> onBranchTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hasUnread = ref.watch(hasUnreadConversationsProvider);
+
     return ColoredBox(
       color: AsmColors.bg,
       child: SafeArea(
@@ -88,6 +92,7 @@ class _BottomNav extends StatelessWidget {
                 icon: LucideIcons.messageSquare,
                 label: 'Chats',
                 active: currentIndex == 2,
+                badge: hasUnread,
                 onTap: () => onBranchTap(2),
               ),
               _NavItem(
@@ -110,19 +115,22 @@ class _NavItem extends StatelessWidget {
     required this.label,
     required this.active,
     required this.onTap,
+    this.badge = false,
   });
 
   final IconData icon;
   final String label;
   final bool active;
   final VoidCallback onTap;
+  final bool badge;
 
   @override
   Widget build(BuildContext context) {
     final color = active ? AsmColors.brandBright : AsmColors.textSecondary;
+    final semanticsLabel = badge ? '$label, ungelesen' : label;
     return Expanded(
       child: Semantics(
-        label: label,
+        label: semanticsLabel,
         button: true,
         selected: active,
         child: InkWell(
@@ -130,7 +138,26 @@ class _NavItem extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: color),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(icon, color: color),
+                  if (badge)
+                    Positioned(
+                      top: -2,
+                      right: -4,
+                      child: Container(
+                        key: const Key('unreadNavBadge'),
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AsmColors.danger,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
               const SizedBox(height: AsmSpacing.xxs),
               Text(label, style: AsmTextStyles.label.copyWith(color: color)),
             ],

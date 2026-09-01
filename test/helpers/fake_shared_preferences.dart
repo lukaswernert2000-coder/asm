@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:asm/features/chat/presentation/chat_providers.dart';
 import 'package:asm/features/listings/domain/create_listing_draft.dart';
 import 'package:asm/features/listings/presentation/create_listing_providers.dart';
 import 'package:asm/features/listings/presentation/listing_providers.dart';
@@ -23,6 +24,7 @@ Future<SharedPreferencesWithCache> fakeSharedPreferences({
   ListingViewMode? listingViewMode,
   List<String>? searchHistory,
   CreateListingDraft? createListingDraft,
+  Map<String, DateTime>? hiddenConversationIds,
 }) {
   SharedPreferencesAsyncPlatform
       .instance = InMemorySharedPreferencesAsync.withData({
@@ -31,6 +33,12 @@ Future<SharedPreferencesWithCache> fakeSharedPreferences({
     searchHistoryPrefsKey: ?searchHistory,
     if (createListingDraft != null)
       createListingDraftPrefsKey: jsonEncode(createListingDraft.toJson()),
+    if (hiddenConversationIds != null)
+      hiddenConversationsPrefsKey: jsonEncode(
+        hiddenConversationIds.map(
+          (key, value) => MapEntry(key, value.toIso8601String()),
+        ),
+      ),
   });
   return SharedPreferencesWithCache.create(
     cacheOptions: const SharedPreferencesWithCacheOptions(
@@ -39,6 +47,7 @@ Future<SharedPreferencesWithCache> fakeSharedPreferences({
         listingViewModePrefsKey,
         searchHistoryPrefsKey,
         createListingDraftPrefsKey,
+        hiddenConversationsPrefsKey,
       },
     ),
   );

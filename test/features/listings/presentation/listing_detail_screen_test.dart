@@ -7,6 +7,10 @@ import 'package:asm/features/auth/presentation/auth_controller.dart';
 import 'package:asm/features/categories/data/category_repository.dart';
 import 'package:asm/features/categories/domain/category.dart';
 import 'package:asm/features/categories/presentation/category_providers.dart';
+import 'package:asm/features/chat/data/chat_repository.dart';
+import 'package:asm/features/chat/domain/conversation.dart';
+import 'package:asm/features/chat/presentation/chat_detail_screen.dart';
+import 'package:asm/features/chat/presentation/chat_providers.dart';
 import 'package:asm/features/favorites/data/favorite_repository.dart';
 import 'package:asm/features/favorites/presentation/favorite_providers.dart';
 import 'package:asm/features/listings/data/listing_repository.dart';
@@ -40,6 +44,8 @@ class MockFavoriteRepository extends Mock implements FavoriteRepository {}
 
 class MockCategoryRepository extends Mock implements CategoryRepository {}
 
+class MockChatRepository extends Mock implements ChatRepository {}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(ReportReason.sonstiges);
@@ -51,6 +57,7 @@ void main() {
   late MockModerationRepository moderationRepository;
   late MockFavoriteRepository favoriteRepository;
   late MockCategoryRepository categoryRepository;
+  late MockChatRepository chatRepository;
 
   const me = AsmUser(id: 'me', email: 'a@b.de', emailConfirmed: true);
   final seller = Profile(
@@ -105,6 +112,7 @@ void main() {
     moderationRepository = MockModerationRepository();
     favoriteRepository = MockFavoriteRepository();
     categoryRepository = MockCategoryRepository();
+    chatRepository = MockChatRepository();
 
     when(() => listingRepository.byId('l1')).thenAnswer(
       (_) async => listing(),
@@ -168,6 +176,7 @@ void main() {
         moderationRepositoryProvider.overrideWithValue(moderationRepository),
         favoriteRepositoryProvider.overrideWithValue(favoriteRepository),
         categoryRepositoryProvider.overrideWithValue(categoryRepository),
+        chatRepositoryProvider.overrideWithValue(chatRepository),
         isAdultProvider.overrideWith((ref) async => isAdult),
         sharedPreferencesProvider.overrideWithValue(
           await fakeSharedPreferences(),
@@ -272,17 +281,36 @@ void main() {
   });
 
   testWidgets(
-    'eingeloggt, Kategorie ohne Altersgate: Tap zeigt Hinweis statt Absturz',
+    'eingeloggt, Kategorie ohne Altersgate: Tap startet den Chat mit dem '
+    'Verkaeufer',
     (tester) async {
+      final conversation = Conversation(
+        id: 'conv1',
+        listingId: 'l1',
+        buyerId: 'me',
+        sellerId: 'seller1',
+        createdAt: DateTime(2026, 8, 31),
+      );
+      when(() => chatRepository.getOrCreateConversation('l1')).thenAnswer(
+        (_) async => conversation,
+      );
+      when(() => chatRepository.byId('conv1')).thenAnswer(
+        (_) async => conversation,
+      );
+      when(() => chatRepository.messages('conv1')).thenAnswer(
+        (_) => Stream.value(const []),
+      );
+      when(() => chatRepository.markRead('conv1')).thenAnswer((_) async {});
+
       await pumpScreen(tester, loggedIn: true);
 
       await tester.tap(find.text('Nachricht schreiben'));
       await pumpBriefly(tester);
 
-      expect(
-        find.textContaining('Chat kommt mit einem späteren Update'),
-        findsOneWidget,
-      );
+      // push() (anders als go()) aktualisiert routeInformationProvider.value.uri
+      // im Test nicht zuverlaessig -- wie in my_listings_screen_test.dart wird
+      // stattdessen direkt geprueft, dass der Ziel-Screen erscheint.
+      expect(find.byType(ChatDetailScreen), findsOneWidget);
     },
   );
 

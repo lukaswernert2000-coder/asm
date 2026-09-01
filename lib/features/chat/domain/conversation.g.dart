@@ -16,6 +16,8 @@ _Conversation _$ConversationFromJson(Map<String, dynamic> json) =>
       lastMessageAt: json['last_message_at'] == null
           ? null
           : DateTime.parse(json['last_message_at'] as String),
+      lastMessageBody: json['last_message_body'] as String?,
+      lastMessageSenderId: json['last_message_sender_id'] as String?,
     );
 
 Map<String, dynamic> _$ConversationToJson(_Conversation instance) =>
@@ -26,4 +28,6 @@ Map<String, dynamic> _$ConversationToJson(_Conversation instance) =>
       'seller_id': instance.sellerId,
       'created_at': instance.createdAt.toIso8601String(),
       'last_message_at': instance.lastMessageAt?.toIso8601String(),
+      'last_message_body': instance.lastMessageBody,
+      'last_message_sender_id': instance.lastMessageSenderId,
     };

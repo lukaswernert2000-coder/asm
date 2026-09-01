@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Conversation {
 
- String get id; String get listingId; String get buyerId; String get sellerId; DateTime get createdAt; DateTime? get lastMessageAt;
+ String get id; String get listingId; String get buyerId; String get sellerId; DateTime get createdAt; DateTime? get lastMessageAt; String? get lastMessageBody; String? get lastMessageSenderId;
 /// Create a copy of Conversation
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $ConversationCopyWith<Conversation> get copyWith => _$ConversationCopyWithImpl<C
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Conversation&&(identical(other.id, id) || other.id == id)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.buyerId, buyerId) || other.buyerId == buyerId)&&(identical(other.sellerId, sellerId) || other.sellerId == sellerId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Conversation&&(identical(other.id, id) || other.id == id)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.buyerId, buyerId) || other.buyerId == buyerId)&&(identical(other.sellerId, sellerId) || other.sellerId == sellerId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt)&&(identical(other.lastMessageBody, lastMessageBody) || other.lastMessageBody == lastMessageBody)&&(identical(other.lastMessageSenderId, lastMessageSenderId) || other.lastMessageSenderId == lastMessageSenderId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,listingId,buyerId,sellerId,createdAt,lastMessageAt);
+int get hashCode => Object.hash(runtimeType,id,listingId,buyerId,sellerId,createdAt,lastMessageAt,lastMessageBody,lastMessageSenderId);
 
 @override
 String toString() {
-  return 'Conversation(id: $id, listingId: $listingId, buyerId: $buyerId, sellerId: $sellerId, createdAt: $createdAt, lastMessageAt: $lastMessageAt)';
+  return 'Conversation(id: $id, listingId: $listingId, buyerId: $buyerId, sellerId: $sellerId, createdAt: $createdAt, lastMessageAt: $lastMessageAt, lastMessageBody: $lastMessageBody, lastMessageSenderId: $lastMessageSenderId)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $ConversationCopyWith<$Res>  {
   factory $ConversationCopyWith(Conversation value, $Res Function(Conversation) _then) = _$ConversationCopyWithImpl;
 @useResult
 $Res call({
- String id, String listingId, String buyerId, String sellerId, DateTime createdAt, DateTime? lastMessageAt
+ String id, String listingId, String buyerId, String sellerId, DateTime createdAt, DateTime? lastMessageAt, String? lastMessageBody, String? lastMessageSenderId
 });
 
 
@@ -66,7 +66,7 @@ class _$ConversationCopyWithImpl<$Res>
 
 /// Create a copy of Conversation
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? listingId = null,Object? buyerId = null,Object? sellerId = null,Object? createdAt = null,Object? lastMessageAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? listingId = null,Object? buyerId = null,Object? sellerId = null,Object? createdAt = null,Object? lastMessageAt = freezed,Object? lastMessageBody = freezed,Object? lastMessageSenderId = freezed,}) {
   return _then(Conversation(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,listingId: null == listingId ? _self.listingId : listingId // ignore: cast_nullable_to_non_nullable
@@ -74,7 +74,9 @@ as String,buyerId: null == buyerId ? _self.buyerId : buyerId // ignore: cast_nul
 as String,sellerId: null == sellerId ? _self.sellerId : sellerId // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,lastMessageAt: freezed == lastMessageAt ? _self.lastMessageAt : lastMessageAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,lastMessageBody: freezed == lastMessageBody ? _self.lastMessageBody : lastMessageBody // ignore: cast_nullable_to_non_nullable
+as String?,lastMessageSenderId: freezed == lastMessageSenderId ? _self.lastMessageSenderId : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -159,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String listingId,  String buyerId,  String sellerId,  DateTime createdAt,  DateTime? lastMessageAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String listingId,  String buyerId,  String sellerId,  DateTime createdAt,  DateTime? lastMessageAt,  String? lastMessageBody,  String? lastMessageSenderId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Conversation() when $default != null:
-return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.createdAt,_that.lastMessageAt);case _:
+return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.createdAt,_that.lastMessageAt,_that.lastMessageBody,_that.lastMessageSenderId);case _:
   return orElse();
 
 }
@@ -180,10 +182,10 @@ return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.crea
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String listingId,  String buyerId,  String sellerId,  DateTime createdAt,  DateTime? lastMessageAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String listingId,  String buyerId,  String sellerId,  DateTime createdAt,  DateTime? lastMessageAt,  String? lastMessageBody,  String? lastMessageSenderId)  $default,) {final _that = this;
 switch (_that) {
 case _Conversation():
-return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.createdAt,_that.lastMessageAt);case _:
+return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.createdAt,_that.lastMessageAt,_that.lastMessageBody,_that.lastMessageSenderId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +202,10 @@ return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.crea
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String listingId,  String buyerId,  String sellerId,  DateTime createdAt,  DateTime? lastMessageAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String listingId,  String buyerId,  String sellerId,  DateTime createdAt,  DateTime? lastMessageAt,  String? lastMessageBody,  String? lastMessageSenderId)?  $default,) {final _that = this;
 switch (_that) {
 case _Conversation() when $default != null:
-return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.createdAt,_that.lastMessageAt);case _:
+return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.createdAt,_that.lastMessageAt,_that.lastMessageBody,_that.lastMessageSenderId);case _:
   return null;
 
 }
@@ -215,7 +217,7 @@ return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.crea
 @JsonSerializable()
 
 class _Conversation implements Conversation {
-  const _Conversation({required this.id, required this.listingId, required this.buyerId, required this.sellerId, required this.createdAt, this.lastMessageAt});
+  const _Conversation({required this.id, required this.listingId, required this.buyerId, required this.sellerId, required this.createdAt, this.lastMessageAt, this.lastMessageBody, this.lastMessageSenderId});
   factory _Conversation.fromJson(Map<String, dynamic> json) => _$ConversationFromJson(json);
 
 @override final  String id;
@@ -224,6 +226,8 @@ class _Conversation implements Conversation {
 @override final  String sellerId;
 @override final  DateTime createdAt;
 @override final  DateTime? lastMessageAt;
+@override final  String? lastMessageBody;
+@override final  String? lastMessageSenderId;
 
 /// Create a copy of Conversation
 /// with the given fields replaced by the non-null parameter values.
@@ -238,16 +242,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Conversation&&(identical(other.id, id) || other.id == id)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.buyerId, buyerId) || other.buyerId == buyerId)&&(identical(other.sellerId, sellerId) || other.sellerId == sellerId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Conversation&&(identical(other.id, id) || other.id == id)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.buyerId, buyerId) || other.buyerId == buyerId)&&(identical(other.sellerId, sellerId) || other.sellerId == sellerId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt)&&(identical(other.lastMessageBody, lastMessageBody) || other.lastMessageBody == lastMessageBody)&&(identical(other.lastMessageSenderId, lastMessageSenderId) || other.lastMessageSenderId == lastMessageSenderId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,listingId,buyerId,sellerId,createdAt,lastMessageAt);
+int get hashCode => Object.hash(runtimeType,id,listingId,buyerId,sellerId,createdAt,lastMessageAt,lastMessageBody,lastMessageSenderId);
 
 @override
 String toString() {
-  return 'Conversation(id: $id, listingId: $listingId, buyerId: $buyerId, sellerId: $sellerId, createdAt: $createdAt, lastMessageAt: $lastMessageAt)';
+  return 'Conversation(id: $id, listingId: $listingId, buyerId: $buyerId, sellerId: $sellerId, createdAt: $createdAt, lastMessageAt: $lastMessageAt, lastMessageBody: $lastMessageBody, lastMessageSenderId: $lastMessageSenderId)';
 }
 
 
@@ -258,7 +262,7 @@ abstract mixin class _$ConversationCopyWith<$Res> implements $ConversationCopyWi
   factory _$ConversationCopyWith(_Conversation value, $Res Function(_Conversation) _then) = __$ConversationCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String listingId, String buyerId, String sellerId, DateTime createdAt, DateTime? lastMessageAt
+ String id, String listingId, String buyerId, String sellerId, DateTime createdAt, DateTime? lastMessageAt, String? lastMessageBody, String? lastMessageSenderId
 });
 
 
@@ -275,7 +279,7 @@ class __$ConversationCopyWithImpl<$Res>
 
 /// Create a copy of Conversation
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? listingId = null,Object? buyerId = null,Object? sellerId = null,Object? createdAt = null,Object? lastMessageAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? listingId = null,Object? buyerId = null,Object? sellerId = null,Object? createdAt = null,Object? lastMessageAt = freezed,Object? lastMessageBody = freezed,Object? lastMessageSenderId = freezed,}) {
   return _then(_Conversation(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,listingId: null == listingId ? _self.listingId : listingId // ignore: cast_nullable_to_non_nullable
@@ -283,7 +287,9 @@ as String,buyerId: null == buyerId ? _self.buyerId : buyerId // ignore: cast_nul
 as String,sellerId: null == sellerId ? _self.sellerId : sellerId // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,lastMessageAt: freezed == lastMessageAt ? _self.lastMessageAt : lastMessageAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,lastMessageBody: freezed == lastMessageBody ? _self.lastMessageBody : lastMessageBody // ignore: cast_nullable_to_non_nullable
+as String?,lastMessageSenderId: freezed == lastMessageSenderId ? _self.lastMessageSenderId : lastMessageSenderId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

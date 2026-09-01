@@ -5,7 +5,8 @@ import 'package:asm/features/chat/domain/message.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class ChatRepository {
-  Future<List<Conversation>> conversations();
+  Stream<List<Conversation>> conversations();
+  Future<Conversation> byId(String id);
   Stream<List<Message>> messages(String conversationId);
   Future<void> send(String conversationId, String body);
   Future<Conversation> getOrCreateConversation(String listingId);
@@ -23,15 +24,24 @@ typedef MessageStreamCaller = Stream<List<Map<String, dynamic>>> Function(
   String conversationId,
 );
 
+/// Analoger Seam fuer den Konversations-Stream.
+typedef ConversationStreamCaller =
+    Stream<List<Map<String, dynamic>>> Function();
+
 class SupabaseChatRepository implements ChatRepository {
   SupabaseChatRepository(
     this._client, {
     MessageStreamCaller? messageStreamCaller,
+    ConversationStreamCaller? conversationStreamCaller,
   }) : _messageStream =
-           messageStreamCaller ?? _defaultMessageStreamCaller(_client);
+           messageStreamCaller ?? _defaultMessageStreamCaller(_client),
+       _conversationStream =
+           conversationStreamCaller ??
+           _defaultConversationStreamCaller(_client);
 
   final SupabaseClient _client;
   final MessageStreamCaller _messageStream;
+  final ConversationStreamCaller _conversationStream;
 
   static MessageStreamCaller _defaultMessageStreamCaller(
     SupabaseClient client,
@@ -42,17 +52,37 @@ class SupabaseChatRepository implements ChatRepository {
           .eq('conversation_id', conversationId)
           .order('created_at');
 
+  /// Bewusst OHNE `.eq('buyer_id', ...)`/`.or(...)`-Filter: Postgres'
+  /// Realtime-Replikationsfilter (`postgres_changes`) unterstuetzt nur
+  /// einfache Ein-Spalten-Bedingungen, kein `.or()`. Die Sichtbarkeit "nur
+  /// meine Konversationen als Kaeufer oder Verkaeufer" liefert stattdessen
+  /// allein RLS (`conversations_participants`, 0005_chat.sql) -- fuer die
+  /// seltenen, kleinen Realtime-Events kein Performance-Problem, anders als
+  /// beim initialen einmaligen SELECT.
+  static ConversationStreamCaller _defaultConversationStreamCaller(
+    SupabaseClient client,
+  ) =>
+      () => client
+          .from('conversations')
+          .stream(primaryKey: ['id'])
+          .order('last_message_at');
+
   @override
-  Future<List<Conversation>> conversations() async {
-    final userId = _client.auth.currentUser?.id;
-    if (userId == null) return const [];
+  Stream<List<Conversation>> conversations() {
+    return _conversationStream().map(
+      (rows) => rows.map(Conversation.fromJson).toList(),
+    );
+  }
+
+  @override
+  Future<Conversation> byId(String id) async {
     try {
-      final rows = await _client
+      final row = await _client
           .from('conversations')
           .select()
-          .or('buyer_id.eq.$userId,seller_id.eq.$userId')
-          .order('last_message_at', ascending: false);
-      return rows.map(Conversation.fromJson).toList();
+          .eq('id', id)
+          .single();
+      return Conversation.fromJson(row);
     } catch (error) {
       throw mapError(error);
     }

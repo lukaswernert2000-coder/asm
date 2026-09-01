@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:asm/features/chat/data/chat_repository.dart';
+import 'package:asm/features/chat/domain/conversation.dart';
 import 'package:asm/features/chat/domain/message.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -19,6 +20,18 @@ Map<String, dynamic> _messageRow({
   'image_path': null,
   'created_at': '2026-09-01T10:00:00.000Z',
   'read_at': null,
+};
+
+Map<String, dynamic> _conversationRow({
+  required String id,
+  String? lastMessageAt,
+}) => {
+  'id': id,
+  'listing_id': 'l1',
+  'buyer_id': 'u1',
+  'seller_id': 'u2',
+  'created_at': '2026-09-01T09:00:00.000Z',
+  'last_message_at': lastMessageAt,
 };
 
 void main() {
@@ -75,5 +88,42 @@ void main() {
 
       expect(capturedId, 'c42');
     });
+  });
+
+  group('conversations', () {
+    test(
+      'gibt neue Konversationen ueber denselben Stream aus, ohne dass neu '
+      'geladen wird',
+      () async {
+        final controller = StreamController<List<Map<String, dynamic>>>();
+        addTearDown(controller.close);
+
+        final repository = SupabaseChatRepository(
+          client,
+          conversationStreamCaller: () => controller.stream,
+        );
+
+        final emissions = <List<Conversation>>[];
+        final subscription = repository.conversations().listen(
+          emissions.add,
+        );
+        addTearDown(subscription.cancel);
+
+        controller.add([_conversationRow(id: 'conv1')]);
+        await Future<void>.delayed(Duration.zero);
+
+        controller.add([
+          _conversationRow(
+            id: 'conv1',
+            lastMessageAt: '2026-09-01T10:05:00.000Z',
+          ),
+        ]);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(emissions, hasLength(2));
+        expect(emissions[0].single.lastMessageAt, isNull);
+        expect(emissions[1].single.lastMessageAt, isNotNull);
+      },
+    );
   });
 }

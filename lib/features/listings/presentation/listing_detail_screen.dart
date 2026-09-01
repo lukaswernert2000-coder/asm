@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:asm/core/config/app_config.dart';
+import 'package:asm/core/errors/app_exception.dart';
 import 'package:asm/core/router/guards.dart';
 import 'package:asm/core/router/routes.dart';
 import 'package:asm/core/theme/asm_colors.dart';
@@ -10,6 +11,7 @@ import 'package:asm/core/widgets/asm_error_view.dart';
 import 'package:asm/core/widgets/asm_skeleton.dart';
 import 'package:asm/features/auth/presentation/auth_controller.dart';
 import 'package:asm/features/categories/presentation/category_providers.dart';
+import 'package:asm/features/chat/presentation/chat_providers.dart';
 import 'package:asm/features/favorites/presentation/favorite_providers.dart';
 import 'package:asm/features/listings/domain/listing.dart';
 import 'package:asm/features/listings/domain/listing_image_url.dart';
@@ -145,9 +147,18 @@ class _ListingDetailScaffoldState
       );
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Chat kommt mit einem späteren Update.')),
-    );
+    try {
+      final conversation = await ref
+          .read(chatRepositoryProvider)
+          .getOrCreateConversation(listing.id);
+      if (!mounted) return;
+      unawaited(context.push(AsmRoutes.chat(conversation.id)));
+    } on AppException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    }
   }
 
   Future<void> _onFavoriteToggle(Listing listing) async {
