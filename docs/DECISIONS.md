@@ -1537,4 +1537,82 @@ gewuenschte `blocksForAge()`-Verdrahtung, die seit Task 2.4/3.1 vorbereitet, abe
 Route angebunden war -- hiermit erstmals live bestaetigt. Fuer nicht gesperrte Kategorien zeigt der
 Button stattdessen "Chat kommt mit einem spaeteren Update." (M6 existiert noch nicht).
 
+## 2026-09-01 · Bugfix-Batch · Echter Bug: F-Kennzeichen/Besitznachweis-Foto fehlten auf der Detailseite
+
+Nutzer meldete: die zwei Pflichtfotos (F-Kennzeichen, Besitznachweis) sind im Inserat nicht zu sehen,
+obwohl sie beim Erstellen hochgeladen werden -- für Käufer aber wichtig zu pruefen. Root-Cause:
+`SupabaseListingRepository.imagePaths()` filterte hart auf `.eq('kind', _imageKindToDb(ImageKind.photo))`,
+obwohl `insertImage()` (Task 5.1) alle drei Bildarten laengst korrekt mit ihrem jeweiligen `kind` in
+`listing_images` schreibt. Die Galerie bekam dadurch nie mehr als die regulaeren Fotos zu sehen. Fix:
+Filter entfernt -- `imagePaths()` liefert jetzt alle Bilder eines Inserats sortiert nach `sort_order`,
+unabhaengig vom `kind`. `listingImagePathsProvider`s Doku-Kommentar entsprechend ergaenzt, damit der
+bewusste Verzicht auf den Filter nicht wie ein vergessenes TODO aussieht. Keine dedizierte neue Testdatei
+noetig (Repository-Methode folgt demselben ungetesteten Muster wie `byId`/`create`/etc., siehe Praezedenz
+aus Task 5.1), stattdessen live verifiziert: neues Test-Inserat mit drei unterscheidbaren Testfotos zeigt
+alle drei einzeln beim Durchswipen der Galerie.
+
+## 2026-09-01 · Bugfix-Batch · Echter Bug: Geburtsdatum liess sich nicht eintippen
+
+Nutzer meldete: beim Geburtsdatum kann man auf der Nummerntastatur keinen "." benutzen, das Datum laesst
+sich nur ueber den Kalender auswaehlen, nicht eintippen. Root-Cause: `showDatePicker()` in
+`register_screen.dart` lief im Flutter-Default (`DatePickerEntryMode.calendar`, mit einem
+Tastatur-Umschalter-Icon im Dialog-Header) -- Androids numerische Tastatur fuer die
+Text-Eingabe-Variante zeigt aber je nach Geraet/Locale keinen "." an, das deutsche Format TT.MM.JJJJ liess
+sich damit nicht eintippen. Fix: `initialEntryMode: DatePickerEntryMode.calendarOnly` -- der
+Tastatur-Umschalter faellt komplett weg, nur noch der (zuverlaessig funktionierende) Kalender bleibt.
+Bewusst kein dedizierter Test dafuer geschrieben: der native Dialog ist bereits laut
+`RegisterScreen.pickBirthDate`-Seam nur ueber lokalisierte Button-Texte fragil steuerbar, und welcher
+Entry-Mode intern greift ist reines SDK-Verhalten -- gleiche Linie wie andere nicht unit-getestete
+Plugin-/SDK-Interaktionen im Projekt (z. B. `flutter_image_compress`). Live auf `flutter_api34`
+verifiziert: Dialog oeffnet direkt den Kalender ganz ohne Umschalter-Icon, Auswahl per Touch fuellt das
+Feld korrekt im TT.MM.JJJJ-Format.
+
+## 2026-09-01 · Bugfix-Batch · Echter Bug: Kategorie-Wurzeln liessen sich nicht wieder einklappen
+
+Nutzer meldete: Dropdown-Menüs bei den Kategorien lassen sich per Touch öffnen, aber nicht mehr
+schliessen. Root-Cause: `onExpandRoot` in `category_step.dart` setzte `_expandedRootSlug` beim Antippen
+einer Wurzel immer auf deren `slug`, ohne zu pruefen, ob genau diese Wurzel bereits expandiert war --
+ein zweiter Tap auf dieselbe Wurzel "expandierte" sie einfach erneut auf denselben Wert, sichtbar blieb
+sie offen. Fix: Toggle-Logik (`_expandedRootSlug == slug ? null : slug`). Vorher per Grep geprueft, dass
+`filter_sheet.dart`s eigene Kategorie-Auswahl denselben Bug nicht hat (andere Implementierung, kein
+gemeinsamer Code) -- Fix bewusst auf `category_step.dart` begrenzt. Mit TDD gefixt: zwei neue Tests
+(`category_step_test.dart`) -- erneutes Antippen einer expandierten Wurzel klappt sie wieder ein, Antippen
+einer anderen Wurzel klappt die vorherige automatisch ein. Live auf `flutter_api34` verifiziert: "Gewehre
+& MPs" beim Anlegen eines echten Test-Inserats mehrfach auf- und zugeklappt, jedes Mal korrekt.
+
+## 2026-09-01 · Bugfix-Batch · Echter Bug: Detailseite nach Veroeffentlichen ohne Weg zurueck
+
+Nutzer meldete: im Inserat gibt es keinen Zurueck-Button, man kann es sonst nicht verlassen. Root-Cause:
+der "Inserat ansehen"-Button auf dem Erfolgs-Screen nach dem Veroeffentlichen (`shipping_step.dart`)
+nutzte `context.go(AsmRoutes.listing(listingId))` statt `push()` -- `go()` ersetzt den kompletten
+Navigations-Stack, wodurch die Detailseite ohne Pop-Ziel dastand und ihr Standard-AppBar keinen
+Zurueck-Pfeil zeigte. Per Grep bestaetigt: das war der einzige `AsmRoutes.listing(...)`-Aufruf im
+gesamten Code, der `go()` statt `push()` nutzte. Fix als Defense-in-Depth (zwei Ebenen, angelehnt an die
+`systematic-debugging`-Technik): **(1)** der eigentliche Fundort korrigiert, `go()` → `push()`. **(2)**
+zusaetzlich `listing_detail_screen.dart` selbst robust gemacht -- neue `_detailAppBar()`-Hilfsfunktion
+zeigt bei `context.canPop() == true` den normalen Zurueck-Pfeil, sonst einen expliziten
+Schliessen-Button (`Semantics(label: 'Schließen')`) zur Startseite. Grund fuer die zweite Ebene: die
+Nutzer-Formulierung ("im Inserat einen Zurück-Button einfügen") liest sich als Wunsch nach einer
+Absicherung in der Detailseite selbst, nicht nur einem Fix am einzelnen Aufrufer, und schuetzt gegen
+jeden kuenftigen Pfad, der die Detailseite ohne Pop-Ziel erreicht (z. B. ein spaeterer Deep-Link).
+Mit TDD gefixt: neuer Test in `listing_detail_screen_test.dart` prueft explizit den
+Schliessen-Button-Fall. Live auf `flutter_api34` verifiziert: nach echtem Veroeffentlichen zeigt
+"Inserat ansehen" die Detailseite jetzt mit funktionierendem Zurueck-Pfeil.
+
+## 2026-09-01 · Bugfix-Batch · Mindestlaenge Beschreibung auf Nutzerwunsch 30 → 15 Zeichen
+
+Kein Bug, sondern eine bewusste Produktentscheidung auf expliziten Nutzerwunsch. Client-Validierung
+(`details_step.dart`, `edit_listing_screen.dart`: `description.length < 15` statt `< 30`, Fehlertext
+"Mindestens 15 Zeichen") und die serverseitige Check-Constraint gemeinsam geaendert, damit ein Inserat mit
+z. B. 20 Zeichen nicht am Client durchgeht, aber an der DB abprallt. Migration
+`0009_description_min_length.sql` legt die reale Constraint neu an -- Name (`listings_description_check`)
+vorher per `supabase db query` gegen `pg_constraint` verifiziert statt geraten, um einen fehlschlagenden
+`DROP CONSTRAINT` zu vermeiden. Per `supabase db push --linked` angewendet und danach erneut per
+`pg_constraint`-Query bestaetigt (`CHECK (char_length(description) BETWEEN 15 AND 5000)`). `00-SPEC.md`
+(Zeile zur Beschreibungslaenge) im selben Zug aktualisiert, damit Doku und Code nicht auseinanderlaufen.
+Mit TDD gefixt (`details_step_test.dart` auf den neuen Fehlertext angepasst, RED vor der Implementierung
+bestaetigt). Live auf `flutter_api34` verifiziert: ein echtes Test-Inserat mit einer bewusst nur
+17 Zeichen langen Beschreibung ("Kaum benutzt, top") wurde ohne Fehlermeldung angenommen und
+veroeffentlicht -- vor dem Fix waere das zwingend an "Mindestens 30 Zeichen" gescheitert.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

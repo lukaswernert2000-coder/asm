@@ -59,8 +59,11 @@ class _CategoryStepState extends ConsumerState<CategoryStep> {
               ? _RootAndChildrenList(
                   selectedCategoryId: draft.categoryId,
                   expandedRootSlug: _expandedRootSlug,
-                  onExpandRoot: (slug) =>
-                      setState(() => _expandedRootSlug = slug),
+                  onExpandRoot: (slug) => setState(
+                    () => _expandedRootSlug = _expandedRootSlug == slug
+                        ? null
+                        : slug,
+                  ),
                   onSelectLeaf: _selectLeaf,
                 )
               : _SearchResults(

@@ -189,6 +189,24 @@ void main() {
     return router;
   }
 
+  testWidgets(
+    'ohne Zurueck-Ziel (z. B. nach dem Veroeffentlichen) zeigt einen '
+    'Schliessen-Button statt niemandem den Weg zurueck zu bieten',
+    (tester) async {
+      final router = await pumpScreen(tester, loggedIn: true);
+
+      expect(find.byIcon(LucideIcons.x), findsOneWidget);
+
+      await tester.tap(find.byIcon(LucideIcons.x));
+      await pumpBriefly(tester);
+
+      expect(
+        router.routeInformationProvider.value.uri.toString(),
+        AsmRoutes.home,
+      );
+    },
+  );
+
   testWidgets('zeigt Titel und erhoeht die Ansichtenzahl nur einmal', (
     tester,
   ) async {

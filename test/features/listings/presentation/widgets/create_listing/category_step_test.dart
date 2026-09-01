@@ -145,6 +145,39 @@ void main() {
     },
   );
 
+  testWidgets(
+    'erneutes Tippen auf eine expandierte Wurzel klappt sie wieder ein',
+    (tester) async {
+      await pumpScreen(tester);
+
+      await tester.tap(find.text('Pistolen'));
+      await tester.pumpAndSettle();
+      expect(find.text('Revolver'), findsOneWidget);
+
+      await tester.tap(find.text('Pistolen'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Revolver'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'Wurzel antippen klappt eine zuvor expandierte andere Wurzel ein',
+    (tester) async {
+      await pumpScreen(tester);
+
+      await tester.tap(find.text('Pistolen'));
+      await tester.pumpAndSettle();
+      expect(find.text('Revolver'), findsOneWidget);
+
+      await tester.tap(find.text('Zubehör'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Revolver'), findsNothing);
+      expect(find.text('Magazine'), findsOneWidget);
+    },
+  );
+
   testWidgets('Weiter ruft onNext und setzt Schritt auf 1', (tester) async {
     var nextCalled = false;
     final container = ProviderContainer(

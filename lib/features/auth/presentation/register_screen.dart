@@ -24,6 +24,11 @@ Future<DateTime?> _defaultPickBirthDate(BuildContext context) {
     initialDate: DateTime(now.year - 18, now.month, now.day),
     firstDate: DateTime(now.year - 120),
     lastDate: now,
+    // Nur Kalender, keine Tastatureingabe: der native Ziffernblock fuer
+    // Datumseingabe zeigt auf manchen Android-Tastaturen keinen "."
+    // (deutsches Trennzeichen TT.MM.JJJJ) an, das Geburtsdatum liess sich
+    // dadurch nicht eintippen -- nur der Kalender funktionierte zuverlaessig.
+    initialEntryMode: DatePickerEntryMode.calendarOnly,
   );
 }
 

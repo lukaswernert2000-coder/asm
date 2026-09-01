@@ -73,10 +73,14 @@ final FutureProviderFamily<Listing, String> listingByIdProvider =
       (ref, id) => ref.watch(listingRepositoryProvider).byId(id),
     );
 
-/// Rohe Storage-Pfade der oeffentlichen Fotos eines Inserats, sortiert
-/// (`ListingRepository.imagePaths`, nur `kind=photo`). Aufloesung zur echten
-/// URL passiert erst in der Praesentationsschicht via `listingImageUrl()` --
-/// exakt das Muster von `Profile.avatarPath` + `avatarUrl()`.
+/// Rohe Storage-Pfade aller Bilder eines Inserats, sortiert
+/// (`ListingRepository.imagePaths`) -- Titelbilder, F-Kennzeichen- und
+/// Besitznachweis-Foto zusammen, bewusst nicht auf `kind=photo` gefiltert:
+/// F-Kennzeichen und Besitznachweis sind fuer Kaeufer wichtig zu sehen
+/// (Nutzer-Feedback nach Task 5.1, siehe DECISIONS.md). Aufloesung zur
+/// echten URL passiert erst in der Praesentationsschicht via
+/// `listingImageUrl()` -- exakt das Muster von `Profile.avatarPath` +
+/// `avatarUrl()`.
 final FutureProviderFamily<List<String>, String> listingImagePathsProvider =
     FutureProvider.family<List<String>, String>(
       (ref, id) => ref.watch(listingRepositoryProvider).imagePaths(id),

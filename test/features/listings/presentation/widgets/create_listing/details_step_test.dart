@@ -160,7 +160,7 @@ void main() {
 
       expect(nextCalled, isFalse);
       expect(find.text('Zwischen 10 und 80 Zeichen'), findsOneWidget);
-      expect(find.text('Mindestens 30 Zeichen'), findsOneWidget);
+      expect(find.text('Mindestens 15 Zeichen'), findsOneWidget);
       await scrollListUntilVisible(
         tester,
         _listKey,

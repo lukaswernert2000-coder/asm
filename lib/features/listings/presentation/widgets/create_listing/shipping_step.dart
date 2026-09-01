@@ -358,7 +358,7 @@ class _PublishSuccessScreen extends StatelessWidget {
               AsmButton(
                 key: const Key('publishSuccessView'),
                 label: 'Inserat ansehen',
-                onPressed: () => context.go(AsmRoutes.listing(listingId)),
+                onPressed: () => context.push(AsmRoutes.listing(listingId)),
               ),
               const SizedBox(height: AsmSpacing.sm),
               AsmButton(

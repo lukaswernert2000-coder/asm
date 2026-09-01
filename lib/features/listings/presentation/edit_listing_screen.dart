@@ -165,8 +165,8 @@ class _EditListingScreenState extends ConsumerState<EditListingScreen> {
           ? 'Zwischen 10 und 80 Zeichen'
           : null;
       final description = _descriptionController.text.trim();
-      _descriptionError = description.length < 30 || description.length > 5000
-          ? 'Mindestens 30 Zeichen'
+      _descriptionError = description.length < 15 || description.length > 5000
+          ? 'Mindestens 15 Zeichen'
           : null;
       _conditionError = _condition == null ? 'Bitte auswaehlen' : null;
       final price = _isGiveaway ? 0 : _parseEuro(_priceController.text);

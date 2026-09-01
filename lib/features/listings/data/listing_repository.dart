@@ -238,7 +238,6 @@ class SupabaseListingRepository implements ListingRepository {
           .from('listing_images')
           .select('storage_path')
           .eq('listing_id', listingId)
-          .eq('kind', _imageKindToDb(ImageKind.photo))
           .order('sort_order');
       return rows.map((r) => r['storage_path'] as String).toList();
     } catch (error) {

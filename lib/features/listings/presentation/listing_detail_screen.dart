@@ -31,6 +31,28 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:share_plus/share_plus.dart';
 
+/// AppBar mit Zurueck-Pfeil, wenn es ein Ziel dafuer gibt -- sonst ein
+/// Schliessen-Button zur Startseite, statt den Nutzer ohne Ausweg dazustehen
+/// zu lassen. Betrifft z. B. "Inserat ansehen" direkt nach dem
+/// Veroeffentlichen, das bewusst `go()` statt `push()` nutzt (siehe
+/// DECISIONS.md) und damit nichts zum Zurueckblaettern hinterlaesst.
+AppBar _detailAppBar(BuildContext context, {List<Widget>? actions}) {
+  return AppBar(
+    title: const Text('Inserat'),
+    leading: context.canPop()
+        ? null
+        : Semantics(
+            label: 'Schließen',
+            button: true,
+            child: IconButton(
+              icon: const Icon(LucideIcons.x),
+              onPressed: () => context.go(AsmRoutes.home),
+            ),
+          ),
+    actions: actions,
+  );
+}
+
 /// Detailseite eines Inserats (Task 5.1). Ersetzt den `_TitledPlaceholder`
 /// unter `/listing/:id` aus Task 3.1.
 class ListingDetailScreen extends ConsumerWidget {
@@ -44,14 +66,14 @@ class ListingDetailScreen extends ConsumerWidget {
 
     return listingAsync.when(
       loading: () => Scaffold(
-        appBar: AppBar(title: const Text('Inserat')),
+        appBar: _detailAppBar(context),
         body: const Padding(
           padding: EdgeInsets.all(AsmSpacing.md),
           child: AsmSkeleton.detail(),
         ),
       ),
       error: (error, stackTrace) => Scaffold(
-        appBar: AppBar(title: const Text('Inserat')),
+        appBar: _detailAppBar(context),
         body: AsmErrorView(
           message: 'Inserat konnte nicht geladen werden',
           onRetry: () => ref.invalidate(listingByIdProvider(listingId)),
@@ -169,8 +191,8 @@ class _ListingDetailScaffoldState
     final isFavorited = isFavoritedAsync.valueOrNull ?? false;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inserat'),
+      appBar: _detailAppBar(
+        context,
         actions: [
           if (!isOwnListing)
             PopupMenuButton<VoidCallback>(

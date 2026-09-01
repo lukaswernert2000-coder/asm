@@ -284,7 +284,7 @@ requires_propulsion   bool  -- Antriebsart ist Pflichtfeld
 | Feld | Typ | Pflicht | Regeln |
 |---|---|---|---|
 | `title` | Text | ja | 10–80 Zeichen. Kein reines CAPS, keine Telefonnummern oder E-Mails |
-| `description` | Text | ja | 30–5000 Zeichen |
+| `description` | Text | ja | 15–5000 Zeichen |
 | `price_cents` | Integer | ja | 0 bis 1.000.000 EUR. `0` nur wenn `is_giveaway` |
 | `negotiable` | Bool | nein | "VB" |
 | `is_giveaway` | Bool | nein | "Zu verschenken" |

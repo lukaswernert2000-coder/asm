@@ -38,11 +38,11 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M5 abgeschlossen → M6 · Chat |
-| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) · Task 5.2 komplett, inkl. eines beim Live-Test gefundenen und gefixten Cache-Bugs in `refreshSellerListings` (siehe unten) · **M5 damit komplett** |
+| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) · Task 5.2 komplett, inkl. eines beim Live-Test gefundenen und gefixten Cache-Bugs in `refreshSellerListings` (siehe unten) · **M5 damit komplett** · 2026-09-01: Bugfix-Batch außerhalb der Plan-Tasks, fünf vom Nutzer gemeldete Bugs (Galerie-Filter, Geburtsdatum-Tastatur, Kategorie-Toggle, fehlender Zurück-Weg auf der Detailseite, Mindestlänge Beschreibung 30→15), alle mit Root-Cause-Fix, TDD und Live-Verifikation (siehe unten) |
 | **Als Nächstes** | **M6 — Task 6.1 (siehe Meilenstein M6 im Plan)** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
 | **Letzter Commit** | `docs: confirm CI green on the task 5.2 push` |
-| **Stand vom** | 2026-08-31 |
+| **Stand vom** | 2026-09-01 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
 (Nutzer hat dem Push zugestimmt, Außer-der-Reihe-Punkt B) — CI lief danach zum ersten Mal
@@ -463,6 +463,47 @@ sinnvoll erzwingen und ist stattdessen gezielt im Unit-Test abgedeckt. Keine Exc
 Task-5.2-Push war auf Anhieb CI-grün (diesmal `dart format lib test` vor dem Push gelaufen,
 Lehre aus Task 5.1) ([Run #37](https://github.com/lukaswernert2000-coder/asm/actions/runs/33438079380),
 `conclusion: success`).
+
+**2026-09-01, Bugfix-Batch nach Nutzer-Feedback (außerhalb der Plan-Tasks):** fünf vom Nutzer
+beim eigenen Ausprobieren gefundene Bugs, alle mit Root-Cause-Analyse vor dem Fix und live auf
+`flutter_api34` verifiziert. **(1)** F-Kennzeichen- und Besitznachweis-Foto fehlten auf der
+Detailseite: `ListingRepository.imagePaths()` filterte hart auf `kind = photo`, die zwei
+Pflichtfotos wurden nie geladen, obwohl `insertImage()` sie längst korrekt schrieb. Fix: Filter
+entfernt, `listingImagePathsProvider`s Doku entsprechend ergänzt — Details in DECISIONS.md.
+**(2)** Geburtsdatum ließ sich beim Registrieren nicht eintippen: `showDatePicker()` lief im
+Default-Modus (Kalender + Tastatur-Umschalter), Androids Ziffernblock für die Datumseingabe zeigt
+aber keinen "." (deutsches Format TT.MM.JJJJ) — nur der Kalender funktionierte. Fix:
+`initialEntryMode: DatePickerEntryMode.calendarOnly`, der Umschalter fällt komplett weg.
+**(3)** Kategorie-Root-Kacheln ließen sich per Touch öffnen, aber nicht wieder schließen:
+`onExpandRoot` setzte den expandierten Slug immer neu, ohne beim erneuten Antippen desselben
+Slugs auf `null` zurückzusetzen. Mit TDD gefixt (zwei neue Tests: erneutes Antippen klappt
+wieder ein, Antippen einer anderen Wurzel klappt die vorherige ein). **(4)** Die Detailseite
+hatte nach "Inserat ansehen" direkt nach dem Veröffentlichen keinen Weg zurück: der Button dort
+nutzte `context.go()` statt `push()` und ersetzte den kompletten Navigationsstack. Doppelt
+gefixt (Defense-in-Depth): `go()` → `push()` am eigentlichen Fundort *und* eine neue
+`_detailAppBar()`-Hilfsfunktion in `listing_detail_screen.dart`, die bei `context.canPop() ==
+false` einen expliziten Schließen-Button zur Startseite zeigt statt eines fehlenden
+Zurück-Pfeils — mit eigenem TDD-Test dafür. **(5)** Mindestlänge der Beschreibung auf
+Nutzerwunsch von 30 auf 15 Zeichen gesenkt: Client-Validierung (`details_step.dart`,
+`edit_listing_screen.dart`), DB-Check-Constraint (`0009_description_min_length.sql`, per
+`supabase db push --linked` angewendet und gegen die echte DB verifiziert) und `00-SPEC.md`
+gemeinsam angepasst.
+
+10 neue/geänderte Tests (Kategorie-Toggle, Detailseite-Schließen-Button, Beschreibungslänge),
+372 insgesamt grün, `flutter analyze` 0 Probleme, `dart format lib test` sauber.
+
+**Live auf `flutter_api34` verifiziert:** ein neues Test-Inserat komplett durch den
+Erstellen-Flow veröffentlicht (Kategorie Gewehre & MPs → S-AEG, drei echte Testfotos für
+Titelbild/F-Kennzeichen/Besitznachweis aus der Emulator-Galerie, Beschreibung mit bewusst nur
+17 Zeichen). Kategorie-Wurzel "Gewehre & MPs" beim Anlegen mehrfach auf-/zugeklappt, jedes Mal
+korrekt. Die 17-Zeichen-Beschreibung wurde ohne Fehlermeldung akzeptiert (früher zwingend
+"Mindestens 30 Zeichen"). Nach dem Veröffentlichen zeigte "Inserat ansehen" die Detailseite mit
+echtem Zurück-Pfeil (nicht mehr gestrandet), die Galerie zeigte alle drei Fotos (drei Punkte,
+einzeln durchgeswiped: Titelbild, F-Kennzeichen, Besitznachweis je klar erkennbar). Zusätzlich
+das Geburtsdatum-Feld auf dem Registrieren-Screen geprüft: öffnet direkt den Kalender ganz ohne
+Tastatur-Umschalter-Icon, Datumsauswahl per Touch (19.09.2008) füllt das Feld korrekt im
+TT.MM.JJJJ-Format. Keine Exceptions im `flutter run`-Log während der gesamten Session.
+Test-Inserat bleibt bewusst in der Dev-DB stehen, gleiche Linie wie bisherige Test-Artefakte.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
