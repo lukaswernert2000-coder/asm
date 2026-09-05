@@ -695,6 +695,9 @@ nichts zu tun, nur zu verifizieren.
 3 BlockedUsersScreen), 414 insgesamt grün, `flutter analyze` 0 Probleme, `dart format lib test`
 sauber.
 
+Push war auf Anhieb CI-grün ([Run #48](https://github.com/lukaswernert2000-coder/asm/actions/runs/33985202361),
+`conclusion: success`).
+
 **Live auf `flutter_api34` verifiziert** (Test-Account `chat_tester_m6`, Gegenpart "Shzn"/Robin):
 Melde-Sheet öffnet als echtes Bottom-Sheet mit allen neun Gründen + Freitext, Absenden zeigt den
 korrigierten Bestätigungstext. Blockieren-Bestätigungsdialog blockiert, Chat-Eingabefeld zeigt
