@@ -6,10 +6,10 @@ Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)
 
 ## Verantwortlich für den Inhalt
 
-- [VOR- UND NACHNAME BZW. FIRMENNAME]
-- [STRASSE UND HAUSNUMMER]
-- [PLZ] [ORT]
-- [LAND]
+- Lume Solutions GbR
+- Urberacher Straße 30
+- 63322 Rödermark
+- Deutschland
 
 ## Kontakt
 
@@ -18,21 +18,21 @@ Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)
 
 ## Vertretungsberechtigt
 
-- [FALLS UNTERNEHMEN: NAME DER GESCHÄFTSFÜHRUNG]
-- [FALLS EINZELPERSON: ENTFÄLLT]
+- Lukas Wernert
 
 ## Registereintrag
 
 - [FALLS VORHANDEN: HANDELSREGISTER, REGISTERGERICHT, REGISTERNUMMER]
 - [FALLS VORHANDEN: UMSATZSTEUER-IDENTIFIKATIONSNUMMER GEMÄSS § 27 A UMSATZSTEUERGESETZ]
 
-> **Offene Frage für die Anwaltsprüfung:** Betreibt [NAME] ASM als Privatperson, als
-> Kleingewerbe oder als eingetragenes Unternehmen? Das entscheidet, welche der obigen
-> Angaben Pflicht sind und ob eine Umsatzsteuer-ID nötig ist.
+> **Offene Frage für die Anwaltsprüfung:** Betrieben als GbR (Lume Solutions GbR) –
+> offen ist noch, ob ein Handelsregistereintrag (z. B. als eGbR) vorliegt bzw. gewollt
+> ist und ob eine Umsatzsteuer-ID vorhanden ist. Bei einer GbR mit mehreren
+> Gesellschafter:innen sind zusätzlich deren Namen hier aufzuführen.
 
 ## Inhaltlich verantwortlich gemäß § 18 Abs. 2 Medienstaatsvertrag (MStV)
 
-[NAME WIE OBEN]
+Lukas Wernert
 
 ## Streitschlichtung
 

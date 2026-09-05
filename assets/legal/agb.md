@@ -6,7 +6,7 @@ Stand: [DATUM DER VERÖFFENTLICHUNG]
 
 ## 1. Geltungsbereich
 
-Diese AGB regeln das Vertragsverhältnis zwischen [FIRMENNAME/NAME] ("wir", "ASM") und
+Diese AGB regeln das Vertragsverhältnis zwischen der Lume Solutions GbR ("wir", "ASM") und
 Nutzern der App und Website ASM (Airsoft Marketplace). Verhaltensregeln für Inserate und
 Inhalte findest du in den gesonderten [Nutzungsbedingungen](nutzungsbedingungen.md), die
 Bestandteil dieser AGB sind.
