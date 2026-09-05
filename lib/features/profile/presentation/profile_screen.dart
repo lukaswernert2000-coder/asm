@@ -8,6 +8,7 @@ import 'package:asm/core/widgets/asm_error_view.dart';
 import 'package:asm/core/widgets/asm_network_image.dart';
 import 'package:asm/core/widgets/asm_skeleton.dart';
 import 'package:asm/features/auth/presentation/auth_controller.dart';
+import 'package:asm/features/notifications/presentation/push_notification_service.dart';
 import 'package:asm/features/profile/domain/avatar_url.dart';
 import 'package:asm/features/profile/domain/profile.dart';
 import 'package:asm/features/profile/presentation/profile_providers.dart';
@@ -145,7 +146,15 @@ class _ProfileContent extends ConsumerWidget {
           icon: LucideIcons.logOut,
           label: 'Abmelden',
           color: AsmColors.dangerText,
-          onTap: () => ref.read(authRepositoryProvider).signOut(),
+          onTap: () async {
+            // Geraetetoken VOR signOut() abmelden: Supabase leert die
+            // Session, bevor es das signedOut-Event feuert, danach wuerde
+            // die RLS-Policy von device_tokens das DELETE stumm verwerfen.
+            await ref
+                .read(pushNotificationServiceProvider)
+                .unregisterCurrentToken();
+            await ref.read(authRepositoryProvider).signOut();
+          },
         ),
         _MenuRow(
           icon: LucideIcons.trash2,

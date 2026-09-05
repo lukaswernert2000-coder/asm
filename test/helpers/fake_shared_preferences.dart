@@ -4,6 +4,7 @@ import 'package:asm/features/chat/presentation/chat_providers.dart';
 import 'package:asm/features/listings/domain/create_listing_draft.dart';
 import 'package:asm/features/listings/presentation/create_listing_providers.dart';
 import 'package:asm/features/listings/presentation/listing_providers.dart';
+import 'package:asm/features/notifications/presentation/notification_providers.dart';
 import 'package:asm/features/onboarding/presentation/onboarding_providers.dart';
 import 'package:asm/features/search/presentation/search_history_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,6 +26,7 @@ Future<SharedPreferencesWithCache> fakeSharedPreferences({
   List<String>? searchHistory,
   CreateListingDraft? createListingDraft,
   Map<String, DateTime>? hiddenConversationIds,
+  bool hasRequestedNotificationPermission = false,
 }) {
   SharedPreferencesAsyncPlatform
       .instance = InMemorySharedPreferencesAsync.withData({
@@ -39,6 +41,8 @@ Future<SharedPreferencesWithCache> fakeSharedPreferences({
           (key, value) => MapEntry(key, value.toIso8601String()),
         ),
       ),
+    if (hasRequestedNotificationPermission)
+      hasRequestedNotificationPermissionPrefsKey: true,
   });
   return SharedPreferencesWithCache.create(
     cacheOptions: const SharedPreferencesWithCacheOptions(
@@ -48,6 +52,7 @@ Future<SharedPreferencesWithCache> fakeSharedPreferences({
         searchHistoryPrefsKey,
         createListingDraftPrefsKey,
         hiddenConversationsPrefsKey,
+        hasRequestedNotificationPermissionPrefsKey,
       },
     ),
   );

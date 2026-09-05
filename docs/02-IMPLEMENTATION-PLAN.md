@@ -37,12 +37,12 @@ Firebase Cloud Messaging · Sentry
 
 | | |
 |---|---|
-| **Meilenstein** | M6 · Chat, Task 6.1–6.2 fertig → Task 6.3 |
-| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) · Task 5.2 komplett, inkl. eines beim Live-Test gefundenen und gefixten Cache-Bugs in `refreshSellerListings` (siehe unten) · **M5 damit komplett** · 2026-09-01: Bugfix-Batch außerhalb der Plan-Tasks, fünf vom Nutzer gemeldete Bugs (Galerie-Filter, Geburtsdatum-Tastatur, Kategorie-Toggle, fehlender Zurück-Weg auf der Detailseite, Mindestlänge Beschreibung 30→15), alle mit Root-Cause-Fix, TDD und Live-Verifikation (siehe unten) · Task 6.1 komplett: `ChatRepository`/`SupabaseChatRepository`, reiner Datenschicht-Task ohne Interface-Änderung (siehe unten) · Task 6.2 komplett: Chatliste und Chat-Detail, live drei echte Bugs im bestehenden Chat-Schema gefunden und gefixt (siehe unten) |
-| **Als Nächstes** | **M6 — Task 6.3 (Push-Benachrichtigungen, siehe Meilenstein M6 im Plan)** |
+| **Meilenstein** | M6 · Chat + Push, Task 6.1–6.3 fertig |
+| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) · Task 5.2 komplett, inkl. eines beim Live-Test gefundenen und gefixten Cache-Bugs in `refreshSellerListings` (siehe unten) · **M5 damit komplett** · 2026-09-01: Bugfix-Batch außerhalb der Plan-Tasks, fünf vom Nutzer gemeldete Bugs (Galerie-Filter, Geburtsdatum-Tastatur, Kategorie-Toggle, fehlender Zurück-Weg auf der Detailseite, Mindestlänge Beschreibung 30→15), alle mit Root-Cause-Fix, TDD und Live-Verifikation (siehe unten) · Task 6.1 komplett: `ChatRepository`/`SupabaseChatRepository`, reiner Datenschicht-Task ohne Interface-Änderung (siehe unten) · Task 6.2 komplett: Chatliste und Chat-Detail, live drei echte Bugs im bestehenden Chat-Schema gefunden und gefixt (siehe unten) · Task 6.3 komplett: FCM-Push für neue Nachrichten, Client + `notify-on-message`-Edge-Function, Webhook live mit zwei erfolgreichen Aufrufen (200) bestätigt — **M6 damit komplett**, echtes Gerät bleibt offen (siehe unten) |
+| **Als Nächstes** | **M7 — Task 7.1 (Melden und Blockieren, siehe Meilenstein M7 im Plan)** — Melden/Blockieren als *echte Aktion* existiert laut Task-2.5-Eintrag oben schon (`moderation`-Feature); eine künftige Session sollte zuerst prüfen, wie viel von Task 7.1 dadurch schon abgedeckt ist, bevor sie neu baut. Danach M8 (Politur und Release), von dem Task 8.0 Teil A (Schritte 1–6) bereits vorgezogen fertig ist |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `docs: confirm CI green on the task 6.2 push` |
-| **Stand vom** | 2026-09-01 |
+| **Letzter Commit** | `feat(notifications): add fcm push for new messages` |
+| **Stand vom** | 2026-09-05 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
 (Nutzer hat dem Push zugestimmt, Außer-der-Reihe-Punkt B) — CI lief danach zum ersten Mal
@@ -599,6 +599,73 @@ in Task 5.1 bestätigt.
 
 Push war auf Anhieb CI-grün ([Run #40](https://github.com/lukaswernert2000-coder/asm/actions/runs/33495920335),
 `conclusion: success`).
+
+**2026-09-05, Task 6.3:** `0013_device_tokens.sql` (Primary Key ist `token`, nicht
+`user_id+token` — ein Re-Login auf demselben Gerät ersetzt die Zeile statt eine Karteileiche
+zu hinterlassen), Pakete `firebase_core`/`firebase_messaging`/`flutter_local_notifications`,
+`lib/features/notifications/` (`push_message.dart` mit 6 TDD-Tests,
+`SupabaseDeviceTokenRepository`, `notification_providers.dart`, `push_notification_service.dart`),
+Verdrahtung in `main.dart`/`app.dart`/`profile_screen.dart`/`chat_detail_screen.dart`, sowie
+`supabase/functions/notify-on-message/index.ts` (neue Function). Firebase-Projekt
+(`asm-app-efm-airsoft`) wurde **vom Nutzer selbst** per `flutterfire configure` angelegt,
+nachdem ein erster CLI-Versuch an einem GCP-Erstanlage-Rough-Edge scheiterte (Workaround:
+Projekt über die Firebase-Console anlegen, dann per CLI nur noch auswählen) —
+`GoogleService-Info.plist` wurde dabei nicht generiert (bekannte `flutterfire configure`-Macke
+unter Windows), blockiert aber nicht, da hier ohnehin kein iOS gebaut werden kann.
+
+Drei bewusste Architekturentscheidungen: (1) **Kein Server-seitiges Presence** —
+`OpenConversationNotifier` haelt clientseitig fest, welcher Chat gerade offen ist, um Pushes
+dafuer zu unterdruecken; deckt nicht denselben Account gleichzeitig auf einem zweiten Geraet
+ab (akzeptierte Einschraenkung, sonst haette `profiles`' spaltenscharfe Grants angefasst
+werden muessen). (2) **Datenbank-Webhook per Dashboard-UI statt Migration**, damit das
+Auth-Secret nie in einer committeten Datei landet — die Supabase-Doku empfiehlt inzwischen
+selbst einen manuellen `apikey`-Header mit einem Secret Key statt des alten
+`Authorization: Bearer <service_role>`-Musters (siehe DECISIONS.md, inkl. eines
+Dashboard-Navigationswechsels, der beim Einrichten stolperte). (3) **Data-only-FCM-Payload**
+(kein `notification`-Feld), damit Vordergrund und Hintergrund/beendet ueber denselben
+`flutter_local_notifications`-Code-Pfad laufen statt zwei divergierende Anzeigewege pflegen
+zu muessen. Die Edge Function signiert das Google-Service-Account-JWT fuer die FCM-v1-API
+selbst per Web Crypto (kein Firebase-Admin-SDK fuer Deno verfuegbar) und loescht Tokens, die
+FCM als `UNREGISTERED` meldet.
+
+**Zwei echte Bugs beim Live-Testen auf `flutter_api34` gefunden:**
+
+1. **Riverpod `ref` ist in `State.dispose()` ungueltig** — ein `ref.read(...)` dort warf
+   `Bad state: Cannot use "ref" after the widget was disposed`, obwohl kein anderer
+   `dispose()` in diesem Projekt bisher `ref` angefasst hatte. Fix: die
+   `OpenConversationNotifier`-Objektreferenz selbst (nicht `ref`) schon in `initState()`
+   festhalten und `.clear()` in `dispose()` direkt darauf aufrufen — das Notifier-Objekt lebt
+   unabhaengig vom Widget im Provider-Container weiter. Neues Standardmuster fuer
+   kuenftigen Dispose-Code, der einen Riverpod-Notifier braucht.
+2. **`flutter_local_notifications` brauchte Core Library Desugaring**, das in
+   `android/app/build.gradle.kts` nicht aktiviert war — `assembleDebug` schlug beim ersten
+   Build fehl (`CheckAarMetadataWorkAction`). Fix: `isCoreLibraryDesugaringEnabled = true`
+   plus `coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")`, exakt die vom
+   Paket selbst empfohlene Version.
+
+11 neue Tests (`push_message_test.dart`), 405 insgesamt grün, `flutter analyze` 0 Probleme,
+`dart format lib test` sauber.
+
+**Live auf `flutter_api34` verifiziert:** `flutter_api34`s System-Image (`google_apis`,
+Android 34) ist laut Firebase-Doku bereits ausreichend fuer FCM (Google Play Store selbst
+wird nicht gebraucht) — die "kein echtes Geraet"-Einschraenkung betrifft hier also nur iOS.
+Kontextbezogene Berechtigungsanfrage ausgeloest (erst nach der ersten gesendeten Nachricht,
+nicht beim App-Start), Systemdialog erschien und wurde erlaubt, keine Abstuerze. Nach
+Einrichten des Datenbank-Webhooks (siehe DECISIONS.md) zwei echte Test-Nachrichten gesendet —
+die Edge-Function-**Invocations**-Ansicht im Dashboard zeigt fuer beide `200 POST`, exakt zu
+den Sendezeitpunkten passend: Webhook und Function-Aufruf sind damit end-to-end bestaetigt.
+**Nicht bestaetigt: die tatsaechliche Zustellung/Anzeige eines Pushes auf einem zweiten
+Geraet** — der Gegenpart-Testaccount ("Shzn") hat auf keinem erreichbaren Geraet einen
+registrierten Token, die Function meldet fuer diesen Fall korrekt "keine Tokens" statt zu
+senden. Deckt sich mit der Plan-Vorgabe, dieses Feature ohnehin auf **echten Geraeten**
+gegenzutesten (Checkbox bewusst offen gelassen).
+
+Waehrend derselben Session, auf Nutzerwunsch und unabhaengig von Task 6.3: Die
+Nachrichten-Reihenfolge im Chat (`chat_detail_screen.dart`) zeigte die neueste Nachricht
+oben statt unten (Ursache: `.order('created_at')` liefert ohne `ascending:` bereits
+absteigend, siehe DECISIONS.md) — behoben, `pending` kommt jetzt vor `messages` und wird
+selbst umgekehrt, kein `.reversed.toList()` mehr auf der Gesamtliste. Live bestaetigt,
+alle 25 Chat-Tests weiterhin gruen.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -2594,18 +2661,22 @@ Stream<List<Message>> messages(String conversationId) {
 `supabase/functions/notify-on-message/index.ts`,
 `lib/features/notifications/`
 
-- [ ] Firebase-Projekt anlegen, `google-services.json` und `GoogleService-Info.plist`
-      einbinden (**beide in `.gitignore`**)
-- [ ] Pakete: `firebase_core`, `firebase_messaging`, `flutter_local_notifications`
-- [ ] Tabelle `device_tokens (user_id, token, platform, updated_at)` mit RLS
-- [ ] Token bei Login registrieren, bei Logout löschen
-- [ ] Berechtigung erst **kontextbezogen** anfragen (nach der ersten gesendeten Nachricht,
+- [x] Firebase-Projekt anlegen, `google-services.json` und `GoogleService-Info.plist`
+      einbinden (**beide in `.gitignore`**) — `GoogleService-Info.plist` fehlt (Windows,
+      siehe unten), blockiert aber nicht, da iOS-Builds hier ohnehin nicht möglich sind
+- [x] Pakete: `firebase_core`, `firebase_messaging`, `flutter_local_notifications`
+- [x] Tabelle `device_tokens (user_id, token, platform, updated_at)` mit RLS
+      (`0013_device_tokens.sql` — `0008` war schon durch `0008_listings_visibility_fix.sql`
+      belegt)
+- [x] Token bei Login registrieren, bei Logout löschen
+- [x] Berechtigung erst **kontextbezogen** anfragen (nach der ersten gesendeten Nachricht,
       nicht beim App-Start) — deutlich höhere Zustimmungsrate
-- [ ] Datenbank-Webhook auf `messages INSERT` → Edge Function → FCM v1 API
-- [ ] Notification-Tap öffnet den richtigen Chat (Deep Link)
-- [ ] Keine Push, wenn der Empfänger den Chat gerade offen hat
-- [ ] Test auf **echten Geräten**, iOS und Android, App im Vordergrund/Hintergrund/beendet
-- [ ] Commit — `feat(notifications): add fcm push for new messages`
+- [x] Datenbank-Webhook auf `messages INSERT` → Edge Function → FCM v1 API
+- [x] Notification-Tap öffnet den richtigen Chat (Deep Link)
+- [x] Keine Push, wenn der Empfänger den Chat gerade offen hat
+- [ ] Test auf **echten Geräten**, iOS und Android, App im Vordergrund/Hintergrund/beendet —
+      **weiterhin offen**, siehe unten (deckt sich mit der seit M0 bestehenden Lücke)
+- [x] Commit — `feat(notifications): add fcm push for new messages`
 
 ---
 

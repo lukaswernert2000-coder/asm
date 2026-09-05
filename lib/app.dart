@@ -5,6 +5,7 @@ import 'package:asm/core/router/routes.dart';
 import 'package:asm/core/theme/asm_theme.dart';
 import 'package:asm/features/auth/presentation/auth_controller.dart';
 import 'package:asm/features/categories/presentation/category_providers.dart';
+import 'package:asm/features/notifications/presentation/push_notification_service.dart';
 import 'package:asm/features/onboarding/presentation/splash_screen.dart';
 import 'package:asm/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,9 @@ class _AsmAppState extends ConsumerState<AsmApp> {
     _splashTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) setState(() => _splashTimedOut = true);
     });
+    // Vordergrund-Handler, Tap-Navigation, Token-Refresh -- einmalig beim
+    // Start, unabhaengig vom Login-Status (Task 6.3).
+    unawaited(ref.read(pushNotificationServiceProvider).initialize());
   }
 
   @override
@@ -55,6 +59,12 @@ class _AsmAppState extends ConsumerState<AsmApp> {
           final from =
               router.routeInformationProvider.value.uri.queryParameters['from'];
           router.go(from ?? AsmRoutes.home);
+          // Token erneut registrieren, falls die Berechtigung schon in einer
+          // frueheren Session erteilt wurde -- ohne erneut zu fragen
+          // (Task 6.3). Das eigentliche Abmelden des Tokens laeuft nicht
+          // reaktiv auf signedOut, sondern in profile_screen.dart VOR dem
+          // signOut()-Aufruf, siehe dortiger Kommentar.
+          unawaited(ref.read(pushNotificationServiceProvider).onSignedIn());
         case AuthChangeEvent.initialSession:
         case AuthChangeEvent.signedOut:
         case AuthChangeEvent.tokenRefreshed:

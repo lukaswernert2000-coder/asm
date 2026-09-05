@@ -1711,4 +1711,83 @@ diese ueberleben den zweiten Parse-Durchlauf auf dem Geraet. Gleiche Grundursach
 bereits in der persoenlichen Merkregel "Git Bash mangles adb paths" festgehaltene
 Pfad-Verstuemmelung, hier aber bei URL-Query-Parametern statt Dateipfaden.
 
+## 2026-09-05 · Task 6.3 · Kein Server-seitiges Presence für "Chat ist offen"
+
+`shouldSuppressPushForOpenChat()` vergleicht rein clientseitig (`OpenConversationNotifier`,
+ein Riverpod-`Notifier<String?>`) gegen die `conversationId` einer eingehenden Push-Nachricht.
+Eine echte Presence-Loesung (z. B. eine `is_online`/`open_conversation_id`-Spalte auf
+`profiles`, die Realtime-Presence oder ein zweiter Kanal aktualisiert) haette die
+spaltenscharfen `revoke all` + `grant select/update (...)`-Listen aus `0001_profiles.sql`
+anfassen muessen -- fuer eine Zusatzfunktion, die nur die eigene Session betrifft, nicht
+gerechtfertigt. Bewusst akzeptierte Einschraenkung: Ist derselbe Account gleichzeitig auf
+einem zweiten Geraet eingeloggt und dort der Chat NICHT offen, bekommt jenes Geraet trotzdem
+einen Push, obwohl "irgendwo" der Chat gerade offen ist. Fuer den Haupt-Use-Case (eine Person,
+ein Geraet) korrekt.
+
+## 2026-09-05 · Task 6.3 · Datenbank-Webhook per Dashboard-UI, `apikey`-Header statt `Authorization`
+
+Der `messages INSERT` → `notify-on-message`-Webhook wurde bewusst **nicht** per SQL-Migration
+angelegt, sondern manuell im Supabase-Dashboard -- eine Migration haette das Auth-Secret fuer
+den Webhook-Aufruf committen muessen (Erweiterung der Regel "service_role-Key nie in
+Client-Code" auf committete Migrationen). Zwei Stolpersteine dabei:
+
+1. **Database Webhooks liegen nicht mehr unter "Database"**, sondern unter
+   **Integrations → Webhooks** (`/project/_/integrations/webhooks/overview`) -- eine
+   Dashboard-Reorganisation nach dem Wissensstand von Sonnet. Der alte Pfad
+   (`/database/hooks`) liefert 404, der Sidebar-Eintrag unter "Database" fehlt komplett.
+2. **Der Auth-Header ist `apikey: <secret key>`, nicht `Authorization: Bearer
+   <service_role>`** -- Supabase empfiehlt inzwischen selbst den neuen `sb_secret_...`-Key
+   (Project Settings → API Keys → Secret keys) ueber einen manuell im Webhook-Formular
+   hinzugefuegten `apikey`-Header. Der `Authorization`-Header hat ausserdem einen bekannten
+   Dashboard-Bug (verschwindet nach dem Speichern wieder aus der UI). Die Edge Function selbst
+   prueft das ueber `withSupabase({ auth: "secret" }, ...)` aus `@supabase/server` -- dieser
+   Auth-Modus existiert dort neben `"user"` speziell fuer nicht-user-authentifizierte Aufrufer
+   wie Webhooks/Cronjobs, mit `ctx.supabaseAdmin` statt `ctx.userClaims`.
+
+## 2026-09-05 · Task 6.3 · Data-only-FCM-Payload statt `notification`-Feld
+
+Die FCM-v1-Nachricht aus `notify-on-message/index.ts` enthaelt bewusst nur ein `data`-Feld,
+kein `notification`-Feld. Mit einem `notification`-Feld wuerde Android/iOS die Anzeige im
+Hintergrund/bei beendeter App automatisch selbst uebernehmen, waehrend im Vordergrund
+weiterhin der eigene `flutter_local_notifications`-Code laeuft -- zwei divergierende
+Anzeige- und Tap-Handling-Pfade, die synchron gehalten werden muessten (z. B. fuer die
+"Chat ist gerade offen"-Unterdrueckung, die nur im eigenen Code moeglich ist). Ein
+data-only-Payload zwingt jeden App-Zustand (Vordergrund, Hintergrund, beendet) durch
+denselben `_showMessageNotification()`-Pfad in `push_notification_service.dart`.
+
+## 2026-09-05 · Task 6.3 · Riverpod `ref` ist in `State.dispose()` ungueltig
+
+`_ChatDetailScaffoldState.dispose()` warf beim Live-Test `Bad state: Cannot use "ref" after
+the widget was disposed` bei `ref.read(openConversationIdProvider.notifier).clear()` --
+obwohl kein anderer `dispose()` in diesem Projekt bisher ueberhaupt versucht hatte, `ref`
+anzufassen, also ohne bekannten Praezedenzfall. Fix: die Notifier-**Objektreferenz** selbst
+(nicht `ref`) schon in `initState()` (im ohnehin vorhandenen Microtask) in einem Feld
+festhalten und in `dispose()` direkt darauf `.clear()` aufrufen -- das Notifier-Objekt lebt
+unabhaengig vom Widget im Provider-Container weiter, `ref` wird dafuer nicht gebraucht.
+Standardmuster fuer jeden kuenftigen `dispose()`, der einen Riverpod-Notifier anfassen muss.
+
+## 2026-09-05 · Task 6.3 · `flutter_local_notifications` braucht Core Library Desugaring
+
+Der erste `flutter run` nach dem Hinzufuegen von `flutter_local_notifications` scheiterte mit
+`CheckAarMetadataWorkAction: Dependency ':flutter_local_notifications' requires core library
+desugaring to be enabled`. `android/app/build.gradle.kts` hatte das nie noetig, weil bisher
+kein Paket die neueren `java.time`-APIs brauchte. Fix (Werte aus dem Paket-README
+uebernommen, nicht geraten): `isCoreLibraryDesugaringEnabled = true` in `compileOptions`
+plus `dependencies { coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4") }`.
+
+## 2026-09-05 · Chat-Reihenfolge · `.order('created_at')` ohne `ascending:` ist bereits absteigend
+
+Auf Nutzerwunsch (neueste Nachricht sollte unten statt oben stehen, wie in jeder anderen
+Chat-App) zeigte `chat_detail_screen.dart` bis dahin die neueste Nachricht **oben**. Ursache:
+`SupabaseChatRepository.messages()` sortiert per `.order('created_at')` ohne
+`ascending:`-Angabe -- der `postgrest`-Default dafuer ist `false` (**descending**), nicht
+`true`, wie man vielleicht erwarten wuerde (Supabase hat das selbst erst nachtraeglich in den
+CHANGELOG-Docs klargestellt, siehe `postgrest`-Package-Changelog). `messages` kommt also
+bereits neueste-zuerst aus dem Provider. Kombiniert mit dem bisherigen
+`[...messages, ...pending].reversed.toList()` vor einem `ListView.builder(reverse: true)`
+ergab das in Summe "neueste oben". Fix: kein `.reversed.toList()` mehr, `pending` steht jetzt
+VOR `messages` in der Liste und wird selbst umgekehrt (`pending.reversed`) -- damit landet die
+neueste Nachricht (bzw. das juengste `pending`) an Index 0, was `reverse: true` unten anzeigt,
+und die aelteste Nachricht ganz oben.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

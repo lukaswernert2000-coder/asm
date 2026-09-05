@@ -15,6 +15,8 @@ import 'package:asm/features/chat/presentation/widgets/listing_chip.dart';
 import 'package:asm/features/listings/domain/listing_image_url.dart';
 import 'package:asm/features/listings/presentation/listing_providers.dart';
 import 'package:asm/features/moderation/presentation/widgets/report_dialog.dart';
+import 'package:asm/features/notifications/presentation/notification_providers.dart';
+import 'package:asm/features/notifications/presentation/push_notification_service.dart';
 import 'package:asm/features/profile/presentation/profile_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -92,15 +94,24 @@ class _ChatDetailScaffold extends ConsumerStatefulWidget {
       _ChatDetailScaffoldState();
 }
 
-class _ChatDetailScaffoldState extends ConsumerState<_ChatDetailScaffold> {
+class _ChatDetailScaffoldState extends ConsumerState<_ChatDetailScaffold>
+    with WidgetsBindingObserver {
   final _controller = TextEditingController();
+  // `ref` ist in `dispose()` schon ungueltig -- den Notifier stattdessen
+  // hier festhalten, das Objekt selbst lebt unabhaengig vom Widget im
+  // Provider-Container weiter, `.clear()` darauf braucht kein `ref` mehr.
+  OpenConversationNotifier? _openConversationNotifier;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     unawaited(
       Future.microtask(() {
         if (!mounted) return;
+        final notifier = ref.read(openConversationIdProvider.notifier)
+          ..open = widget.conversation.id;
+        _openConversationNotifier = notifier;
         unawaited(
           ref.read(chatRepositoryProvider).markRead(widget.conversation.id),
         );
@@ -108,8 +119,25 @@ class _ChatDetailScaffoldState extends ConsumerState<_ChatDetailScaffold> {
     );
   }
 
+  // Push-Unterdrueckung fuer den gerade offenen Chat (Task 6.3) gilt nur,
+  // solange die App wirklich im Vordergrund ist -- ohne das hier bliebe ein
+  // im Hintergrund liegender Chat "offen" und wuerde faellig eintreffende
+  // Nachrichten faelschlich stumm schalten.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!mounted) return;
+    final notifier = ref.read(openConversationIdProvider.notifier);
+    if (state == AppLifecycleState.resumed) {
+      notifier.open = widget.conversation.id;
+    } else {
+      notifier.clear();
+    }
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _openConversationNotifier?.clear();
     _controller.dispose();
     super.dispose();
   }
@@ -123,6 +151,23 @@ class _ChatDetailScaffoldState extends ConsumerState<_ChatDetailScaffold> {
           .send(text),
     );
     _controller.clear();
+    // Kontextbezogene Berechtigungsanfrage nach der ersten gesendeten
+    // Nachricht statt beim App-Start (Task 6.3) -- deutlich hoehere
+    // Zustimmungsrate. `markNotificationPermissionRequested` laeuft zuerst,
+    // damit ein zweiter schneller Tap auf Senden nicht doppelt anfragt.
+    if (!ref.read(hasRequestedNotificationPermissionProvider)) {
+      unawaited(_requestPushPermissionOnce());
+    }
+  }
+
+  Future<void> _requestPushPermissionOnce() async {
+    await markNotificationPermissionRequested(ref);
+    // requestPermissionAndRegisterTokenIfNeeded() ist intern bereits
+    // best-effort (siehe PushNotificationService._guard) -- kein eigenes
+    // try/catch noetig.
+    await ref
+        .read(pushNotificationServiceProvider)
+        .requestPermissionAndRegisterTokenIfNeeded();
   }
 
   @override
@@ -169,15 +214,15 @@ class _ChatDetailScaffoldState extends ConsumerState<_ChatDetailScaffold> {
       }
     });
 
+    // `messages` kommt absteigend (neueste zuerst) aus dem Provider (Supabase
+    // `.order()` ohne `ascending:` ist bereits descending) -- zusammen mit
+    // `ListView.builder(reverse: true)` unten reicht das allein noch nicht:
+    // `pending` muss VOR `messages` stehen und selbst umgekehrt (neuestes
+    // Pending zuerst), sonst landen gerade gesendete Nachrichten optisch
+    // ueber statt unter der zuletzt bestaetigten -- damit am Ende unten die
+    // neueste und oben die aelteste Nachricht steht, wie in Chat-Apps ueblich.
     final bubbles = <Widget>[
-      for (final message in messages)
-        ChatBubble(
-          body: message.body ?? '',
-          isOwn: message.senderId == currentUserId,
-          timestamp: message.createdAt,
-          isRead: message.readAt != null,
-        ),
-      for (final p in pending)
+      for (final p in pending.reversed)
         ChatBubble(
           body: p.body,
           isOwn: true,
@@ -188,7 +233,14 @@ class _ChatDetailScaffoldState extends ConsumerState<_ChatDetailScaffold> {
                     .retry(p.localId)
               : null,
         ),
-    ].reversed.toList();
+      for (final message in messages)
+        ChatBubble(
+          body: message.body ?? '',
+          isOwn: message.senderId == currentUserId,
+          timestamp: message.createdAt,
+          isRead: message.readAt != null,
+        ),
+    ];
 
     return Scaffold(
       appBar: AppBar(
