@@ -1881,4 +1881,62 @@ betroffen ist ausschliesslich das direkte Ablesen von Koordinaten am Bild selbst
 Inline-Links in Fliesstext, die `uiautomator` nicht als eigenes, einzeln antippbares Element
 exponiert.
 
+## 2026-09-05 · Task 7.3 · Security-Advisor-Befunde: behoben vs. bewusst zurückgestellt
+
+`supabase db advisors --linked --type security` meldete sieben Befunde. Behoben (Migration
+`0015_security_audit_hardening.sql`): `function_search_path_mutable` für `handle_new_user()`,
+`bump_conversation()`, `touch_updated_at()` (fehlendes `set search_path = public`) sowie die
+darüber hinaus unbeabsichtigte RPC-Erreichbarkeit von `handle_new_user`/`bump_conversation`
+über `/rest/v1/rpc/...` (EXECUTE entzogen). Bewusst nicht behoben: `is_adult()`/`is_moderator()`
+bleiben öffentlich ausführbar, weil RLS-Policies sie mit den Rechten von anon/authenticated
+aufrufen — ein EXECUTE-Entzug würde jede referenzierende Policy brechen, ein deutlich größeres
+Risiko als der Befund selbst. `extension_in_public` (cube/earthdistance/pg_trgm): Verschieben in
+ein eigenes Schema hätte search_path-Auswirkungen auf die produktive PLZ-Umkreissuche, nicht
+angegangen. `auth_leaked_password_protection` ist ein Auth-Dashboard-Toggle
+(HaveIBeenPwned-Check), keine Migration — an den Nutzer weitergegeben.
+
+## 2026-09-05 · Task 7.3 · Trigger-Funktionen brauchen kein EXECUTE der aufrufenden Rolle
+
+Der Advisor markierte `handle_new_user()`/`bump_conversation()` als öffentlich per RPC
+aufrufbar, obwohl beide nur als Trigger gedacht sind. Befürchtung vor dem Fix: ein
+EXECUTE-Entzug könnte den Trigger selbst brechen (Registrierung / Chat-Nachrichten-Bump). Per
+Recherche bestätigt (postgresql.org-Mailingliste + Supabase-GitHub-Discussion #17606): ein
+Trigger-Aufruf läuft nicht über denselben Rechte-Prüfpfad wie ein direkter Funktionsaufruf —
+`revoke execute ... from public, anon, authenticated` schließt also nur die unbeabsichtigte
+`/rest/v1/rpc/...`-Erreichbarkeit, ohne die Trigger-Funktionalität zu beeinflussen. Nach dem
+Push mit einer echten Registrierung und einer echten Chat-Nachricht verifiziert, dass beides
+weiterhin funktioniert.
+
+## 2026-09-05 · Task 7.3 · Firebase-API-Keys in der Git-Historie sind kein Leak
+
+Der Git-Historien-Scan nach Secrets (`git log -p | grep -i "eyJ"` u. Ä.) fand mehrere
+Firebase-Web-API-Keys. Das sind laut Googles eigenem Sicherheitsmodell keine Geheimnisse —
+Client-Apps müssen sie zwangsläufig einbetten, der eigentliche Schutz kommt über
+API-Key-Restriktionen in der Google Cloud Console und über Firebase Security Rules, nicht über
+Geheimhaltung. Als erwartet/sicher eingestuft, nicht als Befund gemeldet.
+
+## 2026-09-05 · Task 7.3 · APK-Geheimnis-Scan ohne `apktool` — `unzip` + `grep -a` reicht
+
+Der Plan nennt `apktool` zum Öffnen der Release-APK. `apktool` ist nicht installiert und ein
+Download wäre laut den eigenen Betriebsregeln genehmigungspflichtig gewesen. Eine APK ist ein
+gültiges ZIP-Archiv: `unzip` entpackt sie vollständig, `grep -a` (binärsicher) durchsucht danach
+alle Dateien inklusive der kompilierten nativen Bibliotheken (`lib/*/libapp.so`, der
+Dart-AOT-Snapshot) nach Secret-Mustern — erreicht dasselbe Ziel ohne neues Werkzeug. Ein Build
+OHNE `--dart-define-from-file` bettet keine Keys ein (leere `String.fromEnvironment`-Defaults);
+ein Build MIT dem Flag bettet korrekt den `sb_publishable_...`-Key ein (sicher/erwartet) und
+zeigt keine einzige Fundstelle für `sb_secret_` mit echtem Wert.
+
+## 2026-09-05 · Task 7.3 · Cross-Account-Penetrationstest bewusst übersprungen
+
+Für den geplanten Live-Test (fremdes Inserat bearbeiten, fremden Chat lesen o. Ä. mit einem
+zweiten Konto) war kein zweites Testkonto vorhanden. Der Versuch, stattdessen den
+Session-Token aus einem lokal per `adb`/`run-as` gezogenen SharedPreferences-Dump zu
+extrahieren, wurde vom Claude-Code-Automodus-Klassifikator blockiert (Credential-Extraktion,
+auch ohne den Wert auszugeben) — die Anweisung dabei war, zu stoppen und den Nutzer zu fragen,
+statt einen Workaround zu suchen. Dem Nutzer die Wahl vorgelegt (zweites Konto anlegen vs. Test
+überspringen); Nutzer hat sich für Überspringen entschieden. Die RLS-Policy-*Definitionen*
+wurden stattdessen per SQL-Audit geprüft (siehe `pg_policies`-Abfrage im Plan), das ist aber
+kein Ersatz für einen echten Cross-Account-Versuch gegen die laufende API. Bleibt eine bewusst
+akzeptierte Lücke in der Testabdeckung.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

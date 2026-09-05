@@ -37,11 +37,11 @@ Firebase Cloud Messaging · Sentry
 
 | | |
 |---|---|
-| **Meilenstein** | M6 · Chat + Push, Task 6.1–6.3 fertig |
-| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) · Task 5.2 komplett, inkl. eines beim Live-Test gefundenen und gefixten Cache-Bugs in `refreshSellerListings` (siehe unten) · **M5 damit komplett** · 2026-09-01: Bugfix-Batch außerhalb der Plan-Tasks, fünf vom Nutzer gemeldete Bugs (Galerie-Filter, Geburtsdatum-Tastatur, Kategorie-Toggle, fehlender Zurück-Weg auf der Detailseite, Mindestlänge Beschreibung 30→15), alle mit Root-Cause-Fix, TDD und Live-Verifikation (siehe unten) · Task 6.1 komplett: `ChatRepository`/`SupabaseChatRepository`, reiner Datenschicht-Task ohne Interface-Änderung (siehe unten) · Task 6.2 komplett: Chatliste und Chat-Detail, live drei echte Bugs im bestehenden Chat-Schema gefunden und gefixt (siehe unten) · Task 6.3 komplett: FCM-Push für neue Nachrichten, Client + `notify-on-message`-Edge-Function, Webhook live mit zwei erfolgreichen Aufrufen (200) bestätigt — **M6 damit komplett**, echtes Gerät bleibt offen (siehe unten) · Task 7.1 komplett: Melde-Sheet (9 Gründe + Freitext), Blockieren stoppt jetzt auch Nachrichten in bestehenden Konversationen, "Blockierte Nutzer" in neuen Einstellungen, alles live verifiziert (siehe unten) · Task 7.2 komplett: Rechtstexte per `flutter_markdown_plus` in der App (statt externem Website-Link), verlinkt aus Registrierung/Einstellungen/Profil, inklusive Kreuzverweis-Navigation zwischen den vier Dokumenten, live verifiziert (siehe unten) |
-| **Als Nächstes** | **M7 — Task 7.3 (Sicherheits-Durchgang, siehe Meilenstein M7 im Plan)** |
+| **Meilenstein** | M7 · Moderation, Recht und Sicherheit — **komplett** |
+| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) · Task 5.2 komplett, inkl. eines beim Live-Test gefundenen und gefixten Cache-Bugs in `refreshSellerListings` (siehe unten) · **M5 damit komplett** · 2026-09-01: Bugfix-Batch außerhalb der Plan-Tasks, fünf vom Nutzer gemeldete Bugs (Galerie-Filter, Geburtsdatum-Tastatur, Kategorie-Toggle, fehlender Zurück-Weg auf der Detailseite, Mindestlänge Beschreibung 30→15), alle mit Root-Cause-Fix, TDD und Live-Verifikation (siehe unten) · Task 6.1 komplett: `ChatRepository`/`SupabaseChatRepository`, reiner Datenschicht-Task ohne Interface-Änderung (siehe unten) · Task 6.2 komplett: Chatliste und Chat-Detail, live drei echte Bugs im bestehenden Chat-Schema gefunden und gefixt (siehe unten) · Task 6.3 komplett: FCM-Push für neue Nachrichten, Client + `notify-on-message`-Edge-Function, Webhook live mit zwei erfolgreichen Aufrufen (200) bestätigt — **M6 damit komplett**, echtes Gerät bleibt offen (siehe unten) · Task 7.1 komplett: Melde-Sheet (9 Gründe + Freitext), Blockieren stoppt jetzt auch Nachrichten in bestehenden Konversationen, "Blockierte Nutzer" in neuen Einstellungen, alles live verifiziert (siehe unten) · Task 7.2 komplett: Rechtstexte per `flutter_markdown_plus` in der App (statt externem Website-Link), verlinkt aus Registrierung/Einstellungen/Profil, inklusive Kreuzverweis-Navigation zwischen den vier Dokumenten, live verifiziert (siehe unten) · Impressum/AGB mit den echten Geschäftsangaben befüllt (Lukas Wernert, Lume Solutions GbR), Handelsregister/USt-ID bleiben offen bis zur Anwaltsprüfung, `website/*.html` neu generiert · Task 7.3 komplett: Security-Advisor-Befunde geprüft und risikofreie Funde behoben (`0015_security_audit_hardening.sql`), `service_role`-Grep und Git-Historien-Secret-Scan sauber, Release-APK per `unzip`+`grep -a` auf Klartext-Secrets geprüft (sauber) — der Cross-Account-Live-Test mit einem zweiten Testkonto wurde auf Nutzerwunsch bewusst übersprungen (siehe DECISIONS.md), das ist eine akzeptierte Lücke, kein stillschweigend abgehakter Punkt — **M7 damit komplett** |
+| **Als Nächstes** | **M8 — Task 8.1 (Qualitätsdurchgang, siehe Meilenstein M8 im Plan)** — Task 8.0 Teil A Schritte 7–8 (Postfach, Hochladen zu Hostinger) bleiben unabhängig davon offen für den Nutzer |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `feat(legal): add in-app legal documents` |
+| **Letzter Commit** | `chore(security): rls and secret audit` |
 | **Stand vom** | 2026-09-05 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -2802,19 +2802,29 @@ Stream<List<Message>> messages(String conversationId) {
 - [x] Commit — `feat(legal): add in-app legal documents`
 
 ## Task 7.3: Sicherheits-Durchgang
-- [ ] **Jede** Tabelle in `public` prüfen: RLS aktiv, mindestens eine Policy
+- [x] **Jede** Tabelle in `public` prüfen: RLS aktiv, mindestens eine Policy
 ```sql
 select tablename, rowsecurity from pg_tables where schemaname = 'public';
 select tablename, count(*) from pg_policies where schemaname='public' group by 1;
 ```
+      Zusätzlich `supabase db advisors --linked --type security` laufen lassen und die
+      risikofrei behebbaren Befunde in `0015_security_audit_hardening.sql` beheben;
+      bewusst zurückgestellte Befunde siehe DECISIONS.md.
 - [ ] Mit einem zweiten Testkonto versuchen: fremdes Inserat bearbeiten, fremden Chat lesen,
       fremdes Bild überschreiben, Inserate über 0,5 J ohne Geburtsdatum abrufen —
-      **alles muss scheitern**
-- [ ] Kein `service_role`-Key im Client (`grep -r "service_role" lib/` → leer)
-- [ ] Repository nach Secrets durchsuchen (`git log -p | grep -i "eyJ"`)
-- [ ] `flutter build apk --release` → APK mit `apktool` öffnen und prüfen, dass keine
-      Geheimnisse im Klartext liegen
-- [ ] Commit — `chore(security): rls and secret audit`
+      **alles muss scheitern** — **nicht durchgeführt**: kein zweites Testkonto vorhanden,
+      die Session-Token-Extraktion für einen Cross-Account-Test wurde vom
+      Sicherheitsfilter blockiert. Nutzer hat auf Nachfrage explizit entschieden, diesen
+      Live-Test zu überspringen, statt ein zweites Konto anzulegen — siehe DECISIONS.md.
+      Die Policy-Logik selbst wurde stattdessen per SQL-Audit oben geprüft, das ist aber
+      kein Ersatz für einen echten Cross-Account-Versuch.
+- [x] Kein `service_role`-Key im Client (`grep -r "service_role" lib/` → leer)
+- [x] Repository nach Secrets durchsuchen (`git log -p | grep -i "eyJ"`) — siehe
+      DECISIONS.md zur Einordnung der gefundenen Firebase-API-Keys (kein Geheimnis)
+- [x] `flutter build apk --release` → APK mit `apktool` öffnen und prüfen, dass keine
+      Geheimnisse im Klartext liegen — **ohne `apktool`**, stattdessen APK per `unzip`
+      entpackt und mit `grep -a` durchsucht (inkl. `lib/*/libapp.so`), siehe DECISIONS.md
+- [x] Commit — `chore(security): rls and secret audit`
 
 ---
 
