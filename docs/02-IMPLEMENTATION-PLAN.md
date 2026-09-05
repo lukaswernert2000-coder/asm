@@ -756,6 +756,29 @@ direkt aus einem angezeigten Screenshot abgelesen werden (statt aus einem `uiaut
 brauchen den in der Bildunterschrift genannten Skalierungsfaktor (hier 1,2×) -- sonst trifft der
 simulierte Tap konsequent daneben, siehe DECISIONS.md.
 
+Impressum/AGB danach mit den echten Geschäftsangaben befüllt (Lukas Wernert, Lume Solutions
+GbR, Urberacher Straße 30, 63322 Rödermark) -- Handelsregister/USt-ID bleiben offen, nicht
+mitgeteilt. `website/*.html` per `tool/gen_website.dart` neu generiert, "Gegenprobe
+identisch"-Garantie damit weiterhin intakt.
+
+**2026-09-05, Task 7.3:** `supabase db advisors --linked --type security` lieferte sieben
+Befunde; drei risikofrei behebbare (mutable search_path auf `handle_new_user()`/
+`bump_conversation()`/`touch_updated_at()`, dazu die unbeabsichtigte RPC-Erreichbarkeit der
+beiden Trigger-Funktionen) sind in `0015_security_audit_hardening.sql` behoben. Die übrigen
+vier (`is_adult`/`is_moderator` RPC-erreichbar, 3× `extension_in_public`,
+`auth_leaked_password_protection`) bewusst zurückgestellt -- Begründung je Befund in
+DECISIONS.md. Zusätzlich: `service_role`-Grep im Client leer, Git-Historien-Scan nach Secrets
+sauber (gefundene Firebase-API-Keys sind laut Googles eigenem Modell kein Geheimnis, siehe
+DECISIONS.md), Release-APK per `unzip` + `grep -a` (statt `apktool`, nicht installiert) auf
+Klartext-Secrets geprüft -- sauber. **Nicht durchgeführt:** der geplante Cross-Account-Live-Test
+mit einem zweiten Testkonto -- kein zweites Konto vorhanden, die Session-Token-Extraktion für
+einen Ersatzweg wurde vom Automodus-Klassifikator blockiert. Dem Nutzer zur Wahl vorgelegt
+(zweites Konto anlegen vs. übergehen); Nutzer hat sich für Übergehen entschieden. Bewusst
+akzeptierte Lücke, siehe DECISIONS.md. **M7 damit komplett.**
+
+Push war auf Anhieb CI-grün ([Run #52](https://github.com/lukaswernert2000-coder/asm/actions/runs/33991239310),
+`conclusion: success`).
+
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
 ### 🔁 Außer der Reihe — vor Task 2.5 abarbeiten
