@@ -15,61 +15,69 @@ Marktplatz führt. Desktop-Komfort für bestehende Nutzer ist ein Nebeneffekt, n
 Auslöser dieser Entscheidung.
 
 Die Website ist **zweiphasig**, weil sie vor dem eigentlichen App-Launch live gehen muss –
-zu einem Zeitpunkt, an dem es noch keine echten Inserate gibt:
+zu einem Zeitpunkt, an dem es noch keine echten Inserate gibt. Die beiden Phasen sind
+**bewusst unterschiedliche Tech-Stacks**, kein gemeinsames Projekt:
 
-- **Phase 0 (jetzt):** Teaser-Landingpage mit Feature-Vorschau, ohne echte Marktplatz-Routen.
-- **Phase 1 (ab App-Launch):** die volle Marktplatz-Website mit Kategorie-, Such- und
-  Inserats-Detailseiten.
+- **Phase 0 (jetzt):** die bestehende statische `website/`-Seite wird zum Teaser ausgebaut
+  (reines HTML, kein neues Tooling).
+- **Phase 1 (ab App-Launch):** eine neue Next.js/Node.js-Anwendung ersetzt sie durch die
+  volle Marktplatz-Website.
 
-Beide Phasen laufen im selben Projekt, auf derselben Domain, über denselben Deploy-Weg –
-Phase 1 wird nicht neu gebaut, sondern zu Phase 0 hinzugefügt und per Flag freigeschaltet.
+Was zwischen den Phasen stabil bleiben muss, ist nicht der Code, sondern **Domain und
+URLs** – dort hängt der SEO-Wert. Siehe Abschnitt 4.
 
-## 2. Architektur
+## 2. Phase 0 – Teaser (jetzt)
 
-- **Next.js** (App Router), liest **direkt gegen Supabase** (Anon-Key, `@supabase/supabase-js`
-  serverseitig in Server Components) – kein eigenes Backend, kein API-Layer, kein
-  `service_role`-Key. Dieselbe RLS wie die App gilt automatisch mit.
+**Befund im Repo:** `website/index.html` ist bereits handgeschrieben (nicht generiert) und
+inhaltlich schon nah an einem Teaser – Hero, vier Feature-Cards, ein Hinweis "ASM befindet
+sich aktuell im Aufbau". `tool/gen_website.dart` generiert ausschließlich die vier
+Rechtstexte (`impressum.html`, `datenschutz.html`, `agb.html`,
+`nutzungsbedingungen.html`) aus `assets/legal/*.md` – `index.html` und
+`account-loeschen.html` fasst der Generator nicht an.
+
+**Also keine neue Infrastruktur, sondern eine gezielte Erweiterung:**
+- `website/index.html`: Feature-Cards um Screenshots ergänzen (aus dem Emulator
+  eingefangen, siehe Abschnitt 6), den "im Aufbau"-Hinweis von einer Randnotiz zu einem
+  deutlich sichtbaren "App erscheint bald"-Element hochziehen (z. B. direkt unter dem Hero).
+- Rechtsseiten unverändert über `tool/gen_website.dart` – bleiben Pflicht, unabhängig vom
+  App-Status.
+- Hosting/Deploy unverändert: weiterhin die bestehende statische Auslieferung auf Hostinger
+  (aktuell manueller Upload). Automatisierung davon ist ein separates, optionales Thema,
+  nicht Teil dieser Spec.
+- **`account-loeschen.html` bleibt unter genau diesem Pfad** – falls diese URL schon bei
+  Google Play / App Store als Pflicht-Link zur Kontolöschung hinterlegt ist, darf sich der
+  Pfad beim späteren Wechsel zu Phase 1 nicht ändern (siehe Abschnitt 4).
+
+**SEO-Erwartung realistisch halten:** rankt für Markenname und generische Begriffe
+("Airsoft Marktplatz", "Airsoft gebraucht kaufen/verkaufen"). Long-Tail-Produktsuchen (die
+eigentliche Stärke von Phase 1) sind erst mit echten Inseraten möglich.
+
+## 3. Phase 1 – Marktplatz (ab App-Launch)
+
+**Architektur:**
+- **Next.js** (App Router), liest **direkt gegen Supabase** (Anon-Key,
+  `@supabase/supabase-js` serverseitig in Server Components) – kein eigenes Backend, kein
+  API-Layer, kein `service_role`-Key. Dieselbe RLS wie die App gilt automatisch mit.
 - **Hosting: Hostinger Business** (bereits vorhandener Tarif), über die native
   Node.js-App-Funktion in hPanel. Gegen Hostingers eigene Doku bestätigt: Business-Plan
   unterstützt Node-Apps, Next.js wird automatisch erkannt, SSR/ISR/API-Routen funktionieren
   ohne Einschränkung. Keine zusätzlichen Hosting-Kosten.
 - **Deploy:** Hostingers GitHub-Integration – Push auf den verbundenen Branch löst
   automatisch Build + Deploy aus. Ein schlanker CI-Job (nur getriggert bei Änderungen unter
-  `web/`) führt vorher `next build` aus, damit kaputte Builds nicht auf den
-  Auto-Deploy-Branch gelangen. Berührt die bestehende Flutter-CI nicht.
+  `web/`) führt vorher `next build` aus. Berührt die bestehende Flutter-CI nicht.
 - **Repo:** neuer Ordner `web/` im bestehenden Repo (Monorepo), neben `lib/`, `android/`,
-  `ios/`, `supabase/`. Das bisherige `website/`-Verzeichnis (statische Rechtstexte,
-  generiert über `tool/gen_website.dart`) wird abgelöst, sobald Phase 0 live ist – ein
-  Generator statt zwei.
-- **Domain:** `asm-app.de` bleibt bei Hostinger registriert; DNS/Hosting-Vertrag ändert sich
-  nicht, nur der ausgelieferte Inhalt.
+  `ios/`, `supabase/`.
+- Die Rechtstexte wandern in dieses Projekt (aus denselben `assets/legal/*.md`, die auch
+  die App nutzt) – eine Quelle, ein Generator statt zwei getrennter Systeme.
 
-## 3. Phase 0 – Teaser (jetzt)
-
-**Umfang:**
-- `/` – Landingpage: Hero, Feature-Übersicht mit Screenshots (aus dem Emulator eingefangen),
-  deutlicher Hinweis "App erscheint bald".
-- `/impressum`, `/datenschutz`, `/agb`, `/nutzungsbedingungen`, `/konto-loeschen` – aus
-  denselben `assets/legal/*.md` gerendert, die die App bereits nutzt (eine Quelle statt
-  zwei). Pflicht ab dem Moment, in dem die Seite live ist, unabhängig vom App-Status.
-- `/sitemap.xml`, `/robots.txt`.
-- Bewusst **keine** Kategorie-/Such-/Inserats-Routen – ohne echte Inserate kein sinnvoller
-  Inhalt.
-
-**SEO-Erwartung realistisch halten:** rankt für Markenname und generische Begriffe
-("Airsoft Marktplatz", "Airsoft gebraucht kaufen/verkaufen"). Long-Tail-Produktsuchen (die
-eigentliche Stärke von Phase 1) sind erst mit echten Inseraten möglich.
-
-## 4. Phase 1 – Marktplatz (ab App-Launch)
-
-**Neue Routen im selben Projekt:**
+**Neue Routen:**
 - `/kategorie/[slug]` – Kategorie-Browse. Filter (Preis, Zustand, Antriebsart) als
   URL-Query-Parameter (SEO-/bookmark-freundlich).
 - `/suche?q=...` – Volltextsuche.
 - `/inserat/[id]` – Detailseite mit vollen Meta-Tags + JSON-LD (`schema.org/Product` +
   `Offer`; `availability` aus `status` abgeleitet: `active`→`InStock`,
   `reserved`→`LimitedAvailability`, `sold`→`SoldOut`).
-- `/` wechselt von Teaser- auf echten Marktplatz-Inhalt (neueste Inserate, Kategorien).
+- `/` zeigt jetzt echten Marktplatz-Inhalt (neueste Inserate, Kategorien) statt Teaser.
 
 **Datenzugriff:**
 - Kategorie- und Suchseiten rufen **`search_listings()`** auf – dieselbe Postgres-Funktion,
@@ -86,56 +94,58 @@ eigentliche Stärke von Phase 1) sind erst mit echten Inseraten möglich.
 **Rendering:**
 - Detailseiten: ISR, Revalidate 60s.
 - Kategorie-/Suchseiten: SSR pro Request (Filter/Pagination variieren pro Aufruf).
-- Startseite (Marktplatz-Variante): ISR, Revalidate ~5 Min.
+- Startseite: ISR, Revalidate ~5 Min.
 
-## 5. Umschalt-Mechanismus zwischen Phase 0 und Phase 1
+## 4. Übergang von Phase 0 zu Phase 1
 
-Ein serverseitiger Flag (Env-Variable `MARKETPLACE_LIVE`, gesetzt in Hostingers hPanel):
-- `false` (Standard, Phase 0): `/` zeigt Teaser, Marktplatz-Routen sind inaktiv/404.
-- `true` (ab App-Launch): `/` zeigt echten Marktplatz-Content, alle Routen aktiv.
+Kein gemeinsamer Code, kein Feature-Flag – die statische Seite wird zu einem noch nicht
+festgelegten Zeitpunkt (App-Launch absehbar) durch das Next.js-Projekt **ersetzt**:
+Hostinger Node.js-App-Hosting für die Domain einrichten, deployen, die Domain von der
+statischen Auslieferung auf die Node-App umstellen.
 
-Phase 1 kann dadurch **vollständig vor dem eigentlichen Launch gebaut und gegen das
-Dev-Supabase-Projekt getestet werden**, ohne öffentlich sichtbar zu sein. Am Launch-Tag wird
-nur der Flag umgelegt (und die Supabase-Env-Variablen von Dev- auf Produktions-Projekt
-umgestellt, analog zur bestehenden Dev/Prod-Trennung der App) – es muss kein Code mehr
-geschrieben werden.
+**Nicht verhandelbar dabei – URL-Stabilität:**
+- `/` bleibt `/`.
+- Rechtsseiten- und `account-loeschen`-Pfade bleiben erreichbar. Next.js erzeugt standardmäßig
+  Pfade ohne `.html` (`/impressum` statt `/impressum.html`) – die alten `.html`-Pfade
+  brauchen daher mindestens einen 301-Redirect, **zwingend für `/account-loeschen.html`**,
+  falls diese exakte URL bei Google Play / App Store als Kontolöschungs-Link hinterlegt ist
+  (vor dem Umstieg prüfen).
+- Danach gilt: Backlinks und Google-Vertrauen, die die Teaser-Seite bis dahin gesammelt hat,
+  bleiben erhalten, weil Domain und wichtige Pfade gleich bleiben – nur der Inhalt dahinter
+  wechselt.
 
-Vorteil gegenüber zwei getrennten Projekten/Domains: Backlinks und Google-Vertrauen, die die
-Teaser-Seite bis dahin sammelt, bleiben beim Umschalten vollständig erhalten, weil Domain und
-URLs gleich bleiben.
-
-## 6. Fehlerbehandlung
+## 5. Fehlerbehandlung (Phase 1)
 
 - Supabase-Anfrage schlägt zur Laufzeit fehl (Netzwerk-Hänger, kurzer Ausfall): Seite zeigt
   einen freundlichen Fallback statt abzustürzen; `sitemap.xml` liefert im Fehlerfall die
   zuletzt bekannte Liste statt einer leeren Sitemap.
 - Nicht existierende oder nicht-öffentliche Inserat-ID: Next.js `notFound()` (siehe
-  Abschnitt 4 – RLS liefert für nicht-öffentliche Stati ohnehin keine Zeile).
+  Abschnitt 3 – RLS liefert für nicht-öffentliche Stati ohnehin keine Zeile).
 
-## 7. Testing
+## 6. Testing & Bildmaterial
 
-- Lokale Entwicklung gegen dasselbe Dev-Supabase-Projekt wie die App (`env/dev.json`).
-- CI-Job (GitHub Actions, getriggert nur bei Änderungen unter `web/`): `next build` muss
-  grün sein, bevor auf den Auto-Deploy-Branch gemerged wird.
+- **Phase 0:** Screenshots für die Teaser-Seite werden aus dem Emulator eingefangen
+  (Browse-, Detail-, Chat-Screen o. ä.).
+- **Phase 1:** lokale Entwicklung gegen dasselbe Dev-Supabase-Projekt wie die App
+  (`env/dev.json`). CI-Job (GitHub Actions, getriggert nur bei Änderungen unter `web/`):
+  `next build` muss grün sein, bevor auf den Auto-Deploy-Branch gemerged wird.
 
-## 8. Vorschlag zur Umsetzungsreihenfolge
+## 7. Vorschlag zur Umsetzungsreihenfolge
 
-Diese Spec deckt die Gesamtarchitektur inkl. Phase 1 ab, damit der Umschalt-Mechanismus von
-Anfang an mitgedacht ist. Der nächste Schritt (Implementierungsplan) sollte sich aber
-zunächst nur auf **Phase 0** beziehen – die App selbst ist noch mitten im MVP (M6/M7,
-Security-Review offen, kein Test auf echtem Gerät). Phase 1 bekommt einen eigenen,
-späteren Implementierungsplan, sobald der App-Launch absehbar ist.
+Der nächste Schritt (Implementierungsplan) bezieht sich nur auf **Phase 0** – kleine,
+in sich geschlossene Erweiterung der bestehenden statischen Seite. Die App selbst ist noch
+mitten im MVP (M6/M7, Security-Review offen, kein Test auf echtem Gerät). Phase 1
+(Next.js-Projekt) bekommt einen eigenen, späteren Implementierungsplan, sobald der
+App-Launch absehbar ist – dann auch mit Detailfragen wie der genauen Hostinger-Konfiguration
+für ein Unterverzeichnis (`web/`) statt Repo-Root als Build-Quelle.
 
-## 9. Offene Punkte / bewusst nicht Teil dieser Spec
+## 8. Offene Punkte / bewusst nicht Teil dieser Spec
 
-- **Screenshots für den Teaser:** werden separat aus dem Emulator eingefangen (Browse-,
-  Detail-, Chat-Screen o. ä.), sobald Phase 0 umgesetzt wird.
 - **E-Mail-Warteliste auf dem Teaser:** nicht angefragt, daher nicht Teil der Spec. Ließe
   sich bei Bedarf ergänzen (zusätzliche datenschutzrechtliche Pflichten beachten) – eigene
   Entscheidung.
 - **Deep-Link von Website in die App** (z. B. `asm://inserat/<id>`, analog zu den
   bestehenden `asm://auth-callback`/`asm://reset-password`-Schemes): sinnvolle spätere
   Ergänzung für Phase 1, kein Blocker für den ersten Wurf.
-- Exakte Hostinger-Konfiguration für ein Unterverzeichnis (`web/`) statt Repo-Root als
-  Build-Quelle: wird beim tatsächlichen Einrichten in hPanel geprüft – laut Hostinger-Doku
-  sind Build-Command und Output-Verzeichnis frei konfigurierbar, kein Architektur-Risiko.
+- **Automatisierung des Phase-0-Deploys** (aktuell manueller Upload zu Hostinger): möglich,
+  aber nicht angefragt – separate Entscheidung.
