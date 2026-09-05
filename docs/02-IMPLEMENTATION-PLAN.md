@@ -667,6 +667,9 @@ absteigend, siehe DECISIONS.md) — behoben, `pending` kommt jetzt vor `messages
 selbst umgekehrt, kein `.reversed.toList()` mehr auf der Gesamtliste. Live bestaetigt,
 alle 25 Chat-Tests weiterhin gruen.
 
+Push war auf Anhieb CI-grün ([Run #46](https://github.com/lukaswernert2000-coder/asm/actions/runs/33982514071),
+`conclusion: success`).
+
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
 ### 🔁 Außer der Reihe — vor Task 2.5 abarbeiten
