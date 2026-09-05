@@ -150,9 +150,13 @@ void main() {
     ).thenAnswer((_) async {});
   });
 
+  // Der dritte, laengere Pump deckt die 250ms-Slide-up-Transition des
+  // Melde-Sheets ab (Task 7.1) -- ohne ihn lag "Melden bestaetigen" beim
+  // Tappen noch ausserhalb des sichtbaren Bereichs, mitten in der Animation.
   Future<void> pumpBriefly(WidgetTester tester) async {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 250));
   }
 
   Future<GoRouter> pumpScreen(

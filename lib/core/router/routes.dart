@@ -22,6 +22,7 @@ abstract final class AsmRoutes {
   static String publicProfile(String id) => '/user/$id';
 
   static const settings = '/settings';
+  static const blockedUsers = '/settings/blocked-users';
   static const legal = '/legal';
   static const favorites = '/favorites';
   static const myListings = '/my-listings';

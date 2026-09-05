@@ -14,7 +14,8 @@ import 'package:asm/features/chat/presentation/widgets/chat_bubble.dart';
 import 'package:asm/features/chat/presentation/widgets/listing_chip.dart';
 import 'package:asm/features/listings/domain/listing_image_url.dart';
 import 'package:asm/features/listings/presentation/listing_providers.dart';
-import 'package:asm/features/moderation/presentation/widgets/report_dialog.dart';
+import 'package:asm/features/moderation/presentation/moderation_providers.dart';
+import 'package:asm/features/moderation/presentation/widgets/report_sheet.dart';
 import 'package:asm/features/notifications/presentation/notification_providers.dart';
 import 'package:asm/features/notifications/presentation/push_notification_service.dart';
 import 'package:asm/features/profile/presentation/profile_providers.dart';
@@ -327,7 +328,16 @@ class _ChatDetailScaffoldState extends ConsumerState<_ChatDetailScaffold>
                     },
                   ),
           ),
-          _Composer(controller: _controller, onSend: _send),
+          _Composer(
+            controller: _controller,
+            onSend: _send,
+            // Nur die eigene Blockierrichtung ist clientseitig bekannt
+            // (siehe Kommentar auf `isBlockedByMe`) -- hat die Gegenseite
+            // mich blockiert, faengt die RLS-Policy aus
+            // `0014_blocks_stop_messaging.sql` den Sendeversuch ab.
+            blocked:
+                ref.watch(isBlockedByMeProvider(otherId)).valueOrNull ?? false,
+          ),
         ],
       ),
     );
@@ -335,13 +345,33 @@ class _ChatDetailScaffoldState extends ConsumerState<_ChatDetailScaffold>
 }
 
 class _Composer extends StatelessWidget {
-  const _Composer({required this.controller, required this.onSend});
+  const _Composer({
+    required this.controller,
+    required this.onSend,
+    required this.blocked,
+  });
 
   final TextEditingController controller;
   final VoidCallback onSend;
+  final bool blocked;
 
   @override
   Widget build(BuildContext context) {
+    if (blocked) {
+      return SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.all(AsmSpacing.md),
+          child: Text(
+            'Ihr könnt euch nicht mehr schreiben.',
+            style: AsmTextStyles.bodyM.copyWith(
+              color: AsmColors.textSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
     return SafeArea(
       top: false,
       child: Padding(

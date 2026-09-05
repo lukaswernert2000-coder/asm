@@ -38,10 +38,10 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M6 · Chat + Push, Task 6.1–6.3 fertig |
-| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) · Task 5.2 komplett, inkl. eines beim Live-Test gefundenen und gefixten Cache-Bugs in `refreshSellerListings` (siehe unten) · **M5 damit komplett** · 2026-09-01: Bugfix-Batch außerhalb der Plan-Tasks, fünf vom Nutzer gemeldete Bugs (Galerie-Filter, Geburtsdatum-Tastatur, Kategorie-Toggle, fehlender Zurück-Weg auf der Detailseite, Mindestlänge Beschreibung 30→15), alle mit Root-Cause-Fix, TDD und Live-Verifikation (siehe unten) · Task 6.1 komplett: `ChatRepository`/`SupabaseChatRepository`, reiner Datenschicht-Task ohne Interface-Änderung (siehe unten) · Task 6.2 komplett: Chatliste und Chat-Detail, live drei echte Bugs im bestehenden Chat-Schema gefunden und gefixt (siehe unten) · Task 6.3 komplett: FCM-Push für neue Nachrichten, Client + `notify-on-message`-Edge-Function, Webhook live mit zwei erfolgreichen Aufrufen (200) bestätigt — **M6 damit komplett**, echtes Gerät bleibt offen (siehe unten) |
-| **Als Nächstes** | **M7 — Task 7.1 (Melden und Blockieren, siehe Meilenstein M7 im Plan)** — Melden/Blockieren als *echte Aktion* existiert laut Task-2.5-Eintrag oben schon (`moderation`-Feature); eine künftige Session sollte zuerst prüfen, wie viel von Task 7.1 dadurch schon abgedeckt ist, bevor sie neu baut. Danach M8 (Politur und Release), von dem Task 8.0 Teil A (Schritte 1–6) bereits vorgezogen fertig ist |
+| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) · Task 5.2 komplett, inkl. eines beim Live-Test gefundenen und gefixten Cache-Bugs in `refreshSellerListings` (siehe unten) · **M5 damit komplett** · 2026-09-01: Bugfix-Batch außerhalb der Plan-Tasks, fünf vom Nutzer gemeldete Bugs (Galerie-Filter, Geburtsdatum-Tastatur, Kategorie-Toggle, fehlender Zurück-Weg auf der Detailseite, Mindestlänge Beschreibung 30→15), alle mit Root-Cause-Fix, TDD und Live-Verifikation (siehe unten) · Task 6.1 komplett: `ChatRepository`/`SupabaseChatRepository`, reiner Datenschicht-Task ohne Interface-Änderung (siehe unten) · Task 6.2 komplett: Chatliste und Chat-Detail, live drei echte Bugs im bestehenden Chat-Schema gefunden und gefixt (siehe unten) · Task 6.3 komplett: FCM-Push für neue Nachrichten, Client + `notify-on-message`-Edge-Function, Webhook live mit zwei erfolgreichen Aufrufen (200) bestätigt — **M6 damit komplett**, echtes Gerät bleibt offen (siehe unten) · Task 7.1 komplett: Melde-Sheet (9 Gründe + Freitext), Blockieren stoppt jetzt auch Nachrichten in bestehenden Konversationen, "Blockierte Nutzer" in neuen Einstellungen, alles live verifiziert (siehe unten) |
+| **Als Nächstes** | **M7 — Task 7.2 (Rechtstexte in der App, siehe Meilenstein M7 im Plan)** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `feat(notifications): add fcm push for new messages` |
+| **Letzter Commit** | `feat(moderation): add report and block flows` |
 | **Stand vom** | 2026-09-05 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -669,6 +669,45 @@ alle 25 Chat-Tests weiterhin gruen.
 
 Push war auf Anhieb CI-grün ([Run #46](https://github.com/lukaswernert2000-coder/asm/actions/runs/33982514071),
 `conclusion: success`).
+
+**2026-09-05, Task 7.1:** Baute auf Task 2.5s vorgezogenem `moderation`-Feature auf statt neu zu
+beginnen. `report_dialog.dart` → `report_sheet.dart` umbenannt und von `showDialog`/`AlertDialog`
+zu einem echten `showModalBottomSheet` umgebaut (Design-System listet "Melden-Sheet" explizit als
+eigene Komponente, `01-DESIGN-SYSTEM.md` Bildschirmliste) -- Blockieren bleibt bewusst ein
+`AlertDialog`-Bestätigungsdialog, dafür fordert der Plan keine Sheet-Form. Bestätigungstext auf
+den exakten Plan-Wortlaut korrigiert ("... innerhalb von 24 Stunden."). `ModerationRepository`
+um `unblockUser()`, `blockedUserIds()` und `isBlockedByMe()` erweitert. Neues `settings`-Feature
+(`SettingsScreen` ersetzt den `_TitledPlaceholder` von Task 2.5) und
+`BlockedUsersScreen` (gleiches Grundmuster wie `FavoritesScreen` aus Task 5.2: ID-Liste vom
+Repository, jede Zeile per `profileByIdProvider` aufgelöst, Aktion + Invalidieren). Nutzer hat
+sich für die Variante entschieden, bei der ein Block auch eine **schon bestehende** Konversation
+stumm schaltet (nicht nur neue verhindert, das leistete `conversations_buyer_create` schon seit
+Task 6.1) -- Chat-Verlauf bleibt für beide Seiten lesbar, nur `messages_insert` bekam in
+`0014_blocks_stop_messaging.sql` einen zusätzlichen beidseitigen `blocks`-Check. Clientseitig
+zeigt `chat_detail_screen.dart` statt Eingabefeld einen Hinweistext, sobald `isBlockedByMe()` für
+die Gegenseite `true` liefert -- das deckt nur die *eigene* Blockierrichtung ab (RLS erlaubt
+keinen Blick auf fremde `blocker_id`-Zeilen), hat mich die Gegenseite blockiert, fängt die
+RLS-Policy den Sendeversuch serverseitig ab, ohne dass die Oberfläche das vorher anzeigt.
+`search_listings` filterte Blockierte schon seit Task 3.2 beidseitig -- an dieser Stelle war also
+nichts zu tun, nur zu verifizieren.
+
+9 neue Tests (3 Repository-Guard-Klauseln, 1 Chat-Composer-Blockiert-Zustand, 2 SettingsScreen,
+3 BlockedUsersScreen), 414 insgesamt grün, `flutter analyze` 0 Probleme, `dart format lib test`
+sauber.
+
+**Live auf `flutter_api34` verifiziert** (Test-Account `chat_tester_m6`, Gegenpart "Shzn"/Robin):
+Melde-Sheet öffnet als echtes Bottom-Sheet mit allen neun Gründen + Freitext, Absenden zeigt den
+korrigierten Bestätigungstext. Blockieren-Bestätigungsdialog blockiert, Chat-Eingabefeld zeigt
+sofort den Hinweistext statt des Textfelds -- **ohne dass der Chat neu geöffnet werden musste**
+(Provider-Invalidierung direkt nach dem Block-Aufruf). Einstellungen → "Blockierte Nutzer" zeigt
+den blockierten Nutzer korrekt, "Entsperren" entfernt ihn aus der Liste und schaltet das
+Chat-Eingabefeld ebenfalls sofort wieder frei. Dabei einen echten Bug gefunden und behoben:
+`showBlockUserFlow` invalidierte anfangs nur `isBlockedByMeProvider`, nicht aber
+`blockedUserIdsProvider` -- eine schon vorher geöffnete "Blockierte Nutzer"-Liste blieb dadurch
+fälschlich leer, bis der Screen komplett neu aufgebaut wurde. Zusätzlich ein reiner Test-Bug beim
+Umbau auf das Sheet gefunden: die 250ms-Slide-up-Transition brauchte in zwei Test-Dateien einen
+zusätzlichen, längeren Pump, sonst lag "Melden bestätigen" beim Tappen noch außerhalb des
+sichtbaren Testbereichs (siehe DECISIONS.md).
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -2686,11 +2725,13 @@ Stream<List<Message>> messages(String conversationId) {
 # Meilenstein M7 · Moderation, Recht und Sicherheit
 
 ## Task 7.1: Melden und Blockieren
-- [ ] Melde-Sheet mit den 9 Gründen aus Task 1.5 + optionalem Freitext
-- [ ] Bestätigung: "Danke. Wir prüfen die Meldung innerhalb von 24 Stunden."
-- [ ] Blockieren: beidseitig unsichtbar (greift in `search_listings` und den Chat-Policies)
-- [ ] Liste blockierter Nutzer in den Einstellungen, entsperrbar
-- [ ] Commit — `feat(moderation): add report and block flows`
+- [x] Melde-Sheet mit den 9 Gründen aus Task 1.5 + optionalem Freitext
+- [x] Bestätigung: "Danke. Wir prüfen die Meldung innerhalb von 24 Stunden."
+- [x] Blockieren: beidseitig unsichtbar (greift in `search_listings` und den Chat-Policies) —
+      `search_listings` filterte schon seit Task 3.2 beidseitig, `messages_insert` neu in
+      `0014_blocks_stop_messaging.sql` (siehe unten)
+- [x] Liste blockierter Nutzer in den Einstellungen, entsperrbar
+- [x] Commit — `feat(moderation): add report and block flows`
 
 ## Task 7.2: Rechtstexte in der App
 

@@ -9,7 +9,7 @@ import 'package:asm/core/widgets/asm_error_view.dart';
 import 'package:asm/core/widgets/asm_network_image.dart';
 import 'package:asm/core/widgets/asm_skeleton.dart';
 import 'package:asm/features/listings/presentation/listing_providers.dart';
-import 'package:asm/features/moderation/presentation/widgets/report_dialog.dart';
+import 'package:asm/features/moderation/presentation/widgets/report_sheet.dart';
 import 'package:asm/features/profile/domain/avatar_url.dart';
 import 'package:asm/features/profile/domain/profile.dart';
 import 'package:asm/features/profile/presentation/profile_providers.dart';

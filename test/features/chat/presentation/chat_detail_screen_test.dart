@@ -210,6 +210,24 @@ void main() {
   });
 
   testWidgets(
+    'zeigt einen Hinweis statt des Eingabefelds, wenn ich blockiert habe',
+    (tester) async {
+      when(() => chatRepository.messages('conv1')).thenAnswer(
+        (_) => Stream.value(<Message>[]),
+      );
+      when(() => moderationRepository.isBlockedByMe('seller1')).thenAnswer(
+        (_) async => true,
+      );
+
+      await pumpScreen(tester);
+
+      expect(find.text('Ihr könnt euch nicht mehr schreiben.'), findsOneWidget);
+      expect(find.byType(TextField), findsNothing);
+      expect(find.byIcon(LucideIcons.send), findsNothing);
+    },
+  );
+
+  testWidgets(
     'Senden zeigt die Nachricht optimistisch an und ruft send() auf',
     (tester) async {
       when(() => chatRepository.messages('conv1')).thenAnswer(

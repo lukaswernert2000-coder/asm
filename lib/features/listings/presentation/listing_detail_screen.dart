@@ -25,7 +25,7 @@ import 'package:asm/features/listings/presentation/widgets/listing_detail/listin
 import 'package:asm/features/listings/presentation/widgets/listing_detail/listing_legal_warning_box.dart';
 import 'package:asm/features/listings/presentation/widgets/listing_detail/listing_price_header.dart';
 import 'package:asm/features/listings/presentation/widgets/listing_detail/seller_card.dart';
-import 'package:asm/features/moderation/presentation/widgets/report_dialog.dart';
+import 'package:asm/features/moderation/presentation/widgets/report_sheet.dart';
 import 'package:asm/features/profile/presentation/profile_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

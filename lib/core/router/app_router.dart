@@ -1,7 +1,6 @@
 import 'package:asm/core/router/guards.dart' as guards;
 import 'package:asm/core/router/routes.dart';
 import 'package:asm/core/widgets/_gallery_screen.dart';
-import 'package:asm/core/widgets/asm_empty_state.dart';
 import 'package:asm/core/widgets/asm_shell.dart';
 import 'package:asm/features/auth/presentation/auth_controller.dart';
 import 'package:asm/features/auth/presentation/confirm_email_required_screen.dart';
@@ -18,6 +17,7 @@ import 'package:asm/features/listings/presentation/create_listing_screen.dart';
 import 'package:asm/features/listings/presentation/edit_listing_screen.dart';
 import 'package:asm/features/listings/presentation/listing_detail_screen.dart';
 import 'package:asm/features/listings/presentation/my_listings_screen.dart';
+import 'package:asm/features/moderation/presentation/blocked_users_screen.dart';
 import 'package:asm/features/onboarding/presentation/onboarding_providers.dart';
 import 'package:asm/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:asm/features/onboarding/presentation/welcome_screen.dart';
@@ -26,11 +26,10 @@ import 'package:asm/features/profile/presentation/edit_profile_screen.dart';
 import 'package:asm/features/profile/presentation/profile_screen.dart';
 import 'package:asm/features/profile/presentation/public_profile_screen.dart';
 import 'package:asm/features/search/presentation/search_screen.dart';
+import 'package:asm/features/settings/presentation/settings_screen.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Klassischer (nicht generierter) Provider — `riverpod_generator` wurde in
 /// Task 1.9 bewusst aus den Dependencies entfernt (siehe DECISIONS.md),
@@ -156,10 +155,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AsmRoutes.settings,
-        builder: (context, state) => const _TitledPlaceholder(
-          icon: LucideIcons.settings,
-          title: 'Einstellungen',
-        ),
+        builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AsmRoutes.blockedUsers,
+        builder: (context, state) => const BlockedUsersScreen(),
       ),
       GoRoute(
         path: AsmRoutes.onboarding,
@@ -172,20 +172,3 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-
-/// Fuer Routen, die per `push` (mit Zurueck-Pfeil) erreicht werden und noch
-/// keinen echten Screen haben.
-class _TitledPlaceholder extends StatelessWidget {
-  const _TitledPlaceholder({required this.icon, required this.title});
-
-  final IconData icon;
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: AsmEmptyState(icon: icon, title: title),
-    );
-  }
-}

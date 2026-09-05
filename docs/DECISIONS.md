@@ -1790,4 +1790,48 @@ VOR `messages` in der Liste und wird selbst umgekehrt (`pending.reversed`) -- da
 neueste Nachricht (bzw. das juengste `pending`) an Index 0, was `reverse: true` unten anzeigt,
 und die aelteste Nachricht ganz oben.
 
+## 2026-09-05 · Task 7.1 · Block stoppt auch Nachrichten in einer bestehenden Konversation
+
+Der Plan sagt nur "beidseitig unsichtbar (greift in ... den Chat-Policies)" -- offen blieb, ob
+das nur neue Konversationen betrifft (Stand seit Task 6.1s `conversations_buyer_create`) oder
+auch schon bestehende. Dem Nutzer zur Entscheidung vorgelegt (Datenmodell-Änderung, RLS-Policy);
+gewählt: **Nachrichten in bestehenden Konversationen werden gesperrt, der Verlauf bleibt aber für
+beide Seiten lesbar** -- entspricht dem Blockierverhalten der meisten Chat-Apps (WhatsApp,
+Instagram) und ist der am wenigsten ueberraschende, am leichtesten rueckgaengig zu machende von
+drei vorgeschlagenen Optionen (die anderen beiden: gar keine Aenderung, oder die Konversation
+fuer beide komplett verschwinden lassen -- Letzteres haette zusaetzlich RLS auf
+`conversations`/`messages`-select angefasst und ist beim Entblocken schwerer sauber
+rueckabzuwickeln). Umgesetzt in `0014_blocks_stop_messaging.sql`: `messages_insert` prueft jetzt
+zusaetzlich beidseitig gegen `blocks`, exakt wie es `search_listings`
+(0007_search.sql, seit Task 3.2) und `conversations_buyer_create` (0005_chat.sql, seit Task 6.1)
+schon taten.
+
+## 2026-09-05 · Task 7.1 · Melde-Sheet: `showModalBottomSheet` statt `AlertDialog`, Test-Pump für die Slide-up-Transition
+
+`report_dialog.dart` (Task 2.5, ein `AlertDialog`) wurde zu `report_sheet.dart`
+(`showModalBottomSheet`) umgebaut, weil `01-DESIGN-SYSTEM.md`s Bildschirmliste ein eigenes
+"Melden-Sheet" explizit als Komponente nennt. Ohne festen Höhen-Anteil bekam die innere
+`Expanded`-Scrollfläche keine begrenzte Höhe und wuchs in einem Widget-Test über den sichtbaren
+Viewport hinaus (`FractionallySizedBox(heightFactor: 0.85, alignment: Alignment.bottomCenter)`
+behebt das, gleiches Muster wie `FilterSheet` aus Task 3.4). Der eigentliche Grund fuer zwei
+fehlgeschlagene Tests war aber ein anderer: die 250ms-Slide-up-Transition des Sheets
+(`01-DESIGN-SYSTEM.md`s Timing-Tabelle, "Ein-/Ausblenden, Sheets") war beim Tappen auf "Melden
+bestätigen" noch nicht abgeschlossen -- die bisherigen `pumpBriefly()`-Helfer in
+`public_profile_screen_test.dart` und `listing_detail_screen_test.dart` pumpten nur ~50ms. Fix:
+ein dritter, 250ms langer Pump in beiden Helfern. `pumpAndSettle()` geht in beiden Dateien
+weiterhin nicht (Shimmer-Endlosanimation via `AsmSkeleton`, siehe Task-0.6-Eintrag).
+
+## 2026-09-05 · Task 7.1 · Eine Aktion muss alle Provider invalidieren, die ihr Ergebnis zeigen könnten -- nicht nur den naheliegendsten
+
+`showBlockUserFlow` invalidierte nach einem erfolgreichen Block zunächst nur
+`isBlockedByMeProvider` (fürs Chat-Eingabefeld), nicht aber `blockedUserIdsProvider` (für die
+"Blockierte Nutzer"-Liste in den Einstellungen) -- beim Live-Test blieb eine vorher schon
+aufgerufene Liste dadurch fälschlich leer, bis der Screen komplett neu geöffnet wurde (kein
+Compile- oder Test-Fehler, `blockedUserIdsProvider` wird ohne `autoDispose` unbegrenzt
+gecacht). Analog fehlte umgekehrt in `_unblock()` das Invalidieren von `isBlockedByMeProvider`.
+Fix: beide Stellen invalidieren jetzt beide Provider. Lehre für künftige Sessions: bei jeder
+schreibenden Aktion bewusst auflisten, welche *anderen*, schon evtl. offenen Screens/Provider
+dasselbe zugrundeliegende Datum zeigen könnten, statt nur den Provider zu invalidieren, den man
+gerade vor Augen hat.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->
