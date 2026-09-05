@@ -744,6 +744,9 @@ Blockiert-Liste aus Task 7.1) und `ProfileScreen`s schon bestehender "Rechtliche
 Rechtstext-Assets ueber den vollen `appRouterProvider`), 421 insgesamt gruen, `flutter analyze`
 0 Probleme, `dart format lib test` sauber.
 
+Push war auf Anhieb CI-grün ([Run #50](https://github.com/lukaswernert2000-coder/asm/actions/runs/33989053210),
+`conclusion: success`).
+
 **Live auf `flutter_api34` verifiziert:** Nutzungsbedingungen ueber Profil geoeffnet -- Titel,
 Entwurf-Banner, Ueberschriften/Listen/Fettschrift korrekt gerendert. Der Inline-Link "AGB"
 navigiert zur AGB-Seite (mit demselben Entwurf-Banner und ihrem eigenen Rueckverweis auf die
