@@ -23,7 +23,7 @@ abstract final class AsmRoutes {
 
   static const settings = '/settings';
   static const blockedUsers = '/settings/blocked-users';
-  static const legal = '/legal';
+  static String legal(String page) => '/legal/$page';
   static const favorites = '/favorites';
   static const myListings = '/my-listings';
 

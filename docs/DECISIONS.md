@@ -1834,4 +1834,51 @@ schreibenden Aktion bewusst auflisten, welche *anderen*, schon evtl. offenen Scr
 dasselbe zugrundeliegende Datum zeigen könnten, statt nur den Provider zu invalidieren, den man
 gerade vor Augen hat.
 
+## 2026-09-05 · Task 7.2 · `flutter_markdown` ist discontinued -- `flutter_markdown_plus` verwendet
+
+Der Plan nennt explizit `flutter_markdown` fuer die Rechtstext-Anzeige. `flutter pub add` meldet
+das Paket inzwischen als von Google discontinued (Nachfolgeempfehlung:
+`flutter_markdown_plus`). Dem Nutzer zur Entscheidung vorgelegt statt stillschweigend
+auszuweichen (neues Paket, Abweichung vom expliziten Plan-Wortlaut) -- `flutter_markdown_plus`
+gewaehlt: Foresight Mobile hat das Paket in einer offiziellen Uebergabe von Google uebernommen
+und pflegt es aktiv weiter (siehe deren Blogpost "How We Took Over From Google"), API ist ein
+direkter Drop-in-Ersatz.
+
+## 2026-09-05 · Task 7.2 · `MarkdownStyleSheet.fromTheme()` deckt `AsmTheme.dark` fast vollstaendig ab
+
+`MarkdownStyleSheet.fromTheme(Theme.of(context))` liest Standard-Material-`TextTheme`-Slots
+(`bodyMedium`, `titleLarge`, `titleMedium`, `bodyLarge`, `headlineSmall`, ...). `AsmTheme.dark`
+setzt alle davon explizit auf `AsmTextStyles`-Werte -- bis auf `headlineSmall` (fuer Markdown-h1),
+das in `asm_theme.dart` nie belegt wurde. `fromTheme()` liefert dafuer `null`, Markdown faellt
+sonst auf einen unpassenden Material-Default zurueck. Fix: `h1: AsmTextStyles.titleL` explizit
+per `.copyWith(...)` nachgetragen. Zusaetzlich hartcodiert `fromTheme()` die Link-Farbe
+(`a: TextStyle(color: Colors.blue)`) unabhaengig vom Theme -- ebenfalls per `copyWith(...)` auf
+`AsmColors.brandBright` korrigiert. Faustregel fuer kuenftige `fromTheme()`-artige
+Bibliotheks-Helfer: nicht blind vertrauen, sondern gegen die tatsaechlich befuellten
+`TextTheme`-Slots in `asm_theme.dart` gegenchecken.
+
+## 2026-09-05 · Task 7.2 · Rechtstexte auch aus den Einstellungen verlinkt, nicht nur aus dem Profil
+
+Der Plan-Text fuer Task 7.2 nennt explizit drei Verlinkungsstellen: "Registrierung
+(Pflicht-Checkboxen), Einstellungen, Profil". Beim ersten Durchgang zunaechst nur
+Registrierung + Profil umgesetzt (Profil hatte schon vor Task 7.2 einen "Rechtliches"-Abschnitt,
+der externe Links auf `asm-app.de` durch In-App-Navigation ersetzt bekam) -- die explizite
+Nennung von "Einstellungen" im Plan-Text uebersehen. Beim Abgleich mit der Checkliste
+nachgetragen: `SettingsScreen` (neu seit Task 7.1) bekam einen eigenen "Rechtliches"-Abschnitt
+mit denselben vier Links. Lehre: bei einer Checkliste mit mehreren Unterpunkten in einer Zeile
+("Verlinkt aus: X, Y, Z") jeden einzeln abhaken, nicht nur die naheliegendsten umsetzen.
+
+## 2026-09-05 · Live-Test · Am Screenshot abgelesene Tap-Koordinaten brauchen den genannten Skalierungsfaktor
+
+Beim Live-Testen der Kreuzverweis-Links in `LegalScreen` (Task 7.2) trafen drei aufeinanderfolgende
+`adb shell input tap`-Versuche mit Koordinaten, die direkt visuell aus einem angezeigten
+Screenshot abgelesen wurden, konsequent daneben. Ursache: Screenshots werden mit einem Hinweis
+"original 1080x2400, displayed at 900x2000, multiply by 1.20" angezeigt -- Koordinaten, die am
+angezeigten (kleineren) Bild abgelesen werden, muessen mit diesem Faktor (hier 1,2×)
+hochskaliert werden, um auf dem echten 1080x2400-Geraet zu treffen. Bounds aus einem
+`uiautomator dump` brauchen diesen Faktor NICHT (die stehen schon in echten Geraete-Pixeln) --
+betroffen ist ausschliesslich das direkte Ablesen von Koordinaten am Bild selbst, etwa fuer
+Inline-Links in Fliesstext, die `uiautomator` nicht als eigenes, einzeln antippbares Element
+exponiert.
+
 <!-- Neue Einträge oberhalb dieser Zeile einfügen. -->

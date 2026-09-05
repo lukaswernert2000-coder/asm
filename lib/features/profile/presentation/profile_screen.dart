@@ -16,24 +16,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:url_launcher/url_launcher.dart' as url_launcher;
-
-Future<void> _defaultLaunchLink(Uri url) async {
-  try {
-    await url_launcher.launchUrl(
-      url,
-      mode: url_launcher.LaunchMode.externalApplication,
-    );
-  } on Exception catch (_) {
-    // Ein fehlgeschlagener externer Link ist kein App-Fehler.
-  }
-}
 
 class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({this.launchLink = _defaultLaunchLink, super.key});
-
-  /// Seam statt `launchUrl` direkt aufzurufen -- siehe register_screen.dart.
-  final Future<void> Function(Uri url) launchLink;
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -52,7 +37,7 @@ class ProfileScreen extends ConsumerWidget {
         ),
         data: (profile) => profile == null
             ? const AsmErrorView(message: 'Nicht angemeldet', onRetry: _noop)
-            : _ProfileContent(profile: profile, launchLink: launchLink),
+            : _ProfileContent(profile: profile),
       ),
     );
   }
@@ -61,10 +46,9 @@ class ProfileScreen extends ConsumerWidget {
 void _noop() {}
 
 class _ProfileContent extends ConsumerWidget {
-  const _ProfileContent({required this.profile, required this.launchLink});
+  const _ProfileContent({required this.profile});
 
   final Profile profile;
-  final Future<void> Function(Uri url) launchLink;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -125,22 +109,13 @@ class _ProfileContent extends ConsumerWidget {
           style: AsmTextStyles.label.copyWith(color: AsmColors.textTertiary),
         ),
         const SizedBox(height: AsmSpacing.xs),
-        _LegalLink(
+        const _LegalLink(
           label: 'Nutzungsbedingungen',
           page: 'nutzungsbedingungen',
-          launchLink: launchLink,
         ),
-        _LegalLink(
-          label: 'Datenschutzerklärung',
-          page: 'datenschutz',
-          launchLink: launchLink,
-        ),
-        _LegalLink(label: 'AGB', page: 'agb', launchLink: launchLink),
-        _LegalLink(
-          label: 'Impressum',
-          page: 'impressum',
-          launchLink: launchLink,
-        ),
+        const _LegalLink(label: 'Datenschutzerklärung', page: 'datenschutz'),
+        const _LegalLink(label: 'AGB', page: 'agb'),
+        const _LegalLink(label: 'Impressum', page: 'impressum'),
         const SizedBox(height: AsmSpacing.xl),
         _MenuRow(
           icon: LucideIcons.logOut,
@@ -214,20 +189,15 @@ class _MenuRow extends StatelessWidget {
 }
 
 class _LegalLink extends StatelessWidget {
-  const _LegalLink({
-    required this.label,
-    required this.page,
-    required this.launchLink,
-  });
+  const _LegalLink({required this.label, required this.page});
 
   final String label;
   final String page;
-  final Future<void> Function(Uri url) launchLink;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => launchLink(Uri.parse('https://asm-app.de/$page.html')),
+      onTap: () => context.push(AsmRoutes.legal(page)),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AsmSpacing.xs),
         child: Text(

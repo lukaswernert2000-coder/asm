@@ -38,10 +38,10 @@ Firebase Cloud Messaging · Sentry
 | | |
 |---|---|
 | **Meilenstein** | M6 · Chat + Push, Task 6.1–6.3 fertig |
-| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) · Task 5.2 komplett, inkl. eines beim Live-Test gefundenen und gefixten Cache-Bugs in `refreshSellerListings` (siehe unten) · **M5 damit komplett** · 2026-09-01: Bugfix-Batch außerhalb der Plan-Tasks, fünf vom Nutzer gemeldete Bugs (Galerie-Filter, Geburtsdatum-Tastatur, Kategorie-Toggle, fehlender Zurück-Weg auf der Detailseite, Mindestlänge Beschreibung 30→15), alle mit Root-Cause-Fix, TDD und Live-Verifikation (siehe unten) · Task 6.1 komplett: `ChatRepository`/`SupabaseChatRepository`, reiner Datenschicht-Task ohne Interface-Änderung (siehe unten) · Task 6.2 komplett: Chatliste und Chat-Detail, live drei echte Bugs im bestehenden Chat-Schema gefunden und gefixt (siehe unten) · Task 6.3 komplett: FCM-Push für neue Nachrichten, Client + `notify-on-message`-Edge-Function, Webhook live mit zwei erfolgreichen Aufrufen (200) bestätigt — **M6 damit komplett**, echtes Gerät bleibt offen (siehe unten) · Task 7.1 komplett: Melde-Sheet (9 Gründe + Freitext), Blockieren stoppt jetzt auch Nachrichten in bestehenden Konversationen, "Blockierte Nutzer" in neuen Einstellungen, alles live verifiziert (siehe unten) |
-| **Als Nächstes** | **M7 — Task 7.2 (Rechtstexte in der App, siehe Meilenstein M7 im Plan)** |
+| **Fertig** | M0 komplett (Task 0.1–0.8, Checkboxen nachgezogen 2026-08-30) · M1 komplett (Task 1.1–1.9) · M2 komplett (Task 2.1–2.7, inkl. echtem Komplettflow live bestätigt — ein schmaler, bewusst offen gelassener Punkt: Task 2.4s "eingeloggt+unbestätigt"-Guard nie live getestet, siehe DECISIONS.md) · Task 8.0 Teil A Schritt 1–6 (Code fertig, siehe unten) · Task 3.1–3.4 komplett und auf dem Emulator live bestätigt (siehe unten — echtes Gerät steht laut Nutzer noch aus, bewusst erst nach M3) · **M3 damit komplett** · Altersgate/RLS-Konflikt aus Task 3.1 aufgelöst und live (siehe unten) · Task 4.1 komplett und auf dem Emulator verifiziert (siehe unten) · **M0–M3 am 2026-08-30 auf Lücken geprüft, siehe DECISIONS.md** · Task 4.2 komplett, inkl. echtem End-to-End-Publish auf dem Emulator (siehe unten) · Task 4.3 komplett, inkl. Livetest auf dem Emulator mit zwei dabei gefundenen und gefixten echten Bugs (siehe unten) · **M4 damit komplett** · Task 5.1 komplett, inkl. eines Root-Cause-Fixes für die bis dahin nie befüllte `listing_images`-Tabelle und eines echten `AsmButton`-Overflow-Bugs, beide live verifiziert (siehe unten) · Task 5.2 komplett, inkl. eines beim Live-Test gefundenen und gefixten Cache-Bugs in `refreshSellerListings` (siehe unten) · **M5 damit komplett** · 2026-09-01: Bugfix-Batch außerhalb der Plan-Tasks, fünf vom Nutzer gemeldete Bugs (Galerie-Filter, Geburtsdatum-Tastatur, Kategorie-Toggle, fehlender Zurück-Weg auf der Detailseite, Mindestlänge Beschreibung 30→15), alle mit Root-Cause-Fix, TDD und Live-Verifikation (siehe unten) · Task 6.1 komplett: `ChatRepository`/`SupabaseChatRepository`, reiner Datenschicht-Task ohne Interface-Änderung (siehe unten) · Task 6.2 komplett: Chatliste und Chat-Detail, live drei echte Bugs im bestehenden Chat-Schema gefunden und gefixt (siehe unten) · Task 6.3 komplett: FCM-Push für neue Nachrichten, Client + `notify-on-message`-Edge-Function, Webhook live mit zwei erfolgreichen Aufrufen (200) bestätigt — **M6 damit komplett**, echtes Gerät bleibt offen (siehe unten) · Task 7.1 komplett: Melde-Sheet (9 Gründe + Freitext), Blockieren stoppt jetzt auch Nachrichten in bestehenden Konversationen, "Blockierte Nutzer" in neuen Einstellungen, alles live verifiziert (siehe unten) · Task 7.2 komplett: Rechtstexte per `flutter_markdown_plus` in der App (statt externem Website-Link), verlinkt aus Registrierung/Einstellungen/Profil, inklusive Kreuzverweis-Navigation zwischen den vier Dokumenten, live verifiziert (siehe unten) |
+| **Als Nächstes** | **M7 — Task 7.3 (Sicherheits-Durchgang, siehe Meilenstein M7 im Plan)** |
 | **Offen in M0** | keins — eine Einschränkung, siehe unten |
-| **Letzter Commit** | `feat(moderation): add report and block flows` |
+| **Letzter Commit** | `feat(legal): add in-app legal documents` |
 | **Stand vom** | 2026-09-05 |
 
 Repo ist auf GitHub (`lukaswernert2000-coder/asm`). **Task 2.1–2.4 sind jetzt gepusht**
@@ -711,6 +711,47 @@ fälschlich leer, bis der Screen komplett neu aufgebaut wurde. Zusätzlich ein r
 Umbau auf das Sheet gefunden: die 250ms-Slide-up-Transition brauchte in zwei Test-Dateien einen
 zusätzlichen, längeren Pump, sonst lag "Melden bestätigen" beim Tappen noch außerhalb des
 sichtbaren Testbereichs (siehe DECISIONS.md).
+
+**2026-09-05, Task 7.2:** Die vier Markdown-Dateien in `assets/legal/` existierten bereits aus
+Task 8.0A -- dieser Task war wie im Plan vorgesehen "nur" Anzeige und Verlinkung, kein neuer
+Inhalt (die geforderten Punkte fuer die Nutzungsbedingungen -- verbotene Artikel, 18+-Regel,
+F-Kennzeichen-/Besitznachweis-Pflicht, Null-Toleranz-Klausel, Meldeverfahren -- standen alle
+schon drin, nur gegengeprueft). `flutter_markdown` selbst ist inzwischen von Google discontinued
+(Nachfolger: `flutter_markdown_plus`, offizielle Uebergabe an Foresight Mobile) -- dem Nutzer zur
+Entscheidung vorgelegt, `flutter_markdown_plus` gewaehlt. Neue `LegalScreen`
+(`lib/features/legal/presentation/`) unter der neuen Route `/legal/:page` laedt das jeweilige
+`.md`-Asset (Seam `loadMarkdown` fuer Tests, echtes Asset-Laden per `rootBundle` funktionierte in
+`testWidgets` hier problemlos, anders als der bekannte Stolperstein bei `PlzLookup`) und rendert
+per `MarkdownStyleSheet.fromTheme(...)` -- damit folgen Ueberschriften/Absaetze automatisch dem
+App-Theme, nur der Link-Stil (Standard waere hartcodiert `Colors.blue`) und `h1` (kein
+Theme-Slot fuer `headlineSmall` in `AsmTheme.dark` vorhanden) wurden auf `AsmColors`/
+`AsmTextStyles` ueberschrieben. Ein `<!-- ENTWURF ... -->`-Kommentar als erste Zeile wird zu
+einem sichtbaren Warnhinweis-Banner statt als rohes HTML durchgereicht -- exakt dasselbe Muster
+wie `tool/gen_website.dart`s Website-Generator, der dieselben vier Dateien in `website/*.html`
+rendert (das ist die "Gegenprobe identisch"-Garantie: eine gemeinsame Quelle statt zwei
+gepflegter Texte). Ein `[Text](andere.md)`-Link im Markdown navigiert per `onTapLink` zur
+verlinkten Seite in der App (z. B. Nutzungsbedingungen → AGB), statt einen Browser zu oeffnen.
+
+Verlinkt aus allen drei vom Plan geforderten Stellen: `RegisterScreen`s AGB-/
+Datenschutz-Pflicht-Checkboxen (vorher externe `asm-app.de`-Links, jetzt In-App-Navigation --
+der dafuer nicht mehr gebrauchte `launchLink`-Seam wurde komplett entfernt, ebenso aus
+`ProfileScreen`), die neue `SettingsScreen` (eigener "Rechtliches"-Abschnitt, zusaetzlich zur
+Blockiert-Liste aus Task 7.1) und `ProfileScreen`s schon bestehender "Rechtliches"-Abschnitt
+(vorher ebenfalls externe Links).
+
+18 neue/geaenderte Tests (5 LegalScreen inkl. Kreuzverweis-Navigation, 2 RegisterScreen,
+1 ProfileScreen, 1 SettingsScreen -- Letztere beide laden dabei tatsaechlich die echten
+Rechtstext-Assets ueber den vollen `appRouterProvider`), 421 insgesamt gruen, `flutter analyze`
+0 Probleme, `dart format lib test` sauber.
+
+**Live auf `flutter_api34` verifiziert:** Nutzungsbedingungen ueber Profil geoeffnet -- Titel,
+Entwurf-Banner, Ueberschriften/Listen/Fettschrift korrekt gerendert. Der Inline-Link "AGB"
+navigiert zur AGB-Seite (mit demselben Entwurf-Banner und ihrem eigenen Rueckverweis auf die
+Nutzungsbedingungen), Zurueck-Navigation funktioniert sauber. Dieselben vier Links zusaetzlich
+aus den neuen Einstellungen bestaetigt. **Stolperstein beim eigenen Testen:** Koordinaten, die
+direkt aus einem angezeigten Screenshot abgelesen werden (statt aus einem `uiautomator`-Dump),
+brauchen den in der Bildunterschrift genannten Skalierungsfaktor (hier 1,2×) -- sonst trifft der
+simulierte Tap konsequent daneben, siehe DECISIONS.md.
 
 Bekannte Stolpersteine aus bisherigen Sessions stehen in [`DECISIONS.md`](DECISIONS.md).
 
@@ -2743,15 +2784,19 @@ Stream<List<Message>> messages(String conversationId) {
 > dieser Task besteht nur noch aus Anzeige und Verlinkung. Falls nicht: erst 8.0A
 > Schritt 2 machen, damit App und Website dieselbe Quelle nutzen.
 
-- [ ] Vier Markdown-Dateien in `assets/legal/` vorhanden: `impressum.md`, `datenschutz.md`,
+- [x] Vier Markdown-Dateien in `assets/legal/` vorhanden: `impressum.md`, `datenschutz.md`,
       `agb.md`, `nutzungsbedingungen.md` (Quelle: Task 8.0A)
-- [ ] Anzeige über `flutter_markdown` im App-Theme (kein WebView – schneller, offline, konsistent)
-- [ ] Verlinkt aus: Registrierung (Pflicht-Checkboxen), Einstellungen, Profil
-- [ ] **Inhaltlich vom Anwalt prüfen lassen** – die Entwürfe sind nur Platzhalter
-- [ ] Nutzungsbedingungen enthalten: verbotene Artikel, 18+-Regel, F-Kennzeichen-Pflicht,
+- [x] Anzeige über `flutter_markdown_plus` im App-Theme (kein WebView – schneller, offline,
+      konsistent) — `flutter_markdown` selbst ist mittlerweile discontinued, siehe unten
+- [x] Verlinkt aus: Registrierung (Pflicht-Checkboxen), Einstellungen, Profil
+- [ ] **Inhaltlich vom Anwalt prüfen lassen** – die Entwürfe sind nur Platzhalter, bleibt
+      Nutzer-Aufgabe
+- [x] Nutzungsbedingungen enthalten: verbotene Artikel, 18+-Regel, F-Kennzeichen-Pflicht,
       Besitznachweis-Pflicht, Null-Toleranz-Klausel für anstößige Inhalte (Apple 1.2), Meldeverfahren
-- [ ] Gegenprobe: Der in der App angezeigte Text ist identisch mit dem auf der Website
-- [ ] Commit — `feat(legal): add in-app legal documents`
+      — schon in Task 8.0A geschrieben, hier nur gegengeprüft
+- [x] Gegenprobe: Der in der App angezeigte Text ist identisch mit dem auf der Website — beide
+      lesen `assets/legal/*.md` unveraendert, `tool/gen_website.dart` bleibt unangetastet
+- [x] Commit — `feat(legal): add in-app legal documents`
 
 ## Task 7.3: Sicherheits-Durchgang
 - [ ] **Jede** Tabelle in `public` prüfen: RLS aktiv, mindestens eine Policy

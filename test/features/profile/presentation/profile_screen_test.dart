@@ -221,4 +221,54 @@ void main() {
 
     expect(find.widgetWithText(AppBar, 'Account löschen'), findsOneWidget);
   });
+
+  testWidgets(
+    'Rechtliches-Links navigieren zur jeweiligen Rechtstext-Seite (Task 7.2)',
+    (tester) async {
+      when(() => profileRepository.current()).thenAnswer((_) async => profile);
+      tester.view.physicalSize = const Size(400, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final container = ProviderContainer(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(authRepository),
+          profileRepositoryProvider.overrideWithValue(profileRepository),
+          listingRepositoryProvider.overrideWithValue(listingRepository),
+          sharedPreferencesProvider.overrideWithValue(
+            await fakeSharedPreferences(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final router = container.read(appRouterProvider);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+      await tester.pump();
+      router.go(AsmRoutes.profile);
+      await tester.pumpAndSettle();
+
+      // Alle vier Links teilen sich dieselbe Route (`LegalScreen`) mit
+      // echtem `rootBundle`-Laden -- pro Link hin und wieder zurueck, statt
+      // vier eigene Tests mit demselben Setup zu duplizieren.
+      for (final title in const [
+        'Nutzungsbedingungen',
+        'Datenschutzerklärung',
+        'AGB',
+        'Impressum',
+      ]) {
+        await tester.tap(find.text(title));
+        await tester.pumpAndSettle();
+        expect(find.widgetWithText(AppBar, title), findsOneWidget);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+      }
+    },
+  );
 }

@@ -82,4 +82,24 @@ void main() {
 
     expect(find.byType(BlockedUsersScreen), findsOneWidget);
   });
+
+  testWidgets(
+    'Rechtliches-Links navigieren zur jeweiligen Rechtstext-Seite (Task 7.2)',
+    (tester) async {
+      await pumpScreen(tester);
+
+      for (final title in const [
+        'Nutzungsbedingungen',
+        'Datenschutzerklärung',
+        'AGB',
+        'Impressum',
+      ]) {
+        await tester.tap(find.text(title));
+        await tester.pumpAndSettle();
+        expect(find.widgetWithText(AppBar, title), findsOneWidget);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+      }
+    },
+  );
 }

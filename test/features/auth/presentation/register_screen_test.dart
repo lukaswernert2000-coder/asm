@@ -3,11 +3,13 @@ import 'package:asm/core/widgets/asm_text_field.dart';
 import 'package:asm/features/auth/data/auth_repository.dart';
 import 'package:asm/features/auth/presentation/auth_controller.dart';
 import 'package:asm/features/auth/presentation/register_screen.dart';
+import 'package:asm/features/legal/presentation/legal_screen.dart';
 import 'package:asm/features/profile/data/profile_repository.dart';
 import 'package:asm/features/profile/presentation/profile_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -39,7 +41,6 @@ Future<void> _fillValidForm(WidgetTester tester) async {
 void main() {
   late MockAuthRepository authRepository;
   late MockProfileRepository profileRepository;
-  final launchedUrls = <Uri>[];
 
   Widget wrap() => ProviderScope(
     overrides: [
@@ -47,17 +48,13 @@ void main() {
       profileRepositoryProvider.overrideWithValue(profileRepository),
     ],
     child: MaterialApp(
-      home: RegisterScreen(
-        pickBirthDate: (context) async => DateTime(2000),
-        launchLink: (url) async => launchedUrls.add(url),
-      ),
+      home: RegisterScreen(pickBirthDate: (context) async => DateTime(2000)),
     ),
   );
 
   setUp(() {
     authRepository = MockAuthRepository();
     profileRepository = MockProfileRepository();
-    launchedUrls.clear();
     when(
       () => profileRepository.isUsernameTaken(any()),
     ).thenAnswer((_) async => false);
@@ -129,26 +126,62 @@ void main() {
     },
   );
 
-  testWidgets('Tap auf AGB-Link oeffnet die richtige URL', (tester) async {
-    await tester.pumpWidget(wrap());
+  // Eigener Mini-Router statt des einfachen `wrap()` oben: die Links
+  // navigieren jetzt in die App (Task 7.2), `context.push` braucht dafuer
+  // einen echten GoRouter im Baum. `LegalScreen` bekommt eine gefakte
+  // `loadMarkdown`, damit kein echtes Asset geladen werden muss.
+  Widget wrapWithRouter() {
+    final router = GoRouter(
+      initialLocation: '/register',
+      routes: [
+        GoRoute(
+          path: '/register',
+          builder: (context, state) =>
+              RegisterScreen(pickBirthDate: (context) async => DateTime(2000)),
+        ),
+        GoRoute(
+          path: '/legal/:page',
+          builder: (context, state) => LegalScreen(
+            page: state.pathParameters['page']!,
+            loadMarkdown: (page) async => '# Test',
+          ),
+        ),
+      ],
+    );
+    return ProviderScope(
+      overrides: [
+        authRepositoryProvider.overrideWithValue(authRepository),
+        profileRepositoryProvider.overrideWithValue(profileRepository),
+      ],
+      child: MaterialApp.router(routerConfig: router),
+    );
+  }
+
+  testWidgets('Tap auf AGB-Link oeffnet die AGB-Seite in der App', (
+    tester,
+  ) async {
+    await tester.pumpWidget(wrapWithRouter());
 
     await tester.tapOnText(find.textRange.ofSubstring('AGB'));
+    await tester.pumpAndSettle();
 
-    expect(launchedUrls, [Uri.parse('https://asm-app.de/agb.html')]);
+    expect(find.widgetWithText(AppBar, 'AGB'), findsOneWidget);
   });
 
   testWidgets(
-    'Tap auf Datenschutz-Link oeffnet die richtige URL',
+    'Tap auf Datenschutz-Link oeffnet die Datenschutz-Seite in der App',
     (tester) async {
-      await tester.pumpWidget(wrap());
+      await tester.pumpWidget(wrapWithRouter());
 
       await tester.tapOnText(
         find.textRange.ofSubstring('Datenschutzerklärung'),
       );
+      await tester.pumpAndSettle();
 
-      expect(launchedUrls, [
-        Uri.parse('https://asm-app.de/datenschutz.html'),
-      ]);
+      expect(
+        find.widgetWithText(AppBar, 'Datenschutzerklärung'),
+        findsOneWidget,
+      );
     },
   );
 }

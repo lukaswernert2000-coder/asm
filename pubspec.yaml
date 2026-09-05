@@ -40,6 +40,7 @@ dependencies:
   flutter_local_notifications: ^22.3.0
   flutter_localizations:
     sdk: flutter
+  flutter_markdown_plus: ^1.0.12
   flutter_riverpod: ^2.6.1
   flutter_secure_storage: ^11.0.0
   flutter_svg: ^2.3.0
@@ -86,6 +87,7 @@ flutter:
     - assets/icons/categories/
     - assets/images/
     - assets/data/
+    - assets/legal/
   fonts:
     - family: Inter
       fonts:

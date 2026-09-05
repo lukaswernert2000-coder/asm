@@ -7,8 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Einstellungen (Task 7.1) -- ersetzt den `_TitledPlaceholder` aus
-/// Task 2.5. Bisher nur ein Eintrag; weitere Einstellungen sind nicht Teil
-/// des Plans und wurden deshalb nicht vorgezogen.
+/// Task 2.5. Bisher nur zwei Eintraege; weitere Einstellungen sind nicht
+/// Teil des Plans und wurden deshalb nicht vorgezogen.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -23,6 +23,31 @@ class SettingsScreen extends StatelessWidget {
             icon: LucideIcons.userX,
             label: 'Blockierte Nutzer',
             onTap: () => context.push(AsmRoutes.blockedUsers),
+          ),
+          const SizedBox(height: AsmSpacing.xl),
+          Text(
+            'Rechtliches',
+            style: AsmTextStyles.label.copyWith(color: AsmColors.textTertiary),
+          ),
+          _SettingsRow(
+            icon: LucideIcons.fileText,
+            label: 'Nutzungsbedingungen',
+            onTap: () => context.push(AsmRoutes.legal('nutzungsbedingungen')),
+          ),
+          _SettingsRow(
+            icon: LucideIcons.fileText,
+            label: 'Datenschutzerklärung',
+            onTap: () => context.push(AsmRoutes.legal('datenschutz')),
+          ),
+          _SettingsRow(
+            icon: LucideIcons.fileText,
+            label: 'AGB',
+            onTap: () => context.push(AsmRoutes.legal('agb')),
+          ),
+          _SettingsRow(
+            icon: LucideIcons.fileText,
+            label: 'Impressum',
+            onTap: () => context.push(AsmRoutes.legal('impressum')),
           ),
         ],
       ),

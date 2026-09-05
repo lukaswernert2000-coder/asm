@@ -13,6 +13,7 @@ import 'package:asm/features/categories/presentation/category_screen.dart';
 import 'package:asm/features/chat/presentation/chat_detail_screen.dart';
 import 'package:asm/features/chat/presentation/chats_screen.dart';
 import 'package:asm/features/favorites/presentation/favorites_screen.dart';
+import 'package:asm/features/legal/presentation/legal_screen.dart';
 import 'package:asm/features/listings/presentation/create_listing_screen.dart';
 import 'package:asm/features/listings/presentation/edit_listing_screen.dart';
 import 'package:asm/features/listings/presentation/listing_detail_screen.dart';
@@ -160,6 +161,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AsmRoutes.blockedUsers,
         builder: (context, state) => const BlockedUsersScreen(),
+      ),
+      GoRoute(
+        path: '/legal/:page',
+        builder: (context, state) =>
+            LegalScreen(page: state.pathParameters['page']!),
       ),
       GoRoute(
         path: AsmRoutes.onboarding,

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:asm/core/errors/app_exception.dart';
+import 'package:asm/core/router/routes.dart';
 import 'package:asm/core/theme/asm_colors.dart';
 import 'package:asm/core/theme/asm_spacing.dart';
 import 'package:asm/core/theme/asm_text_styles.dart';
@@ -15,7 +16,7 @@ import 'package:asm/features/profile/presentation/profile_providers.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart' as url_launcher;
+import 'package:go_router/go_router.dart';
 
 Future<DateTime?> _defaultPickBirthDate(BuildContext context) {
   final now = DateTime.now();
@@ -32,34 +33,15 @@ Future<DateTime?> _defaultPickBirthDate(BuildContext context) {
   );
 }
 
-Future<void> _defaultLaunchLink(Uri url) async {
-  try {
-    await url_launcher.launchUrl(
-      url,
-      mode: url_launcher.LaunchMode.externalApplication,
-    );
-  } on Exception catch (_) {
-    // Ein fehlgeschlagener externer Link ist kein App-Fehler.
-  }
-}
-
 /// Dateien laut Plan-Task 2.2 nennen keinen zweiten Screen fuer die
 /// "E-Mail bestaetigen"-Ansicht -- als interner Zustand dieses Screens
 /// umgesetzt statt als eigene Route. Siehe DECISIONS.md.
 class RegisterScreen extends ConsumerStatefulWidget {
-  const RegisterScreen({
-    this.pickBirthDate = _defaultPickBirthDate,
-    this.launchLink = _defaultLaunchLink,
-    super.key,
-  });
+  const RegisterScreen({this.pickBirthDate = _defaultPickBirthDate, super.key});
 
   /// Seam statt `showDatePicker` direkt aufzurufen -- der native Dialog laesst
   /// sich in Widget-Tests nur fragil ueber lokalisierte Button-Texte steuern.
   final Future<DateTime?> Function(BuildContext context) pickBirthDate;
-
-  /// Seam statt `launchUrl` direkt aufzurufen -- der echte Plugin-Kanal ist in
-  /// Widget-Tests ohne Platform-Mock nicht verfuegbar.
-  final Future<void> Function(Uri url) launchLink;
 
   @override
   ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
@@ -71,11 +53,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _birthDateController = TextEditingController();
 
+  // Task 7.2: die Pflicht-Checkboxen verlinken jetzt in die App
+  // (LegalScreen) statt auf die externe Website.
   late final _agbLinkRecognizer = TapGestureRecognizer()
-    ..onTap = () => widget.launchLink(Uri.parse('https://asm-app.de/agb.html'));
+    ..onTap = () => context.push(AsmRoutes.legal('agb'));
   late final _datenschutzLinkRecognizer = TapGestureRecognizer()
-    ..onTap = () =>
-        widget.launchLink(Uri.parse('https://asm-app.de/datenschutz.html'));
+    ..onTap = () => context.push(AsmRoutes.legal('datenschutz'));
 
   DateTime? _birthDate;
   bool _agbChecked = false;
